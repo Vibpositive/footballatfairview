@@ -1,45 +1,43 @@
-<!-- views/login.ejs -->
+<!-- views/index.ejs -->
 <!doctype html>
 <html>
 <head>
-    <title>Node Authentication</title>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
-    <style>
-        body        { padding-top:80px; }
-    </style>
+	<title>Node Authentication</title>
+	<script>
+		if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+			
+		}else{
+			
+		}
+	</script>
+	<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no; target-densityDpi=device-dpi"/>
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.css">
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+
+	<script>
+		$(document).ready( function() {
+			$('#comclick').click( function() {
+				$(location).attr('href','http://localhost:8080/auth/facebook');
+			});
+		});
+	</script>
 </head>
 <body>
-<div class="container">
+	<div data-role="page" id="index">
+		<div data-role="content">
+			<div class="jumbotron text-center">
+				<p>Login or Register with:</p>
+				<a id="comclick" class="ui-btn ui-corner-all btn btn-primary"><span class="fa fa-facebook"></span> Facebook</a>
+			</div>
+		</div>
 
-<div class="col-sm-6 col-sm-offset-3">
-
-    <h1><span class="fa fa-sign-in"></span> Login</h1>
-
-    <!-- show any messages that come back with authentication -->
-    <% if (message.length > 0) { %>
-        <div class="alert alert-danger"><%= message %></div>
-    <% } %>
-
-    <!-- LOGIN FORM -->
-    <form action="/login" method="post">
-        <div class="form-group">
-            <label>Email</label>
-            <input type="text" class="form-control" name="email">
-        </div>
-        <div class="form-group">
-            <label>Password</label>
-            <input type="password" class="form-control" name="password">
-        </div>
-
-        <button type="submit" class="btn btn-warning btn-lg">Login</button>
-    </form>
-
-    <hr>
-    <p>Or go <a href="/">home</a>.</p>
-
-</div>
-
-</div>
+		<div data-theme="a" data-role="footer" data-position="fixed">
+		</div>
+	</div>    
 </body>
 </html>
+
