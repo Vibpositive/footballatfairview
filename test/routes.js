@@ -6,7 +6,7 @@ describe('Routes main point', function()
 	it('should get 200 message', function(done)
 	{
 		request
-		.get('http://http://localhost:8080')
+		.get('http://localhost:8080')
 		.end(function(err, res){
 			expect(res).to.exist;
 			expect(res.status).to.equal(200);
@@ -16,12 +16,13 @@ describe('Routes main point', function()
 	});
 });
 
-describe('Routes Login', function()
+
+describe('Routes lists', function()
 {
 	it('should get 200 message', function(done)
 	{
 		request
-		.get('http://http://localhost:8080/login')
+		.get('http://localhost:8080/lists')
 		.end(function(err, res){
 			expect(res).to.exist;
 			expect(res.status).to.equal(200);
@@ -31,19 +32,18 @@ describe('Routes Login', function()
 	});
 });
 
-describe('Routes indexuser', function()
+
+describe('List', function()
 {
 	it('should get 200 message', function(done)
 	{
 		request
-		.get('http://http://localhost:8080/indexuser')
+		.post('http://localhost:8080/list')
 		.end(function(err, res){
 			expect(res).to.exist;
 			expect(res.status).to.equal(200);
-			//expect(res.body).to.contain('world');
+			expect(res.text).to.contain('ok');
 			done();
 		});
 	});
 });
-
-

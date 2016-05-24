@@ -12,30 +12,44 @@
 		</script>
 
 		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no; target-densityDpi=device-dpi"/>
-		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
-		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.css">
-		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
-
-		<script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
 		<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-		
+
 	</head>
 	<body>
-		<div data-role="page" id="index">
-			<div data-theme="a" data-role="header">
-				<h3>
-					First Page
-				</h3>
-				<a href="/second" class="ui-btn-right">Next</a>
-			</div>
-			<div data-role="content">
-			<ul data-role="listview">
-			    <li><a href="#">Listas</a></li>
-			</ul>
-			</div>
+		<nav class="navbar navbar-default">
+		  <div class="container-fluid">
+		   <button type="button" class="btn btn-default navbar-btn">Sign in</button>
+		   <button type="button" class="btn btn-default navbar-btn">Sign in</button>
+		   <button type="button" class="btn btn-default navbar-btn">Sign in</button>
+		  </div><!-- /.container-fluid -->
+		</nav>
 
-			<div data-theme="a" data-role="footer" data-position="fixed">
-			</div>
+		<div class="page-header">
+			<h1>Example page header <small>Subtext for header</small></h1>
 		</div>
+
+		<table class="table table-reflow">
+		  <thead>
+			<tr>
+				<th>#</th>
+				<th>Table heading</th>
+		  </thead>
+		  <tbody>
+			<tr>
+				<th scope="row">1</th>
+				<td>Table cell</td>
+			</tr>
+			<tr>
+				<th scope="row">2</th>
+				<td>Table cell</td>
+			</tr>
+
+		  </tbody>
+		</table>
+		<p class="text-center">
+			<a id="comclick" class="ui-btn ui-corner-all btn btn-primary"> Participate</a>
+		</p>
 	</body>
 </html>

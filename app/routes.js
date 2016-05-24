@@ -1,63 +1,58 @@
 // app/routes.js
-module.exports = function(app, passport) {
+module.exports = function(app, passport)
+{
 
     // =====================================
     // HOME PAGE (with login links) ========
     // =====================================
-    app.get('/', function(req, res) {
-        res.render('index.ejs'); // load the index.ejs file
-    });
-
-    // =====================================
-    // LOGIN ===============================
-    // =====================================
-    // show the login form
-    app.get('/login', function(req, res) {
-
-        // render the page and pass in any flash data if it exists
+    app.get('/', function(req, res)
+    {
         res.render('login.ejs', { message: req.flash('loginMessage') }); 
     });
 
-    // process the login form
-    // app.post('/login', do all our passport stuff here);
-
-    // =====================================
-    // SIGNUP ==============================
-    // =====================================
-    // show the signup form
-    app.get('/signup', function(req, res) {
-
+    app.get('/index', function(req, res)
+    {
         // render the page and pass in any flash data if it exists
-        res.render('signup.ejs', { message: req.flash('signupMessage') });
+        res.render('index.ejs', { message: req.flash('loginMessage') }); 
     });
 
-    // process the signup form
-    // app.post('/signup', do all our passport stuff here);
-
+    app.get('/second', function(req, res)
+    {
+        // render the page and pass in any flash data if it exists
+        res.render('second.ejs', { message: req.flash('loginMessage') });
+    });
+    
     // =====================================
     // PROFILE SECTION =====================
     // =====================================
     // we will want this protected so you have to be logged in to visit
     // we will use route middleware to verify this (the isLoggedIn function)
-    app.get('/profile', isLoggedIn, function(req, res) {
+    app.get('/profile', isLoggedIn, function(req, res)
+    {
         res.render('profile.ejs', {
             user : req.user // get the user out of session and pass to template
         });
     });
 
+    app.get('/lists', isLoggedIn, function(req, res)
+    {
+        res.render('lists.ejs', {
+            user : req.user // get the user out of session and pass to template
+        });
+    });
+
+    app.post('/list', function(req, res)
+    {
+        res.send('ok')
+    });
+
     // =====================================
     // LOGOUT ==============================
     // =====================================
-    app.get('/logout', function(req, res) {
+    app.get('/logout', function(req, res)
+    {
         req.logout();
         res.redirect('/');
-    });
-    
-    // route for showing the profile page
-    app.get('/profile', isLoggedIn, function(req, res) {
-        res.render('profile.ejs', {
-            user : req.user // get the user out of session and pass to template
-        });
     });
 
     // =====================================
@@ -69,19 +64,21 @@ module.exports = function(app, passport) {
     // handle the callback after facebook has authenticated the user
     app.get('/auth/facebook/callback',
         passport.authenticate('facebook', {
-            successRedirect : '/profile',
+            successRedirect : '/index',
             failureRedirect : '/'
         }));
 
     // route for logging out
-    app.get('/logout', function(req, res) {
+    app.get('/logout', function(req, res)
+    {
         req.logout();
         res.redirect('/');
     });
 };
 
 // route middleware to make sure a user is logged in
-function isLoggedIn(req, res, next) {
+function isLoggedIn(req, res, next)
+{
 
     // if user is authenticated in the session, carry on 
     if (req.isAuthenticated())
