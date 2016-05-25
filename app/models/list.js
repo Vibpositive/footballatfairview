@@ -1,32 +1,26 @@
-// app/models/user.js
 // load the things we need
 var mongoose = require('mongoose');
 var bcrypt   = require('bcrypt-nodejs');
 
-// define the schema for our user model
+// define the schema for our list model
+/*var listSchema = mongoose.Schema({
+	list      : {
+		id        : String,
+		list_date : String,
+		list_size : String,
+		names     : Array,
+		date      : String
+	}
+});*/
+
 var listSchema = mongoose.Schema({
-    facebook         : {
-        id           : String,
-        token        : String,
-        email        : String,
-        name         : String,
-        date         :
-        {
-        	type: Date, default: Date.now
-        }
-    }
+	id          : String,
+	list_date   : String,
+	list_size   : String,
+	names       : Array,
+	list_status : String,
+	date        : String
 });
 
-// methods ======================
-// generating a hash
-listSchema.methods.generateHash = function(password) {
-    return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
-};
-
-// checking if password is valid
-listSchema.methods.validPassword = function(password) {
-    return bcrypt.compareSync(password, this.local.password);
-};
-
-// create the model for users and expose it to our app
+// create the model for list and expose it to our app
 module.exports = mongoose.model('List', listSchema);

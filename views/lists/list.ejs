@@ -51,8 +51,18 @@
 				</tr>
 			</thead>
 			<tbody>
-			<%= user.facebook.name %>
-			<%if (lists.length > 0) { %>
+			<tr>
+				<th scope="row">1</th>
+					<td>
+						<p>
+						1111
+						</p>
+					</td>
+					<td>
+						<p>Aaaa</p>
+					</td>
+				</tr>
+				<%if (lists.length > 0) { %>
 				<% for(var i=0; i<lists.length; i++) { %>
 					<tr>
 						<th scope="row"><%= i+1 %></th>
@@ -69,24 +79,6 @@
 					</tr>
 				<% } %>
 			<% }else{ %>
-				<tr>
-					<th scope="row"><%= 1 %></th>
-					<td>
-						<p>
-							<%= lists.list_date %>
-						</p>
-					</td>
-					<td>
-						<%if (lists.list_status == 'inactive') { %>
-							<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm disabled">Participate</button>
-						<% }else{ %>
-							<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm">Participate</button>
-						<% } %>
-					</td>
-				</tr>
-			<% } %>
-
-				
 		  </tbody>
 		</table>
 	</body>
