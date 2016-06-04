@@ -38,13 +38,14 @@ module.exports = function(app, passport)
 
 	app.get('/list/:listid', isLoggedIn, function(req, res)
 	{
-		List.find({}, function (err, list)
+		List.findOne({id:req.param.listid}, function (err, list)
 		{
 			if (err) return handleError(err);
 			// render the page and pass in any flash data if it exists
 			console.log(list);
 			//TODO: Keep Going from here 25/05/2016 17/04
-			res.render('index.ejs', { message: req.flash('loginMessage'), lists: list, user:req.user});
+			// res.render('index.ejs', { message: req.flash('loginMessage'), lists: list, user:req.user});
+			res.render('lists/list.ejs', { message: req.flash('loginMessage'), list: list, user:req.user});
 		});
 	});
 

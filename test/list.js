@@ -1,18 +1,16 @@
 var request = require('superagent');
 var expect = require('expect.js');
 
-describe('List list post', function()
+describe('Create a list', function()
 {
-	it('should return a list', function(done)
+	it('should return a regExp of 24', function(done)
 	{
 		request
-		.post('http://localhost:8080/list')
+		.get('http://localhost:8080/crud/list/create')
 		.end(function(err, res){
-			console.log(res.body);
 			expect(res).to.exist;
 			expect(res.status).to.equal(200);
-			expect(res.body).to.be.an('array');
-			expect(res.body).to.not.be.empty();
+			expect(res.text).to.match(/\b\w{24}\b/);
 			done();
 		});
 	});

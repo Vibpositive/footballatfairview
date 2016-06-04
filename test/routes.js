@@ -29,3 +29,17 @@ describe('List detail', function()
 		});
 	});
 });
+
+describe('Create List', function()
+{
+	it('should get 200 message', function(done)
+	{
+		request
+		.get('http://localhost:8080/crud/list/create')
+		.end(function(err, res){
+			expect(res).to.exist;
+			expect(res.status).to.equal(200);
+			done();
+		});
+	});
+});

@@ -46,39 +46,22 @@
 			<thead>
 				<tr>
 					<th>#</th>
-					<th>Date</th>
+					<th>Name</th>
 					<th></th>
 				</tr>
 			</thead>
 			<tbody>
-			<tr>
-				<th scope="row">1</th>
-					<td>
-						<p>
-						1111
-						</p>
-					</td>
-					<td>
-						<p>Aaaa</p>
-					</td>
-				</tr>
-				<%if (lists.length > 0) { %>
-				<% for(var i=0; i<lists.length; i++) { %>
-					<tr>
-						<th scope="row"><%= i+1 %></th>
-						<td>
-							<p><%= lists[i].list_date %></p>
-						</td>
-						<td>
-							<%if (lists[i].list_status == 'inactive') { %>
-								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm disabled">Participate</button>
-							<% }else{ %>
-								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm">Participate</button>
-							<% } %>
-						</td>
-					</tr>
-				<% } %>
-			<% }else{ %>
+					<% for(var i=0; i<list.names.length; i++) { %>
+						<tr>
+							<th scope="row"><%= i+1 %></th>
+							<td>
+								<p><%= list.names[i].nome %></p>
+							</td>
+							<td>
+
+							</td>
+						</tr>
+					<% } %>
 		  </tbody>
 		</table>
 	</body>
