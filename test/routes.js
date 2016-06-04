@@ -29,7 +29,7 @@ describe('List detail', function()
 		});
 	});
 });
-
+/*
 describe('Create List', function()
 {
 	it('should get 200 message', function(done)
@@ -43,3 +43,27 @@ describe('Create List', function()
 		});
 	});
 });
+*/
+describe('Create List post', function()
+{
+	it('should get 200 message', function(done)
+	{
+		request
+		.post('http://localhost:8080/crud/list/create')
+		.send(
+			{
+				names       : [{nome:'Manny', datetime:Date.now()},{nome:'Manny', datetime:Date.now()}],
+				list_status : 'active',
+				list_size : '21',
+				list_date : Date.now()
+		})
+		.end(function(err, res)
+		{
+			expect(res).to.exist;
+			expect(res.status).to.equal(200);
+			expect(res.text).to.match(/\b\w{24}\b/);
+			done();
+		});
+	});
+});
+

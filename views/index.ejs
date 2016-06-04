@@ -21,7 +21,7 @@
 			}
 
 			$( document ).ready(function(){
-				$("#participate").click(function(res)
+				$(".participate").click(function(res)
 				{
 					$(location).attr('href','/list/' + $(this).attr('value'));
 				})
@@ -61,9 +61,9 @@
 						</td>
 						<td>
 							<%if (lists[i].list_status == 'inactive') { %>
-								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm disabled">Participate</button>
+								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
 							<% }else{ %>
-								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm">Participate</button>
+								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
 							<% } %>
 						</td>
 					</tr>
@@ -78,9 +78,9 @@
 					</td>
 					<td>
 						<%if (lists.list_status == 'inactive') { %>
-							<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm disabled">Participate</button>
+							<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
 						<% }else{ %>
-							<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm">Participate</button>
+							<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
 						<% } %>
 					</td>
 				</tr>

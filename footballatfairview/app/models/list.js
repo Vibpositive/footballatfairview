@@ -14,12 +14,12 @@ var bcrypt   = require('bcrypt-nodejs');
 });*/
 
 var listSchema = mongoose.Schema({
-	id          : String,
-	list_date   : String,
-	list_size   : String,
-	names       : Array,
-	list_status : String,
-	date        : String
+	id          : String         ,
+	list_date   : { type: String , required: true }    ,
+	list_size   : { type: String , required: true }    ,
+	names       : { type: Array  , required: true }    ,
+	list_status : { type: String , required: true, enum: ['inactive', 'active'] }    ,
+	date        : { type: Date   , default: Date.now }
 });
 
 // create the model for list and expose it to our app

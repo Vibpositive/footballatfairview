@@ -18,9 +18,8 @@ module.exports = function(app, passport) {
   app.get('/index', isLoggedIn, function(req, res) {
     List.find({}, function(err, list) {
       if (err) {
-        return handleError(err);
+        return console.log(err);
       }
-      console.log(list);
       res.render('index.ejs', {
         message: req.flash('loginMessage'),
         lists: list,
@@ -35,10 +34,11 @@ module.exports = function(app, passport) {
   });
   app.get('/list/:listid', isLoggedIn, function(req, res) {
     List.findOne({
-      id: req.param.listid
+      _id: req.params.listid
     }, function(err, list) {
       if (err) {
-        return handleError(err);
+        console.log(err);
+        return;
       }
       console.log(list);
       res.render('lists/list.ejs', {
@@ -48,21 +48,32 @@ module.exports = function(app, passport) {
       });
     });
   });
-  app.get('/crud/list/create', function(req, res) {
-    var match;
+  app.post('/crud/list/create', function(req, res, next) {
+    var errMessage, list_date, list_size, list_status, match, names;
+    names = req.body.names;
+    list_date = req.body.list_date;
+    list_size = req.body.list_size;
+    list_status = req.body.list_status;
+    errMessage = '';
     match = new List({
-      list_date: "",
-      list_size: "",
-      names: "",
-      list_status: "",
-      date: ""
+      list_date: list_date,
+      list_size: list_size,
+      names: names,
+      list_status: list_status,
+      date: Date.now()
     });
     return match.save(function(err) {
+      var errName;
       if (err) {
-        res.send('notok');
-        return handleError(err);
+        for (errName in err.errors) {
+          console.log('err', err.errors[errName].message);
+          errMessage += err.errors[errName].message;
+        }
+        res.send(errMessage);
+      } else {
+        console.log('match._id', match._id);
+        res.send(match._id);
       }
-      res.send(match._id);
     });
   });
   app.get('/logout', function(req, res) {
