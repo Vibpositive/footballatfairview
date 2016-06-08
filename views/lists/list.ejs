@@ -20,11 +20,27 @@
 				
 			}
 
+			var listid ="<%-list._id%>";
+
 			$( document ).ready(function(){
 				$(".participate").click(function(res)
 				{
 					$(location).attr('href','/list/' + $(this).attr('value'));
-				})
+				});
+				$("#participate_on_match").click(function(res)
+				{
+					$.post("/crud/list/participate",
+					{
+						list_id  : listid
+					},
+					function(data, status)
+					{
+						console.log(data)
+						alert("Data: " + data + "\nStatus: " + status);
+					});
+				});
+				// $.mobile.loadingMessage = false;
+				$.mobile.loading().hide();
 			})
 
 		</script>
@@ -33,36 +49,39 @@
 	<body>
 		<nav class="navbar navbar-default">
 		  <div class="container-fluid">
-		   <button type="button" class="btn btn-default navbar-btn">Sign in</button>
-		   <button type="button" class="btn btn-default navbar-btn">Sign in</button>
-		   <button type="button" class="btn btn-default navbar-btn">Sign in</button>
-		  </div><!-- /.container-fluid -->
+		  </div>
 		</nav>
 
 		<div class="page-header">
-			<h1>Example page header <small>Subtext for header</small></h1>
+			<h1><%= match_date %></h1>
+			<h2><small>Subtext for header</small></h2>
 		</div>
 		<table class="table table-reflow">
 			<thead>
 				<tr>
 					<th>#</th>
-					<th>Name</th>
-					<th></th>
+					<th>First Name</th>
+					<th>Last Name</th>
+					<th>Status</th>
 				</tr>
 			</thead>
 			<tbody>
 					<% for(var i=0; i<list.names.length; i++) { %>
 						<tr>
 							<th scope="row"><%= i+1 %></th>
-							<td>
-								<p><%= list.names[i].nome %></p>
-							</td>
-							<td>
-
-							</td>
+								<td>
+									<p><%= list.names[i].first_name %></p>
+								</td>
+								<td>
+									<p><%= list.names[i].last_name %></p>
+								</td>
+								<td>
+									<p><%= list.names[i].status %></p>
+								</td>
 						</tr>
 					<% } %>
 		  </tbody>
 		</table>
+		<p class="text-center"><button id="participate_on_match" type="button" class="btn btn-default navbar-btn">Participate</button></p>
 	</body>
 </html>

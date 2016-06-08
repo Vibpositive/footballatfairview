@@ -9,8 +9,10 @@ var userSchema = mongoose.Schema({
         id           : String,
         token        : String,
         email        : String,
-        name         : String,
-        date         :
+        full_name    : String,
+        first_name   : String,
+        last_name    : String,
+        date         : 
         {
         	type: Date, default: Date.now
         }

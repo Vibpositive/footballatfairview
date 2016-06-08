@@ -65,11 +65,13 @@ module.exports = function(passport) {
 					console.log(profile);
 					
 					// set all of the facebook information in our user model
-					newUser.facebook.id    = profile.id; // set the users facebook id                   
-					newUser.facebook.token = token; // we will save the token that facebook provides to the user                    
-					newUser.facebook.name  = profile._json.first_name + ' ' + profile._json.last_name; // look at the passport user profile to see how names are returned
-					newUser.facebook.email = profile._json.email; // facebook can return multiple emails so we'll take the first
-
+					newUser.facebook.id         = profile.id; // set the users facebook id
+					newUser.facebook.token      = token; // we will save the token that facebook provides to the user
+					newUser.facebook.full_name  = profile._json.first_name + ' ' + profile._json.last_name; // look at the passport user profile to see how names are returned
+					newUser.facebook.first_name = profile._json.first_name;
+					newUser.facebook.last_name  = profile._json.last_name; // look at the passport user profile to see how names are returned
+					newUser.facebook.email      = profile._json.email; // facebook can return multiple emails so we'll take the first
+					
 					// save our user to the database
 					newUser.save(function(err) {
 						if (err)

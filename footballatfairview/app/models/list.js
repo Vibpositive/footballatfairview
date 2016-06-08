@@ -1,6 +1,7 @@
 // load the things we need
 var mongoose = require('mongoose');
 var bcrypt   = require('bcrypt-nodejs');
+var moment   = require('moment');
 
 // define the schema for our list model
 /*var listSchema = mongoose.Schema({
@@ -14,12 +15,12 @@ var bcrypt   = require('bcrypt-nodejs');
 });*/
 
 var listSchema = mongoose.Schema({
-	id          : String         ,
-	list_date   : { type: String , required: true }    ,
-	list_size   : { type: String , required: true }    ,
-	names       : { type: Array  , required: true }    ,
-	list_status : { type: String , required: true, enum: ['inactive', 'active'] }    ,
-	date        : { type: Date   , default: Date.now }
+	id          : String,
+	list_date   : { type: String , required: true },
+	list_size   : { type: String , required: true },
+	names       : { type: Array  , required: true },
+	list_status : { type: String , required: true  , enum: ['inactive', 'active'] },
+	date        : { type: Date   , default: moment().format("DD-MM-YYYY") }
 });
 
 // create the model for list and expose it to our app

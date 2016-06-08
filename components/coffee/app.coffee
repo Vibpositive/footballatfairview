@@ -19,6 +19,7 @@ require('../../config/passport') passport
 app.use morgan('dev')
 app.use cookieParser()
 app.use bodyParser()
+app.use('/public', express.static('public'))
 app.set 'view engine', 'ejs'
 app.use session(secret: 'ilovescotchscotchyscotchscotch')
 app.use passport.initialize()
