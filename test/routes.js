@@ -50,12 +50,14 @@ describe('Create List post', function()
 				{
 					first_name : sillyName.split(' ')[0],
 					last_name  : sillyName.split(' ')[1],
+					full_name  : sillyName.split(' ')[0] + ' ' + sillyName.split(' ')[1],
 					datetime   : Date.now(),
 					player_id  : '01',
 					status     : 'playing'
 				},{
 					first_name : sillyName2.split(' ')[0],
 					last_name  : sillyName2.split(' ')[1],
+					full_name  : sillyName2.split(' ')[0] + ' ' + sillyName.split(' ')[1],
 					datetime   : Date.now(),
 					player_id  : '01',
 					status     : 'playing'

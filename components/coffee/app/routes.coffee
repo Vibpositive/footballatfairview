@@ -38,17 +38,24 @@ module.exports = (app, passport) ->
     # app.get '/list/:listid', isLoggedIn, (req, res) ->
     app.get '/list/:listid', (req, res) ->
 
-        List.findOne { _id: req.params.listid }, (err, list) ->
-            if err
-                console.log err
+        listid = req.params.listid
+
+        List.find { '_id': listid, 'names': $elemMatch: 'full_name': req.user.facebook.full_name }, (err, sec_res) ->
+
+            player_on_list = if sec_res.length <= 0 then false else true
+
+            List.findOne { _id: listid }, (err, list) ->
+                if err
+                    console.log err
+                    return
+                # return
+                res.render 'lists/list.ejs',
+                message        : req.flash('loginMessage')
+                list           : list
+                match_date     : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
+                user           : req.user
+                player_on_list : player_on_list
                 return
-            # return
-            res.render 'lists/list.ejs',
-            message    : req.flash('loginMessage')
-            list       : list
-            match_date : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
-            user       : req.user
-            return
         return
 
     app.get '/list/details/:listid', (req, res) ->
@@ -100,46 +107,51 @@ module.exports = (app, passport) ->
 
     # app.post '/crud/list/participate', isLoggedIn ,(req, res, next) ->
     app.post '/crud/list/participate', (req, res, next) ->
-
-        # List.find '_id' : '57587de6d1c385f511fbbb17' , {names: 1}, (err, sec_res) ->
-        #     players_count = console.log sec_res[0].names.length
-
         player_id  = req.user.facebook.id
         datetime   = 'moment().format("dddd, MMMM Do YYYY, h : mm : ss a")'
         last_name  = req.user.facebook.last_name
         first_name = req.user.facebook.first_name
+        full_name  = req.user.facebook.first_name + " " + req.user.facebook.last_name
         status     = 'playing'
         list_id    = req.body.list_id
 
-        if player_id != undefined and datetime != undefined and last_name != undefined and first_name != undefined and status != undefined and list_id != undefined
-            if player_id != '' and datetime != '' and last_name != '' and first_name != '' and status != '' and list_id != ''
-                console.log 'all good'
-        else
-            console.log 'not everything good'
+        if req.body.player_status == 'true'
 
-        # TODO: Use UUID instead of DB id
-        
-        # list_id    = '57587de6d1c385f511fbbb17'
+            # TODO: Use UUID instead of DB id
+            # list_id    = '57587de6d1c385f511fbbb17'
 
-        List.update { '_id' : list_id }, { $addToSet : { 'names' : {
-                    player_id  : player_id
-                    datetime   : datetime
-                    last_name  : last_name
-                    first_name : first_name
-                    status     : status
-                } } },(err, numAffected) ->
-            if err
-                console.log err
-                res.send 'err: ' + String(err)
-            else
-                if numAffected > 0
-                    res.json({ message: 'ok' });
+            List.update { '_id' : list_id }, { $addToSet : { 'names' : {
+                        player_id  : player_id
+                        datetime   : datetime
+                        last_name  : last_name
+                        first_name : first_name
+                        full_name  : full_name
+                        status     : status
+                    } } },(err, numAffected) ->
+                if err
+                    res.send 'err: ' + String(err)
                 else
-                    res.json({ message: '0 rows affected' });
-            return
-
-    app.post '/crud/list/unparticipate', (req, res, next) ->
-        res.send('todo')
+                    if numAffected > 0
+                        res.json({ message: 'ok' });
+                    else
+                        res.json({ message: '0 rows affected' });
+                return
+        else
+            # List.update { '_id' : list_id }, { $pull : 'names' : 'full_name' : full_name }, false, true , (err, numAffected) ->
+            List.findByIdAndUpdate { '_id' : list_id }, { $pull: 'names': full_name : full_name }, (err, model) ->
+              if err
+                res.send 'err: ' + String(err)
+              else
+                res.send model
+                ###if err
+                    console.log err
+                    res.send 'err: ' + String(err)
+                else
+                    if numAffected > 0
+                        res.json({ message: 'ok' });
+                    else
+                        res.json({ message: '0 rows affected' });
+                return###
 
     # app.get '/cp', isLoggedIn, (req, res) ->
     app.get '/cp', (req, res, next) ->

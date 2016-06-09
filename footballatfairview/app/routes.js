@@ -37,18 +37,32 @@ module.exports = function(app, passport) {
     });
   });
   app.get('/list/:listid', function(req, res) {
-    List.findOne({
-      _id: req.params.listid
-    }, function(err, list) {
-      if (err) {
-        console.log(err);
-        return;
+    var listid;
+    listid = req.params.listid;
+    List.find({
+      '_id': listid,
+      'names': {
+        $elemMatch: {
+          'full_name': req.user.facebook.full_name
+        }
       }
-      res.render('lists/list.ejs', {
-        message: req.flash('loginMessage'),
-        list: list,
-        match_date: moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a"),
-        user: req.user
+    }, function(err, sec_res) {
+      var player_on_list;
+      player_on_list = sec_res.length <= 0 ? false : true;
+      return List.findOne({
+        _id: listid
+      }, function(err, list) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        res.render('lists/list.ejs', {
+          message: req.flash('loginMessage'),
+          list: list,
+          match_date: moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a"),
+          user: req.user,
+          player_on_list: player_on_list
+        });
       });
     });
   });
@@ -96,51 +110,71 @@ module.exports = function(app, passport) {
     });
   });
   app.post('/crud/list/participate', function(req, res, next) {
-    var datetime, first_name, last_name, list_id, player_id, status;
+    var datetime, first_name, full_name, last_name, list_id, player_id, status;
     player_id = req.user.facebook.id;
     datetime = 'moment().format("dddd, MMMM Do YYYY, h : mm : ss a")';
     last_name = req.user.facebook.last_name;
     first_name = req.user.facebook.first_name;
+    full_name = req.user.facebook.first_name + " " + req.user.facebook.last_name;
     status = 'playing';
     list_id = req.body.list_id;
-    if (player_id !== void 0 && datetime !== void 0 && last_name !== void 0 && first_name !== void 0 && status !== void 0 && list_id !== void 0) {
-      if (player_id !== '' && datetime !== '' && last_name !== '' && first_name !== '' && status !== '' && list_id !== '') {
-        console.log('all good');
-      }
-    } else {
-      console.log('not everything good');
-    }
-    return List.update({
-      '_id': list_id
-    }, {
-      $addToSet: {
-        'names': {
-          player_id: player_id,
-          datetime: datetime,
-          last_name: last_name,
-          first_name: first_name,
-          status: status
+    if (req.body.player_status === 'true') {
+      return List.update({
+        '_id': list_id
+      }, {
+        $addToSet: {
+          'names': {
+            player_id: player_id,
+            datetime: datetime,
+            last_name: last_name,
+            first_name: first_name,
+            full_name: full_name,
+            status: status
+          }
         }
-      }
-    }, function(err, numAffected) {
-      if (err) {
-        console.log(err);
-        res.send('err: ' + String(err));
-      } else {
-        if (numAffected > 0) {
-          res.json({
-            message: 'ok'
-          });
+      }, function(err, numAffected) {
+        if (err) {
+          res.send('err: ' + String(err));
         } else {
-          res.json({
-            message: '0 rows affected'
-          });
+          if (numAffected > 0) {
+            res.json({
+              message: 'ok'
+            });
+          } else {
+            res.json({
+              message: '0 rows affected'
+            });
+          }
         }
-      }
-    });
-  });
-  app.post('/crud/list/unparticipate', function(req, res, next) {
-    return res.send('todo');
+      });
+    } else {
+      return List.findByIdAndUpdate({
+        '_id': list_id
+      }, {
+        $pull: {
+          'names': {
+            full_name: full_name
+          }
+        }
+      }, function(err, model) {
+        if (err) {
+          return res.send('err: ' + String(err));
+        } else {
+          return res.send(model);
+
+          /*if err
+              console.log err
+              res.send 'err: ' + String(err)
+          else
+              if numAffected > 0
+                  res.json({ message: 'ok' });
+              else
+                  res.json({ message: '0 rows affected' });
+          return
+           */
+        }
+      });
+    }
   });
   app.get('/cp', function(req, res, next) {
     res.render('cp/index.ejs');

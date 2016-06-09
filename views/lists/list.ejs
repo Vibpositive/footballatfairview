@@ -6,11 +6,13 @@
 
 		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no; target-densityDpi=device-dpi"/>
 		
-
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-		<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+		<script type="text/javascript" src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+		<script type="text/javascript" src="/public/js/bootstrap-toggle.min.js"></script>
 
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"        integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<link rel="stylesheet" href="/public/css/bootstrap-toggle.min.css">
+		
 
 		<script>
 
@@ -22,30 +24,26 @@
 
 			var listid ="<%-list._id%>";
 
-			$( document ).ready(function(){
-				$(".participate").click(function(res)
-				{
-					$(location).attr('href','/list/' + $(this).attr('value'));
-				});
-				$("#participate_on_match").click(function(res)
+			$( document ).ready(function()
+			{
+				$('#toggle-event').change(function()
 				{
 					$.post("/crud/list/participate",
 					{
-						list_id  : listid
+						list_id       : listid,
+						player_status : $(this).prop('checked')
 					},
 					function(data, status)
 					{
-						console.log(data);
-						
-						// $( "#list_container" ).load( "/list/details/" + listid );
-
 						$.get("/list/details/" + listid + " #list_container", function(data) {
-							$("#list_container").replaceWith(data);
+							// $("#list_container").replaceWith(data);
+							$("#list_container").html( data );
 						});
-						// alert("Data: " + data + "\nStatus: " + status);
+
 					});
+
 				});
-				// $.mobile.loadingMessage = false;
+				
 				$.mobile.loading().hide();
 			})
 
@@ -63,8 +61,17 @@
 			<h2><small>Subtext for header</small></h2>
 		</div>
 		<div id="list_container">
-			<% include list_details %>
+			<div>
+				<% include list_details %>
+			</div>
 		</div>
 		<p class="text-center"><button id="participate_on_match" type="button" class="btn btn-default navbar-btn">Participate</button></p>
+		<p class="text-center">
+			<%if (player_on_list == true) { %>
+				<input type="checkbox" id="toggle-event" checked data-toggle="toggle" data-on="Yes" data-off="No">
+			<% }else{ %>
+				<input type="checkbox" id="toggle-event" data-toggle="toggle" data-on="Yes" data-off="No">
+			<% } %>
+		</p>
 	</body>
 </html>
