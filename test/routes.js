@@ -92,7 +92,7 @@ describe('Create List post', function()
 
 });*/
 
-describe('Add participant to a Match', function()
+/*describe('Add participant to a Match', function()
 {
 	it('should get a ok message', function(done)
 	{
@@ -111,6 +111,29 @@ describe('Add participant to a Match', function()
 			expect(res).to.exist;
 			expect(res.status).to.equal(200)
 			expect(res.body).to.have.key('message');
+			done();
+		});
+	});
+});*/
+
+describe('Get list details by post', function()
+{
+	it('should get a 200 status message', function(done)
+	{
+		request
+		.post('http://localhost:8080/list/57587de6d1c385f511fbbb17')
+		.send(
+		{
+			first_name : sillyName.split(' ')[0],
+			last_name  : sillyName.split(' ')[1],
+			datetime   : moment.now(),
+			player_id  : '01',
+			status     : 'playing'
+		})
+		.end(function(err, res)
+		{
+			expect(res).to.exist;
+			expect(res.status).to.equal(200)
 			done();
 		});
 	});

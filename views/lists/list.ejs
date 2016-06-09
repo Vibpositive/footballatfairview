@@ -35,8 +35,14 @@
 					},
 					function(data, status)
 					{
-						console.log(data)
-						alert("Data: " + data + "\nStatus: " + status);
+						console.log(data);
+						
+						// $( "#list_container" ).load( "/list/details/" + listid );
+
+						$.get("/list/details/" + listid + " #list_container", function(data) {
+							$("#list_container").replaceWith(data);
+						});
+						// alert("Data: " + data + "\nStatus: " + status);
 					});
 				});
 				// $.mobile.loadingMessage = false;
@@ -56,32 +62,9 @@
 			<h1><%= match_date %></h1>
 			<h2><small>Subtext for header</small></h2>
 		</div>
-		<table class="table table-reflow">
-			<thead>
-				<tr>
-					<th>#</th>
-					<th>First Name</th>
-					<th>Last Name</th>
-					<th>Status</th>
-				</tr>
-			</thead>
-			<tbody>
-					<% for(var i=0; i<list.names.length; i++) { %>
-						<tr>
-							<th scope="row"><%= i+1 %></th>
-								<td>
-									<p><%= list.names[i].first_name %></p>
-								</td>
-								<td>
-									<p><%= list.names[i].last_name %></p>
-								</td>
-								<td>
-									<p><%= list.names[i].status %></p>
-								</td>
-						</tr>
-					<% } %>
-		  </tbody>
-		</table>
+		<div id="list_container">
+			<% include list_details %>
+		</div>
 		<p class="text-center"><button id="participate_on_match" type="button" class="btn btn-default navbar-btn">Participate</button></p>
 	</body>
 </html>

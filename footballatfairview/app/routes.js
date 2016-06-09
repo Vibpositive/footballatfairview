@@ -52,6 +52,22 @@ module.exports = function(app, passport) {
       });
     });
   });
+  app.get('/list/details/:listid', function(req, res) {
+    List.findOne({
+      _id: req.params.listid
+    }, function(err, list) {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      res.render('lists/list_details.ejs', {
+        message: req.flash('loginMessage'),
+        list: list,
+        match_date: moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a"),
+        user: req.user
+      });
+    });
+  });
   app.post('/crud/list/create', function(req, res, next) {
     var errMessage, list_date, list_size, list_status, match, names;
     names = req.body.names;
@@ -71,12 +87,10 @@ module.exports = function(app, passport) {
       var errName;
       if (err) {
         for (errName in err.errors) {
-          console.log('err', err.errors[errName].message);
           errMessage += err.errors[errName].message;
         }
         res.send(errMessage);
       } else {
-        console.log('match._id', match._id);
         res.send(match._id);
       }
     });

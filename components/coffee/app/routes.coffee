@@ -51,6 +51,21 @@ module.exports = (app, passport) ->
             return
         return
 
+    app.get '/list/details/:listid', (req, res) ->
+
+        List.findOne { _id: req.params.listid }, (err, list) ->
+            if err
+                console.log err
+                return
+            # return
+            res.render 'lists/list_details.ejs',
+            message    : req.flash('loginMessage')
+            list       : list
+            match_date : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
+            user       : req.user
+            return
+        return
+
     # app.get '/crud/list/create', isLoggedIn, (req, res) ->
     # app.get '/crud/list/create', (req, res, next) ->
     app.post '/crud/list/create', (req, res, next) ->
@@ -75,13 +90,11 @@ module.exports = (app, passport) ->
 
                 for errName of err.errors
                     
-                    console.log 'err', err.errors[errName].message
                     errMessage += err.errors[errName].message
 
                 res.send errMessage
                 return
             else
-                console.log 'match._id',match._id
                 res.send match._id
                 return
 
