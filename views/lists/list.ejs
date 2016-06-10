@@ -55,17 +55,10 @@
 		  <div class="container-fluid">
 		  </div>
 		</nav>
-
 		<div class="page-header">
 			<h1><%= match_date %></h1>
 			<h2><small>Subtext for header</small></h2>
 		</div>
-		<div id="list_container">
-			<div>
-				<% include list_details %>
-			</div>
-		</div>
-		<p class="text-center"><button id="participate_on_match" type="button" class="btn btn-default navbar-btn">Participate</button></p>
 		<p class="text-center">
 			<%if (player_on_list == true) { %>
 				<input type="checkbox" id="toggle-event" checked data-toggle="toggle" data-on="Yes" data-off="No">
@@ -73,5 +66,10 @@
 				<input type="checkbox" id="toggle-event" data-toggle="toggle" data-on="Yes" data-off="No">
 			<% } %>
 		</p>
+		<div id="list_container">
+			<div>
+				<% include list_details %>
+			</div>
+		</div>
 	</body>
 </html>

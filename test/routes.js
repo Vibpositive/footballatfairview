@@ -78,7 +78,7 @@ describe('Create List post', function()
 
 
 
-/*describe('Check route for participating in a match', function()
+describe('Check route for participating in a match', function()
 {
 	it('should get 200 message', function(done)
 	{
@@ -92,9 +92,9 @@ describe('Create List post', function()
 		});
 	});
 
-});*/
+});
 
-/*describe('Add participant to a Match', function()
+describe('Add participant to a Match', function()
 {
 	it('should get a ok message', function(done)
 	{
@@ -116,7 +116,7 @@ describe('Create List post', function()
 			done();
 		});
 	});
-});*/
+});
 
 describe('Get list details by post', function()
 {
@@ -140,7 +140,7 @@ describe('Get list details by post', function()
 		});
 	});
 });
-/*describe('Control Panel', function()
+describe('Control Panel', function()
 {
 	it('should get 200 message for main url', function(done)
 	{
@@ -153,4 +153,19 @@ describe('Get list details by post', function()
 			done();
 		});
 	});
-});*/
+});
+
+describe('Matchs', function()
+{
+	it('should get 200 message for main url', function(done)
+	{
+		request
+		.get('http://localhost:8080/cp/matchs')
+		.end(function(err, res)
+		{
+			expect(res).to.exist;
+			expect(res.status).to.equal(200);
+			done();
+		});
+	});
+});

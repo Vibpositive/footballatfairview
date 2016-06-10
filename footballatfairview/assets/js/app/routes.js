@@ -36,7 +36,7 @@ module.exports = function(app, passport) {
       user: req.user
     });
   });
-  app.get('/list/:listid', function(req, res) {
+  app.get('/list/:listid', isLoggedIn, function(req, res) {
     var listid;
     listid = req.params.listid;
     List.find({
@@ -66,7 +66,7 @@ module.exports = function(app, passport) {
       });
     });
   });
-  app.get('/list/details/:listid', function(req, res) {
+  app.get('/list/details/:listid', isLoggedIn, function(req, res) {
     List.findOne({
       _id: req.params.listid
     }, function(err, list) {
@@ -82,7 +82,7 @@ module.exports = function(app, passport) {
       });
     });
   });
-  app.post('/crud/list/create', function(req, res, next) {
+  app.post('/crud/list/create', isLoggedIn, function(req, res, next) {
     var errMessage, list_date, list_size, list_status, match, names;
     names = req.body.names;
     list_date = req.body.list_date;
@@ -109,10 +109,10 @@ module.exports = function(app, passport) {
       }
     });
   });
-  app.post('/crud/list/participate', function(req, res, next) {
+  app.post('/crud/list/participate', isLoggedIn, function(req, res, next) {
     var datetime, first_name, full_name, last_name, list_id, player_id, status;
     player_id = req.user.facebook.id;
-    datetime = 'moment().format("dddd, MMMM Do YYYY, h : mm : ss a")';
+    datetime = 'date';
     last_name = req.user.facebook.last_name;
     first_name = req.user.facebook.first_name;
     full_name = req.user.facebook.first_name + " " + req.user.facebook.last_name;
@@ -178,6 +178,9 @@ module.exports = function(app, passport) {
   });
   app.get('/cp', function(req, res, next) {
     res.render('cp/index.ejs');
+  });
+  app.post('/cp/matchs', function(req, res, next) {
+    res.render('matchs/index.ejs');
   });
   app.get('/logout', function(req, res) {
     req.logout();

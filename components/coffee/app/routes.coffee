@@ -35,8 +35,7 @@ module.exports = (app, passport) ->
         res.render 'profile.ejs', user: req.user
         return
 
-    # app.get '/list/:listid', isLoggedIn, (req, res) ->
-    app.get '/list/:listid', (req, res) ->
+    app.get '/list/:listid', isLoggedIn,(req, res) ->
 
         listid = req.params.listid
 
@@ -49,7 +48,7 @@ module.exports = (app, passport) ->
                     console.log err
                     return
                 # return
-                res.render 'lists/list.ejs',
+                res.render     'lists/list.ejs',
                 message        : req.flash('loginMessage')
                 list           : list
                 match_date     : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
@@ -58,7 +57,7 @@ module.exports = (app, passport) ->
                 return
         return
 
-    app.get '/list/details/:listid', (req, res) ->
+    app.get '/list/details/:listid', isLoggedIn, (req, res) ->
 
         List.findOne { _id: req.params.listid }, (err, list) ->
             if err
@@ -73,9 +72,7 @@ module.exports = (app, passport) ->
             return
         return
 
-    # app.get '/crud/list/create', isLoggedIn, (req, res) ->
-    # app.get '/crud/list/create', (req, res, next) ->
-    app.post '/crud/list/create', (req, res, next) ->
+    app.post '/crud/list/create', isLoggedIn, (req, res, next) ->
 
         names       = req.body.names
         list_date   = req.body.list_date
@@ -105,10 +102,9 @@ module.exports = (app, passport) ->
                 res.send match._id
                 return
 
-    # app.post '/crud/list/participate', isLoggedIn ,(req, res, next) ->
-    app.post '/crud/list/participate', (req, res, next) ->
+    app.post '/crud/list/participate', isLoggedIn ,(req, res, next) ->
         player_id  = req.user.facebook.id
-        datetime   = 'moment().format("dddd, MMMM Do YYYY, h : mm : ss a")'
+        datetime   = 'date'
         last_name  = req.user.facebook.last_name
         first_name = req.user.facebook.first_name
         full_name  = req.user.facebook.first_name + " " + req.user.facebook.last_name
@@ -156,6 +152,11 @@ module.exports = (app, passport) ->
     # app.get '/cp', isLoggedIn, (req, res) ->
     app.get '/cp', (req, res, next) ->
         res.render 'cp/index.ejs'
+        return
+
+    # app.get '/cp', isLoggedIn, (req, res) ->
+    app.post '/cp/matchs', (req, res, next) ->
+        res.render 'matchs/index.ejs'
         return
 
     app.get '/logout', (req, res) ->

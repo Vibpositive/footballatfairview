@@ -6,17 +6,14 @@
 
 		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no; target-densityDpi=device-dpi"/>
 		
-
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 		<script type="text/javascript" src="/public/js/bootstrap-switch.js"></script>
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.1/js/bootstrap-datepicker.min.js"></script>
-
 		<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+		<script type="text/javascript" src="/public/js/bootstrap-datetimepicker.min.js"></script>
 
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.1/css/bootstrap-datepicker3.min.css">
-		<link rel="stylesheet" href="/public/css/bootstrap3/bootstrap-switch.min.css">
-
+		<link rel="stylesheet" href="/public/css/bootstrap-datetimepicker.min.css">
+		
 		<script>
 
 			if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
@@ -26,12 +23,46 @@
 			}
 
 			$( document ).ready(function(){
-				$("[name='my-checkbox']").bootstrapSwitch();
+				/*$("[name='my-checkbox']").bootstrapSwitch();
 				$('#sandbox-container').datepicker({
 					format: "dd/mm/yyyy",
 					todayBtn: true,
 					daysOfWeekHighlighted: "4",
 					toggleActive: false
+				});*/
+
+				$('#matchs').click(function()
+				{
+					// $(location).attr('href','/cp/matchs');
+
+					/*$.post("/cp/matchs" + listid, function(data) {
+						$("#list_container").html( data );
+					});*/
+
+					$.post("/cp/matchs",
+					{
+						/*list_id       : listid,
+						player_status : $(this).prop('checked')*/
+					},
+					function(data, status)
+					{
+						$("#list_container").html( data );
+
+					});
+				});
+
+				/*$(".form_datetime").datetimepicker({
+					format: "dd MM yyyy - hh:ii"
+				});*/
+
+				$('.form_datetime')
+				.datetimepicker()
+				.on('changeDate', function(ev){
+					console.log(ev.date);
+					console.log(ev.timeStamp);
+					/*if (ev.date.valueOf() < date-start-display.valueOf()){
+						console.log(ev);
+					}*/
 				});
 			})
 
@@ -48,9 +79,15 @@
 		<div class="page-header">
 			<h1>Example page header <small>Subtext for header</small></h1>
 		</div>
-		<div class="container-fluid">
-		<input type="text" id="sandbox-container" class="form-control">
-		<p>Option 1</p><input type="checkbox" name="my-checkbox" checked>
+
+		<div id="list_container">
+			<p class="text-center">
+				<button type="button" class="btn btn-primary" id="matchs">Matchs</button>
+				<button type="button" class="btn btn-primary">Primary</button>
+				<button type="button" class="btn btn-primary">Primary</button>
+				<button type="button" class="btn btn-primary">Primary</button>
+			</p>
 		</div>
+
 	</body>
 </html>

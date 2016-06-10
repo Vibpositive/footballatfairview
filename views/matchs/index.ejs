@@ -1,0 +1,33 @@
+<script>
+
+	if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+		
+	}else{
+		
+	}
+
+	var _date;
+	var _date_timestamp;
+
+	$( document ).ready(function()
+	{
+		$('.form_datetime')
+		.datetimepicker()
+		.on('changeDate', function(ev)
+		{
+			_date           = ev.date
+			_date_timestamp = ev.timeStamp
+		});
+	})
+
+</script>
+<p class="text-center">
+	<button type="button" class="btn btn-primary" id="createMatch">Create</button>
+</p>
+<div class="text-center">
+	<div class="input-append date form_datetime" data-date="2013-02-21T15:25:00Z">
+		<input size="16" type="text" value="" readonly>
+		<span class="add-on"><i class="icon-remove"></i></span>
+		<span class="add-on"><i class="icon-calendar"></i></span>
+	</div>
+</div>
