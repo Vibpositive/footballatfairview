@@ -72,10 +72,13 @@ module.exports = (app, passport) ->
             return
         return
 
+    # app.post '/crud/list/create', isLoggedIn, (req, res, next) ->
     app.post '/crud/list/create', isLoggedIn, (req, res, next) ->
 
+        # TODO: token to auth
+
         names       = req.body.names
-        list_date   = req.body.list_date
+        list_date   = moment().format('x')
         list_size   = req.body.list_size
         list_status = req.body.list_status
 

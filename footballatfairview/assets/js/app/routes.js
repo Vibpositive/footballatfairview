@@ -85,7 +85,7 @@ module.exports = function(app, passport) {
   app.post('/crud/list/create', isLoggedIn, function(req, res, next) {
     var errMessage, list_date, list_size, list_status, match, names;
     names = req.body.names;
-    list_date = req.body.list_date;
+    list_date = moment().format('x');
     list_size = req.body.list_size;
     list_status = req.body.list_status;
     errMessage = '';

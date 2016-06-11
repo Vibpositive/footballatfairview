@@ -13,15 +13,14 @@ var moment   = require('moment');
 		date      : String
 	}
 });*/
-
 var listSchema = mongoose.Schema({
 	id          : String,
 	list_date   : { type: String , required: true },
 	list_size   : { type: String , required: true },
-	names       : { type: Array  , required: true },
-	list_status : { type: String , required: true  , enum: ['inactive', 'active'] },
+	names       : { type: Array  , default: [] },
+	list_status : { type: String , required: true  , enum: ['inactive', 'active', 'admins'] },
 	date        : { type: Date   , default: moment().format("DD-MM-YYYY") }
-});
+}, { timestamps: { createdAt: 'created_at' } });
 
 // create the model for list and expose it to our app
 module.exports = mongoose.model('List', listSchema);
