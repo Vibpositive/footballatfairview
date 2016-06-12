@@ -1,8 +1,15 @@
 # app/routes.js
-List = require('../app/models/list')
-uuid = require 'node-uuid'
-moment = require 'moment'
+List         = require '../app/models/list'
+User         = require '../app/models/user'
+errorhandler = require 'errorhandler'
+uuid         = require 'node-uuid'
+moment       = require 'moment'
+notifier     = require 'node-notifier'
+_            = require 'underscore'
 # route middleware to make sure a user is logged in
+
+process.env.NODE_ENV = 'development'
+nonSecurePaths = ['/', '/profile', '/auth/facebook', '/profile/crud/phoneNumber', '/profile/crud/details']
 
 isLoggedIn = (req, res, next) ->
   # if user is authenticated in the session, carry on
@@ -12,18 +19,71 @@ isLoggedIn = (req, res, next) ->
   res.redirect '/'
   return
 
+addMatchToUserList = (user, match, operation, next) ->
+
+    if operation == 'push'
+
+        User.update { _id : user.id }, { $addToSet : { 'matchs' : match } },(err, numAffected) ->
+            if err
+                return { message: err }
+            else
+                if numAffected > 0
+                    return { message: 'ok' }
+                else
+                    return { message: '0 rows affected' }
+                return
+
+    else
+        User.findByIdAndUpdate { _id : user.id }, { $pull: 'matchs' : match }, (err, numAffected) ->
+          if err
+            return { message : err }
+          else
+            return { message : numAffected }
+
+isProfileComplete = (req) ->
+   
+
+errorNotification = (err, str, req) ->
+    title = 'Error in ' + req.method + ' ' + req.url
+    notifier.notify
+    {
+        title: title,
+        message: str
+    }
+
 module.exports = (app, passport) ->
+
+    app.use (req, res, next) ->
+
+        if _.contains(nonSecurePaths, req.path)
+            return next()
+
+        try
+            if req.user.id
+
+                 User.findOne { _id : req.user.id }, (err, userResult) ->
+                    if err
+                        console.log err
+                        return false
+
+                    if userResult.phone == '000-000-0000'
+                        res.redirect '/profile'
+                    else
+                        return next()
+
+        catch err
+            return next()
+
     app.get '/', (req, res) ->
         res.render 'login.ejs', message: req.flash('loginMessage')
         return
     # TODO: Authentication
 
     app.get '/index', isLoggedIn, (req, res) ->
-    # List.find({status : 'active'}, function (err, list)
+
         List.find {}, (err, list) ->
             if err
                 return console.log err
-            # render the page and pass in any flash data if it exists
             res.render 'index.ejs',
             message: req.flash('loginMessage')
             lists: list
@@ -32,8 +92,32 @@ module.exports = (app, passport) ->
         return
 
     app.get '/profile', isLoggedIn, (req, res) ->
-        res.render 'profile.ejs', user: req.user
+        res.render 'profile/profile.ejs', user: req.user
         return
+
+    # app.post '/profile/crud', isLoggedIn, (req, res) ->
+    app.post '/profile/crud/phoneNumber', (req, res) ->
+
+        phoneNumber = req.body.phoneNumber
+        userId      = req.user.id
+
+        # User.update { id : userId }, { $set: { 'phone': phoneNumber }},(err, numAffected) ->
+        # User.update { id : userId }, { 'phone': phoneNumber } ,(err, numAffected) ->
+        User.update _id : userId, { 'phone': phoneNumber },(err, numAffected) ->
+            if err
+                return { message: err }
+            else
+                if numAffected > 0
+                    res.send { message: 'ok' }
+                else
+                    res.send { message: '0 rows affected' }
+
+    app.get '/profile/crud/details', (req, res) ->
+        res.render 'profile/details.ejs',
+        message    : req.flash('loginMessage')
+        user       : req.user
+        return
+    ######
 
     app.get '/list/:listid', isLoggedIn,(req, res) ->
 
@@ -72,7 +156,6 @@ module.exports = (app, passport) ->
             return
         return
 
-    # app.post '/crud/list/create', isLoggedIn, (req, res, next) ->
     app.post '/crud/list/create', isLoggedIn, (req, res, next) ->
 
         # TODO: token to auth
@@ -106,6 +189,7 @@ module.exports = (app, passport) ->
                 return
 
     app.post '/crud/list/participate', isLoggedIn ,(req, res, next) ->
+
         player_id  = req.user.facebook.id
         datetime   = 'date'
         last_name  = req.user.facebook.last_name
@@ -118,6 +202,8 @@ module.exports = (app, passport) ->
 
             # TODO: Use UUID instead of DB id
             # list_id    = '57587de6d1c385f511fbbb17'
+
+            addMatchToUserList(req.user, list_id, 'push')
 
             List.update { '_id' : list_id }, { $addToSet : { 'names' : {
                         player_id  : player_id
@@ -136,29 +222,22 @@ module.exports = (app, passport) ->
                         res.json({ message: '0 rows affected' });
                 return
         else
-            # List.update { '_id' : list_id }, { $pull : 'names' : 'full_name' : full_name }, false, true , (err, numAffected) ->
+
+            addMatchToUserList(req.user, list_id, 'pull')
+
             List.findByIdAndUpdate { '_id' : list_id }, { $pull: 'names': full_name : full_name }, (err, model) ->
               if err
                 res.send 'err: ' + String(err)
               else
                 res.send model
-                ###if err
-                    console.log err
-                    res.send 'err: ' + String(err)
-                else
-                    if numAffected > 0
-                        res.json({ message: 'ok' });
-                    else
-                        res.json({ message: '0 rows affected' });
-                return###
 
-    # app.get '/cp', isLoggedIn, (req, res) ->
-    app.get '/cp', (req, res, next) ->
+    # app.get '/cp', (req, res, next) ->
+    app.get '/cp', isLoggedIn, (req, res) ->
         res.render 'cp/index.ejs'
         return
 
-    # app.get '/cp', isLoggedIn, (req, res) ->
-    app.post '/cp/matchs', (req, res, next) ->
+    # app.post '/cp/matchs', (req, res, next) ->
+    app.get '/cp', isLoggedIn, (req, res) ->
         res.render 'matchs/index.ejs'
         return
 
@@ -174,4 +253,20 @@ module.exports = (app, passport) ->
         req.logout()
         res.redirect '/'
         return
+
+    app.use (req, res) ->
+        res.status 400
+        res.render 'errors/404.ejs', title: '404: File Not Found'
+        return
+    # Handle 500
+    app.use (error, req, res, next) ->
+        res.status 500
+        res.render 'errors/500.ejs',
+            title: '500: Internal Server Error'
+            error: error
+        return
+
+    if process.env.NODE_ENV == 'development'
+        app.use errorhandler {log: errorNotification}
+
     return

@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "errorhandler": "^1.4.3",
     "expect": "^1.20.1",
     "expect.js": "^0.3.1",
     "gulp": "^3.9.1",
@@ -39,6 +40,7 @@
     "gulp-uglify": "^1.5.3",
     "gulp-util": "^3.0.7",
     "mocha": "*",
+    "node-notifier": "^4.6.0",
     "request": "*",
     "sillyname": "^0.1.0",
     "superagent": "^2.0.0",

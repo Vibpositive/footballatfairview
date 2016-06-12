@@ -1,10 +1,22 @@
-var List, isLoggedIn, moment, uuid;
+var List, User, _, addMatchToUserList, errorNotification, errorhandler, isLoggedIn, isProfileComplete, moment, nonSecurePaths, notifier, uuid;
 
 List = require('../app/models/list');
+
+User = require('../app/models/user');
+
+errorhandler = require('errorhandler');
 
 uuid = require('node-uuid');
 
 moment = require('moment');
+
+notifier = require('node-notifier');
+
+_ = require('underscore');
+
+process.env.NODE_ENV = 'development';
+
+nonSecurePaths = ['/', '/profile', '/auth/facebook', '/profile/crud/phoneNumber', '/profile/crud/details'];
 
 isLoggedIn = function(req, res, next) {
   if (req.isAuthenticated()) {
@@ -13,7 +25,91 @@ isLoggedIn = function(req, res, next) {
   res.redirect('/');
 };
 
+addMatchToUserList = function(user, match, operation, next) {
+  if (operation === 'push') {
+    return User.update({
+      _id: user.id
+    }, {
+      $addToSet: {
+        'matchs': match
+      }
+    }, function(err, numAffected) {
+      if (err) {
+        return {
+          message: err
+        };
+      } else {
+        if (numAffected > 0) {
+          return {
+            message: 'ok'
+          };
+        } else {
+          return {
+            message: '0 rows affected'
+          };
+        }
+      }
+    });
+  } else {
+    return User.findByIdAndUpdate({
+      _id: user.id
+    }, {
+      $pull: {
+        'matchs': match
+      }
+    }, function(err, numAffected) {
+      if (err) {
+        return {
+          message: err
+        };
+      } else {
+        return {
+          message: numAffected
+        };
+      }
+    });
+  }
+};
+
+isProfileComplete = function(req) {};
+
+errorNotification = function(err, str, req) {
+  var title;
+  title = 'Error in ' + req.method + ' ' + req.url;
+  notifier.notify;
+  return {
+    title: title,
+    message: str
+  };
+};
+
 module.exports = function(app, passport) {
+  app.use(function(req, res, next) {
+    var err, error1;
+    if (_.contains(nonSecurePaths, req.path)) {
+      return next();
+    }
+    try {
+      if (req.user.id) {
+        return User.findOne({
+          _id: req.user.id
+        }, function(err, userResult) {
+          if (err) {
+            console.log(err);
+            return false;
+          }
+          if (userResult.phone === '000-000-0000') {
+            return res.redirect('/profile');
+          } else {
+            return next();
+          }
+        });
+      }
+    } catch (error1) {
+      err = error1;
+      return next();
+    }
+  });
   app.get('/', function(req, res) {
     res.render('login.ejs', {
       message: req.flash('loginMessage')
@@ -32,7 +128,39 @@ module.exports = function(app, passport) {
     });
   });
   app.get('/profile', isLoggedIn, function(req, res) {
-    res.render('profile.ejs', {
+    res.render('profile/profile.ejs', {
+      user: req.user
+    });
+  });
+  app.post('/profile/crud/phoneNumber', function(req, res) {
+    var phoneNumber, userId;
+    phoneNumber = req.body.phoneNumber;
+    userId = req.user.id;
+    return User.update({
+      _id: userId
+    }, {
+      'phone': phoneNumber
+    }, function(err, numAffected) {
+      if (err) {
+        return {
+          message: err
+        };
+      } else {
+        if (numAffected > 0) {
+          return res.send({
+            message: 'ok'
+          });
+        } else {
+          return res.send({
+            message: '0 rows affected'
+          });
+        }
+      }
+    });
+  });
+  app.get('/profile/crud/details', function(req, res) {
+    res.render('profile/details.ejs', {
+      message: req.flash('loginMessage'),
       user: req.user
     });
   });
@@ -119,6 +247,7 @@ module.exports = function(app, passport) {
     status = 'playing';
     list_id = req.body.list_id;
     if (req.body.player_status === 'true') {
+      addMatchToUserList(req.user, list_id, 'push');
       return List.update({
         '_id': list_id
       }, {
@@ -148,6 +277,7 @@ module.exports = function(app, passport) {
         }
       });
     } else {
+      addMatchToUserList(req.user, list_id, 'pull');
       return List.findByIdAndUpdate({
         '_id': list_id
       }, {
@@ -161,25 +291,14 @@ module.exports = function(app, passport) {
           return res.send('err: ' + String(err));
         } else {
           return res.send(model);
-
-          /*if err
-              console.log err
-              res.send 'err: ' + String(err)
-          else
-              if numAffected > 0
-                  res.json({ message: 'ok' });
-              else
-                  res.json({ message: '0 rows affected' });
-          return
-           */
         }
       });
     }
   });
-  app.get('/cp', function(req, res, next) {
+  app.get('/cp', isLoggedIn, function(req, res) {
     res.render('cp/index.ejs');
   });
-  app.post('/cp/matchs', function(req, res, next) {
+  app.get('/cp', isLoggedIn, function(req, res) {
     res.render('matchs/index.ejs');
   });
   app.get('/logout', function(req, res) {
@@ -197,4 +316,22 @@ module.exports = function(app, passport) {
     req.logout();
     res.redirect('/');
   });
+  app.use(function(req, res) {
+    res.status(400);
+    res.render('errors/404.ejs', {
+      title: '404: File Not Found'
+    });
+  });
+  app.use(function(error, req, res, next) {
+    res.status(500);
+    res.render('errors/500.ejs', {
+      title: '500: Internal Server Error',
+      error: error
+    });
+  });
+  if (process.env.NODE_ENV === 'development') {
+    app.use(errorhandler({
+      log: errorNotification
+    }));
+  }
 };

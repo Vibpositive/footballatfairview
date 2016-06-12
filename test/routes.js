@@ -6,7 +6,7 @@ var generateName = require('sillyname');
 var sillyName = generateName();
 var sillyName2 = generateName();
 
-describe('Routes main point', function()
+/*describe('Routes main point', function()
 {
 	it('should get 200 message', function(done)
 	{
@@ -37,7 +37,7 @@ describe('Create List', function()
 });
 */
 
-describe('Create List post', function()
+/*describe('Create List post', function()
 {
 	this.timeout(15000);
 	it('should get 200 message', function(done)
@@ -74,11 +74,11 @@ describe('Create List post', function()
 			done();
 		});
 	});
-});
+});*/
 
 
 
-describe('Check route for participating in a match', function()
+/*describe('Check route for participating in a match', function()
 {
 	it('should get 200 message', function(done)
 	{
@@ -167,5 +167,29 @@ describe('Matchs', function()
 			expect(res.status).to.equal(200);
 			done();
 		});
+	});
+});
+*/
+
+describe('User profile phone number', function()
+{
+	it('should get 200 message for main url', function(done)
+	{
+		request
+		.post('http://localhost:8080/profile/crud/phoneNumber')
+		.send(
+		{
+			userId : '575d76af26b14f151bde344d',
+			phoneNumber: '987-654-3210'
+		})
+		.end(function(err, res)
+		{
+			expect(res).to.exist;
+			expect(res.body).to.have.key('message')
+			expect(res.body.message).to.eql('ok')
+			expect(res.status).to.equal(200)
+			done()
+		});
+
 	});
 });

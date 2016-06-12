@@ -1,0 +1,66 @@
+<!-- views/profile.ejs -->
+<!doctype html>
+<html>
+<head>
+    <title>Node Authentication</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no; target-densityDpi=device-dpi"/>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js"></script>
+
+    <script>
+
+        $( document ).ready(function()
+        {
+
+            $("#PhoneNumber").mask("999 999 9999");
+            
+            var telefone = new RegExp(/\d{3}\-?\ ?\d{3}\-?\ ?\d{4}/);
+
+            $('#submit').click(function()
+            {
+                if (telefone.test($('#PhoneNumber').val())) {
+                    $.post("/profile/crud/phoneNumber",
+                    {
+                        phoneNumber : $('#PhoneNumber').val()
+                    },
+                    function(data, status)
+                    {
+                        $.get("/profile/crud/details", function(data) {
+                            $(".row").html( data );
+                            setTimeout(function()
+                            {
+                                $(location).attr('href', '/index')
+                            }, 2000);
+                        });
+                    });
+                }
+            });
+        })
+
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+</head>
+<body>
+    <div class="container">
+
+        <div class="page-header text-center">
+            <h1><span class="fa fa-info-circle fa-2x"></span> Profile Page</h1>
+            <a href="/logout" class="btn btn-default btn-sm">Logout</a>
+        </div>
+
+        <div class="row">
+            <% include details %>
+        </div>
+    <form>
+    <div class="form-group">
+        <label for="PhoneNumber">Phone Number</label>
+        <input type="text" class="form-control" id="PhoneNumber" placeholder="Password">
+    </div>
+  <button type="button" class="btn btn-default" id="submit">Submit</button>
+</form>
+</div>
+</body>
+</html>
