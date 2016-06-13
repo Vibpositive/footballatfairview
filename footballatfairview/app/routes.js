@@ -16,7 +16,7 @@ _ = require('underscore');
 
 process.env.NODE_ENV = 'development';
 
-nonSecurePaths = ['/', '/profile', '/auth/facebook', '/profile/crud/phoneNumber', '/profile/crud/details'];
+nonSecurePaths = ['/', '/profile', '/auth/facebook', '/profile/crud/phoneNumber', '/profile/crud/details', '/cp/matchs'];
 
 isLoggedIn = function(req, res, next) {
   if (req.isAuthenticated()) {
@@ -211,9 +211,23 @@ module.exports = function(app, passport) {
     });
   });
   app.post('/crud/list/create', isLoggedIn, function(req, res, next) {
-    var errMessage, list_date, list_size, list_status, match, names;
-    names = req.body.names;
-    list_date = moment().format('x');
+    var errMessage, isParticipating, list_date, list_size, list_status, match, names;
+    isParticipating = req.body.names;
+    if (isParticipating === 'true') {
+      names = [
+        {
+          player_id: req.user.facebook.id,
+          datetime: 'date',
+          last_name: req.user.facebook.last_name,
+          first_name: req.user.facebook.first_name,
+          full_name: req.user.facebook.first_name + " " + req.user.facebook.last_name,
+          status: 'playing'
+        }
+      ];
+    } else {
+      names = [];
+    }
+    list_date = req.body.list_date;
     list_size = req.body.list_size;
     list_status = req.body.list_status;
     errMessage = '';
@@ -298,7 +312,7 @@ module.exports = function(app, passport) {
   app.get('/cp', isLoggedIn, function(req, res) {
     res.render('cp/index.ejs');
   });
-  app.get('/cp', isLoggedIn, function(req, res) {
+  app.post('/cp/matchs', isLoggedIn, function(req, res) {
     res.render('matchs/index.ejs');
   });
   app.get('/logout', function(req, res) {

@@ -9,7 +9,7 @@ _            = require 'underscore'
 # route middleware to make sure a user is logged in
 
 process.env.NODE_ENV = 'development'
-nonSecurePaths = ['/', '/profile', '/auth/facebook', '/profile/crud/phoneNumber', '/profile/crud/details']
+nonSecurePaths = ['/', '/profile', '/auth/facebook', '/profile/crud/phoneNumber', '/profile/crud/details', '/cp/matchs']
 
 isLoggedIn = (req, res, next) ->
   # if user is authenticated in the session, carry on
@@ -157,11 +157,21 @@ module.exports = (app, passport) ->
         return
 
     app.post '/crud/list/create', isLoggedIn, (req, res, next) ->
+        isParticipating = req.body.names
 
-        # TODO: token to auth
+        if isParticipating == 'true'
+            names = [{
+                player_id  : req.user.facebook.id
+                datetime   : 'date'
+                last_name  : req.user.facebook.last_name
+                first_name : req.user.facebook.first_name
+                full_name  : req.user.facebook.first_name + " " + req.user.facebook.last_name
+                status     : 'playing'
+            }]
+        else
+            names = []
 
-        names       = req.body.names
-        list_date   = moment().format('x')
+        list_date   = req.body.list_date
         list_size   = req.body.list_size
         list_status = req.body.list_status
 
@@ -237,7 +247,7 @@ module.exports = (app, passport) ->
         return
 
     # app.post '/cp/matchs', (req, res, next) ->
-    app.get '/cp', isLoggedIn, (req, res) ->
+    app.post '/cp/matchs', isLoggedIn, (req, res) ->
         res.render 'matchs/index.ejs'
         return
 

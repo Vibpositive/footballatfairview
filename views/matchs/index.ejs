@@ -1,3 +1,8 @@
+<script type="text/javascript" src="/public/js/addNumberPicker.min.js"></script>
+<script type="text/javascript" src="/public/js/Obj.min.js"></script>
+
+<link rel="stylesheet" href="/public/css/addNumberPicker.min.css" />
+
 <p class="text-center">
 	<div style="overflow:hidden;">
 	    <div class="form-group">
@@ -8,15 +13,9 @@
 	        </div>
 	    </div>
 	    <script type="text/javascript">
-	        $(function () {
-
-	        	var names = [{
-	        		"status"     : "playing",
-	        		"player_id"  : "01",
-	        		"datetime"   : '1465552471371.0',
-	        		"last_name"  : "Hisser",
-	        		"first_name" : "Slashheron"
-	        	}]
+	        $(function ()
+	        {
+	        	var list_date;
 
 	            $('#datetimepicker12').datetimepicker({
 	                inline: true,
@@ -24,18 +23,22 @@
 	            })
 	            .on("dp.change", function (e)
 	            {
-	            	var data = moment().format('x')
+	            	list_date = moment(e.date).format('x');
+
 		            $("#createMatch").removeClass('disabled');
 		        });
 
 				$('#createMatch').click(function()
 				{
+					var list_size = $('.addui-numberPicker-input').val();
 					var isParticipating = $("#creatorOnList").is(':checked')
+					
 
 					$.post("/crud/list/create",
 					{
-						names       : isParticipating ? names : [],
-				        list_size   : '21',
+						names       : isParticipating,
+						list_date   : list_date,
+				        list_size   : list_size,
 				        list_status : 'admins'
 					},
 					function(data, status)
@@ -53,6 +56,12 @@
 		<input type="checkbox" id="creatorOnList" value="option"> Participate?
 	</label>
 </p>
+<p class="text-center">
+	<label class="checkbox-inline">
+		Participants <input data-addui='numberpicker' class="participantsNumber">
+	</label>
+</p>
+
 <p class="text-center">
 	<button type="button" class="btn btn-primary disabled" id="createMatch">Create</button>
 </p>
