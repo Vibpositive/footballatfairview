@@ -83,7 +83,8 @@ router.post('/views/list', isLoggedIn, function(req, res) {
     res.render('matchs/list.ejs', {
       message: req.flash('loginMessage'),
       lists: list,
-      user: req.user
+      user: req.user,
+      moment: moment
     });
   });
 });
@@ -237,16 +238,31 @@ router.post('/match/create', isLoggedIn, function(req, res, next) {
   });
 });
 
-router.post('/match/edit', isLoggedIn, function(req, res, next) {
-  var list_id;
+router.post('/match/edit/status', isLoggedIn, function(req, res, next) {
+  var list_id, list_status;
   list_id = req.body.list_id;
-
-  /*
-  list_date   = req.body.list_date
-  list_size   = req.body.list_size
-  list_status = req.body.list_status
-   */
-  return res.send(list_id);
+  list_status = req.body.list_status;
+  return List.update({
+    _id: list_id
+  }, {
+    'list_status': String(list_status)
+  }, function(err, numAffected) {
+    if (err) {
+      return {
+        message: err
+      };
+    } else {
+      if (numAffected > 0) {
+        res.send({
+          message: 'ok'
+        });
+      } else {
+        res.send({
+          message: '0 rows affected'
+        });
+      }
+    }
+  });
 });
 
 module.exports = router;

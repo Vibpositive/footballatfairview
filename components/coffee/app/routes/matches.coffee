@@ -45,7 +45,7 @@ router.post '/views/list', isLoggedIn, (req, res)->
         if err
             res.send err
             return
-        res.render 'matchs/list.ejs', message: req.flash('loginMessage'), lists: list, user: req.user
+        res.render 'matchs/list.ejs', message: req.flash('loginMessage'), lists: list, user: req.user, moment: moment
         return
 
 router.post '/participate', isLoggedIn, (req, res)->
@@ -166,14 +166,19 @@ router.post '/match/create', isLoggedIn, (req, res, next) ->
                 res.send match._id
                 return
 
-router.post '/match/edit', isLoggedIn, (req, res, next) ->
+router.post '/match/edit/status', isLoggedIn, (req, res, next) ->
     
     list_id     = req.body.list_id
-    ###
-    list_date   = req.body.list_date
-    list_size   = req.body.list_size
     list_status = req.body.list_status
-    ###
-    res.send list_id
+
+    List.update { _id : list_id }, { 'list_status' : String(list_status) },(err, numAffected) ->
+        if err
+            return { message: err }
+        else
+            if numAffected > 0
+                res.send { message: 'ok' }
+            else
+                res.send { message: '0 rows affected' }
+            return
 
 module.exports = router;
