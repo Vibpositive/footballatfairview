@@ -167,9 +167,6 @@ module.exports = function(app, passport) {
       user: req.user
     });
   });
-  app.post('/match/crud/deactivate', function(req, res) {
-    res.send('ok');
-  });
   app.get('/list/:listid', isLoggedIn, function(req, res) {
     var listid;
     listid = req.params.listid;
@@ -318,9 +315,6 @@ module.exports = function(app, passport) {
   app.get('/cp', isLoggedIn, function(req, res) {
     res.render('cp/index.ejs');
   });
-  app.post('/cp/matchs', isLoggedIn, function(req, res) {
-    res.render('matchs/index.ejs');
-  });
   app.post('/cp/matchs/list', isLoggedIn, function(req, res) {
     List.find({}, function(err, list) {
       console.log(list);
@@ -350,11 +344,13 @@ module.exports = function(app, passport) {
     req.logout();
     res.redirect('/');
   });
-  app.use(function(req, res) {
+  app.use(function(error, req, res, next) {
     res.status(400);
     res.render('errors/404.ejs', {
-      title: '404: File Not Found'
+      title: '404',
+      error: error
     });
+    return;
   });
   app.use(function(error, req, res, next) {
     res.status(500);

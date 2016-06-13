@@ -122,10 +122,6 @@ module.exports = (app, passport) ->
         return
     ######
     
-    app.post '/match/crud/deactivate', (req, res) ->
-        res.send 'ok'
-        return
-
     app.get '/list/:listid', isLoggedIn,(req, res) ->
 
         listid = req.params.listid
@@ -252,13 +248,7 @@ module.exports = (app, passport) ->
     app.get '/cp', isLoggedIn, (req, res) ->
         res.render 'cp/index.ejs'
         return
-
-    # app.post '/cp/matchs', (req, res, next) ->
-    app.post '/cp/matchs', isLoggedIn, (req, res) ->
-        res.render 'matchs/index.ejs'
-        return
-
-    # app.post '/cp/matchs', (req, res, next) ->
+        
     app.post '/cp/matchs/list', isLoggedIn, (req, res) ->
         List.find {}, (err, list) ->
             console.log list
@@ -282,9 +272,12 @@ module.exports = (app, passport) ->
         res.redirect '/'
         return
 
-    app.use (req, res) ->
+    app.use (error, req, res, next) ->
         res.status 400
-        res.render 'errors/404.ejs', title: '404: File Not Found'
+        res.render 'errors/404.ejs',
+            title: '404'
+            error: error
+        return
         return
     # Handle 500
     app.use (error, req, res, next) ->

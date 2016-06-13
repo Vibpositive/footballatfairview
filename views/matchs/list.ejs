@@ -58,7 +58,7 @@
         $('.deactivate').click(function (argument) {
             var list_id = ($(this).val());
 
-            $.post("/match/crud/deactivate",
+            $.post("/deactivate",
             {
                 list_id       : list_id
             },
