@@ -9,7 +9,7 @@ _            = require 'underscore'
 # route middleware to make sure a user is logged in
 
 process.env.NODE_ENV = 'development'
-nonSecurePaths = ['/', '/profile', '/auth/facebook', '/profile/crud/phoneNumber', '/profile/crud/details', '/cp/matchs']
+nonSecurePaths = ['/', '/profile', '/auth/facebook', '/auth/facebook/callback', '/profile/crud/phoneNumber', '/profile/crud/details', '/cp/matchs']
 
 isLoggedIn = (req, res, next) ->
   # if user is authenticated in the session, carry on
@@ -74,6 +74,9 @@ module.exports = (app, passport) ->
         catch err
             return next()
 
+    app.get '/newindex', isLoggedIn, (req, res) ->
+        res.render 'newindex.ejs'
+
     app.get '/', (req, res) ->
         res.render 'login.ejs', message: req.flash('loginMessage')
         return
@@ -118,6 +121,10 @@ module.exports = (app, passport) ->
         user       : req.user
         return
     ######
+    
+    app.post '/match/crud/deactivate', (req, res) ->
+        res.send 'ok'
+        return
 
     app.get '/list/:listid', isLoggedIn,(req, res) ->
 
@@ -249,6 +256,17 @@ module.exports = (app, passport) ->
     # app.post '/cp/matchs', (req, res, next) ->
     app.post '/cp/matchs', isLoggedIn, (req, res) ->
         res.render 'matchs/index.ejs'
+        return
+
+    # app.post '/cp/matchs', (req, res, next) ->
+    app.post '/cp/matchs/list', isLoggedIn, (req, res) ->
+        List.find {}, (err, list) ->
+            console.log list
+            if err
+                res.send err
+                return
+            res.render 'matchs/list.ejs', message: req.flash('loginMessage'), lists: list, user: req.user
+            return
         return
 
     app.get '/logout', (req, res) ->

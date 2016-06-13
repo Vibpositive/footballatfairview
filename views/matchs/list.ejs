@@ -1,0 +1,76 @@
+<div class="col-sm-12">
+    <table class="table table-reflow">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Approve</th>
+                <th>Cancel</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            <%if (lists.length > 0) { %>
+                <% for(var i=0; i<lists.length; i++) { %>
+                    <tr>
+                        <th scope="row"><%= i+1 %></th>
+                        <td>
+                            <p><%= lists[i].list_date %></p>
+                        </td>
+                        <td>
+                            <%= lists[i].list_status %>
+                        </td>
+                        <td>
+                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-sm btn-success btn-sm approve">Approve</button>
+                        </td>
+                        <td>
+                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-sm btn-danger btn-sm deactivate">Deactivate</button>
+                        </td>
+
+                        <td>
+                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-sm btn-primary btn-sm view">View</button>
+                        </td>
+                    </tr>
+                <% } %>
+            <% }else{ %>
+                <tr>
+                    <th scope="row"><%= 1 %></th>
+                    <td>
+                        <p>
+                            <%= lists.list_date %>
+                        </p>
+                    </td>
+                    <td>
+                        <%if (lists.list_status == 'inactive') { %>
+                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
+                        <% }else{ %>
+                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
+                        <% } %>
+                    </td>
+                </tr>
+            <% } %>        
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function(){
+        $('.deactivate').click(function (argument) {
+            var list_id = ($(this).val());
+
+            $.post("/match/crud/deactivate",
+            {
+                list_id       : list_id
+            },
+            function(data, status)
+            {
+                $.post("/cp/matchs/list", function(data) {
+                    // $("#list_container").replaceWith(data);
+                    $("#list_container").html( data );
+                });
+
+            });
+
+        })
+    })
+</script>

@@ -16,7 +16,7 @@ _ = require('underscore');
 
 process.env.NODE_ENV = 'development';
 
-nonSecurePaths = ['/', '/profile', '/auth/facebook', '/profile/crud/phoneNumber', '/profile/crud/details', '/cp/matchs'];
+nonSecurePaths = ['/', '/profile', '/auth/facebook', '/auth/facebook/callback', '/profile/crud/phoneNumber', '/profile/crud/details', '/cp/matchs'];
 
 isLoggedIn = function(req, res, next) {
   if (req.isAuthenticated()) {
@@ -110,6 +110,9 @@ module.exports = function(app, passport) {
       return next();
     }
   });
+  app.get('/newindex', isLoggedIn, function(req, res) {
+    return res.render('newindex.ejs');
+  });
   app.get('/', function(req, res) {
     res.render('login.ejs', {
       message: req.flash('loginMessage')
@@ -163,6 +166,9 @@ module.exports = function(app, passport) {
       message: req.flash('loginMessage'),
       user: req.user
     });
+  });
+  app.post('/match/crud/deactivate', function(req, res) {
+    res.send('ok');
   });
   app.get('/list/:listid', isLoggedIn, function(req, res) {
     var listid;
@@ -314,6 +320,20 @@ module.exports = function(app, passport) {
   });
   app.post('/cp/matchs', isLoggedIn, function(req, res) {
     res.render('matchs/index.ejs');
+  });
+  app.post('/cp/matchs/list', isLoggedIn, function(req, res) {
+    List.find({}, function(err, list) {
+      console.log(list);
+      if (err) {
+        res.send(err);
+        return;
+      }
+      res.render('matchs/list.ejs', {
+        message: req.flash('loginMessage'),
+        lists: list,
+        user: req.user
+      });
+    });
   });
   app.get('/logout', function(req, res) {
     req.logout();

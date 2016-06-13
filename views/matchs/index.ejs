@@ -12,9 +12,12 @@
 	            </div>
 	        </div>
 	    </div>
-	    <script type="text/javascript">
-	        $(function ()
-	        {
+	</div>
+</p>
+
+ <script type="text/javascript">
+	        $( document ).ready(function()
+			{
 	        	var list_date;
 
 	            $('#datetimepicker12').datetimepicker({
@@ -39,7 +42,7 @@
 						names       : isParticipating,
 						list_date   : list_date,
 				        list_size   : list_size,
-				        list_status : 'admins'
+				        list_status : 'pending'
 					},
 					function(data, status)
 					{
@@ -48,8 +51,6 @@
 				});
 	        });
 	    </script>
-	</div>
-</p>
 
 <p class="text-center">
 	<label class="checkbox-inline">

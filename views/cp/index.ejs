@@ -32,14 +32,8 @@
 			$( document ).ready(function()
 			{
 
-				$('#matchs').click(function()
+				$('.createMatch').click(function()
 				{
-					// $(location).attr('href','/cp/matchs');
-
-					/*$.post("/cp/matchs" + listid, function(data) {
-						$("#list_container").html( data );
-					});*/
-
 					$.post("/cp/matchs",
 					{
 						/*list_id       : listid,
@@ -47,10 +41,25 @@
 					},
 					function(data, status)
 					{
-						$("#list_container").html( data );
+						$("#loadedContainer").html( data );
 
 					});
 				});
+				
+				$('#manageMatch').click(function()
+				{
+					$.post("/cp/matchs/list",
+					{
+						/*list_id       : listid,
+						player_status : $(this).prop('checked')*/
+					},
+					function(data, status)
+					{
+						$("#loadedContainer").html( data );
+
+					});
+				});
+				
 			})
 
 		</script>
@@ -63,11 +72,13 @@
 
 		<div id="list_container">
 			<p class="text-center">
-				<button type="button" class="btn btn-primary" id="matchs">Matchs</button>
-				<button type="button" class="btn btn-primary">Primary</button>
+				<button type="button" class="btn btn-primary createMatch">Create Match</button>
+				<button type="button" class="btn btn-primary" id="manageMatch">Manage Match</button>
 				<button type="button" class="btn btn-primary">Primary</button>
 				<button type="button" class="btn btn-primary">Primary</button>
 			</p>
+		</div>
+		<div id="loadedContainer">
 		</div>
 	</body>
 </html>
