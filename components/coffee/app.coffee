@@ -12,6 +12,8 @@ session      = require('express-session')
 configDB     = require('./app/config/database.js')
 gabriel      = require('express-session')
 matches      = require './app/routes/matches'
+profile      = require './app/routes/profile'
+controlpanel = require './app/routes/controlpanel'
 
 mongoose.connect configDB.url
 
@@ -27,6 +29,8 @@ app.use passport.initialize()
 app.use passport.session()
 app.use flash()
 require('./app/routes.js') app, passport
-app.use '/matches', matches
+app.use '/matches'      , matches
+app.use '/profile'      , profile
+app.use '/controlpanel' , controlpanel
 app.listen port
 console.log 'The magic happens on port ' + port

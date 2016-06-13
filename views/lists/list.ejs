@@ -28,15 +28,14 @@
 			{
 				$('#toggle-event').change(function()
 				{
-					$.post("/crud/list/participate",
+					$.post("/matches/participate",
 					{
 						list_id       : listid,
 						player_status : $(this).prop('checked')
 					},
 					function(data, status)
 					{
-						$.get("/list/details/" + listid + " #list_container", function(data) {
-							// $("#list_container").replaceWith(data);
+						$.get("/matches/match/details/" + listid + " #list_container", function(data) {
 							$("#list_container").html( data );
 						});
 

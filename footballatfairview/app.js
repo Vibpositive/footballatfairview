@@ -1,5 +1,5 @@
 'use strict';
-var app, bodyParser, configDB, cookieParser, express, flash, gabriel, matches, mongoose, morgan, passport, port, session;
+var app, bodyParser, configDB, controlpanel, cookieParser, express, flash, gabriel, matches, mongoose, morgan, passport, port, profile, session;
 
 express = require('express');
 
@@ -26,6 +26,10 @@ configDB = require('./app/config/database.js');
 gabriel = require('express-session');
 
 matches = require('./app/routes/matches');
+
+profile = require('./app/routes/profile');
+
+controlpanel = require('./app/routes/controlpanel');
 
 mongoose.connect(configDB.url);
 
@@ -54,6 +58,10 @@ app.use(flash());
 require('./app/routes.js')(app, passport);
 
 app.use('/matches', matches);
+
+app.use('/profile', profile);
+
+app.use('/controlpanel', controlpanel);
 
 app.listen(port);
 
