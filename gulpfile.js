@@ -22,11 +22,7 @@ var options = {
 
 	// JavaScript
 	COFFEE_SOURCE   : 'components/coffee/**/*.coffee',
-	COFFEE_DEST     : "footballatfairview/assets/js/",
-
-	COFFE_APP_SOURCE : "components/coffee/app/**/*.coffee",
-	COFFE_APP_DEST : "footballatfairview/app",
-
+	COFFEE_DEST     : "footballatfairview/",
 	// Images
 	IMAGE_SOURCE    : "components/images/**/*",
 	IMAGE_DEST      : "footballatfairview/assets/images",
@@ -75,13 +71,6 @@ gulp.task('coffee', function(){
 	.pipe(gulp.dest(options.COFFEE_DEST));
 });
 
-gulp.task('coffee_app', function(){
-	gulp.src(options.COFFE_APP_SOURCE)
-	.pipe(coffee({bare : true}))
-	.on('error', gutil.log)
-	.pipe(gulp.dest(options.COFFE_APP_DEST));
-});
-
 gulp.task('lint', function () {
 	gulp.src( options.COFFEE_SOURCE )
 	.pipe(coffeelint())
@@ -90,12 +79,12 @@ gulp.task('lint', function () {
 
 gulp.task('default', function () {
 	gulp.watch( options.SASS_SOURCE , ['sass']);
-	gulp.watch( options.COFFEE_SOURCE , ['coffee_app','coffee','lint'] );
+	gulp.watch( options.COFFEE_SOURCE , ['coffee','lint'] );
 });
 
 gulp.task('watch', function () {
 	// Watch .SCSS files
-	gulp.watch( options.COFFEE_SOURCE , ['coffee_app', 'coffee','lint'] );
+	gulp.watch( options.COFFEE_SOURCE , [ 'coffee','lint'] );
 	gulp.watch( options.SASS_SOURCE , ['sass']);
 	// gulp.watch( options.HTML_SOURCE , ['html'] );
 	// gulp.watch( options.IMAGE_SOURCE , ['images'] );
@@ -104,7 +93,7 @@ gulp.task('watch', function () {
 
 gulp.task('serve', function (cb) {
 	nodemon({
-		script  : "./footballatfairview/assets/js/app.js",
+		script  : "./footballatfairview/app.js",
 		watch   : "./"
 		//...add nodeArgs: ['--debug=5858'] to debug 
 		//..or nodeArgs: ['--debug-brk=5858'] to debug at server start

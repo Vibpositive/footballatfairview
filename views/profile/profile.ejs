@@ -21,15 +21,20 @@
 
             $('#submit').click(function()
             {
-                if (telefone.test($('#PhoneNumber').val())) {
-                    $.post("/profile/crud/phoneNumber",
+                if (telefone.test($('#PhoneNumber').val()))
+                {
+                    $.post("/profile/edit/phoneNumber",
                     {
                         phoneNumber : $('#PhoneNumber').val()
                     },
                     function(data, status)
                     {
-                        $.get("/profile/crud/details", function(data) {
+                        $.get("/profile/view/details", function(data) {
+
                             $(".row").html( data );
+
+                            console.log(data)
+
                             setTimeout(function()
                             {
                                 $(location).attr('href', '/index')

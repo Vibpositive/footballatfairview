@@ -58,15 +58,16 @@
         $('.deactivate').click(function (argument) {
             var list_id = ($(this).val());
 
-            $.post("/match/crud/deactivate",
+            $.post("/matches/match/edit",
             {
                 list_id       : list_id
             },
             function(data, status)
             {
-                $.post("/cp/matchs/list", function(data) {
+                console.log(data);
+                $.post("/controlpanel/matchs/list", function(data) {
                     // $("#list_container").replaceWith(data);
-                    $("#list_container").html( data );
+                    // $("#list_container").html( data );
                 });
 
             });
