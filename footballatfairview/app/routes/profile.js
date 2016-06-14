@@ -15,7 +15,8 @@ isLoggedIn = function(req, res, next) {
 
 router.get('/', isLoggedIn, function(req, res) {
   res.render('profile/profile.ejs', {
-    user: req.user
+    user: req.user,
+    title: 'Profile'
   });
 });
 
@@ -49,7 +50,8 @@ router.post('/edit/phoneNumber', function(req, res) {
 router.get('/view/details', function(req, res) {
   res.render('profile/details.ejs', {
     message: req.flash('loginMessage'),
-    user: req.user
+    user: req.user,
+    title: 'Profile Details: ' + String(req.user.fullname)
   });
 });
 

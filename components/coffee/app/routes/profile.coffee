@@ -9,7 +9,9 @@ isLoggedIn = (req, res, next) ->
   return
 
 router.get '/', isLoggedIn, (req, res) ->
-    res.render 'profile/profile.ejs', user: req.user
+    res.render 'profile/profile.ejs',
+    user: req.user
+    title: 'Profile'
     return
 
 router.post '/edit/phoneNumber', (req, res) ->
@@ -30,6 +32,7 @@ router.get '/view/details', (req, res) ->
     res.render 'profile/details.ejs',
     message    : req.flash('loginMessage')
     user       : req.user
+    title      : 'Profile Details: ' + String(req.user.fullname)
     return
     
 module.exports = router;

@@ -56,11 +56,12 @@ module.exports = (app, passport) ->
         res.render 'newindex.ejs'
 
     app.get '/', (req, res) ->
-        res.render 'login.ejs', message: req.flash('loginMessage')
+        res.render 'login.ejs',
+        message : req.flash('loginMessage')
+        title   : "Login page"
         return
         
     app.get '/index', isLoggedIn, (req, res) ->
-        req.user.admin = true
 
         List.find {}, (err, list) ->
             if err
@@ -69,24 +70,11 @@ module.exports = (app, passport) ->
             message: req.flash('loginMessage')
             lists: list
             user: req.user
+            moment: moment
+            title: 'Matches List'
             return
-        return
-    ###
-    app.get '/cp', isLoggedIn, (req, res) ->
-        res.render 'cp/index.ejs'
         return
         
-    app.post '/cp/matchs/list', isLoggedIn, (req, res) ->
-        List.find {}, (err, list) ->
-            console.log list
-            if err
-                res.send err
-                return
-            res.render 'matchs/list.ejs', message: req.flash('loginMessage'), lists: list, user: req.user
-            return
-        return
-    ###
-
     app.get '/logout', (req, res) ->
         req.logout()
         res.redirect '/'

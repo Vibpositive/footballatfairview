@@ -73,11 +73,11 @@ module.exports = function(app, passport) {
   });
   app.get('/', function(req, res) {
     res.render('login.ejs', {
-      message: req.flash('loginMessage')
+      message: req.flash('loginMessage'),
+      title: "Login page"
     });
   });
   app.get('/index', isLoggedIn, function(req, res) {
-    req.user.admin = true;
     List.find({}, function(err, list) {
       if (err) {
         return console.log(err);
@@ -85,26 +85,12 @@ module.exports = function(app, passport) {
       res.render('index.ejs', {
         message: req.flash('loginMessage'),
         lists: list,
-        user: req.user
+        user: req.user,
+        moment: moment,
+        title: 'Matches List'
       });
     });
   });
-
-  /*
-  app.get '/cp', isLoggedIn, (req, res) ->
-      res.render 'cp/index.ejs'
-      return
-      
-  app.post '/cp/matchs/list', isLoggedIn, (req, res) ->
-      List.find {}, (err, list) ->
-          console.log list
-          if err
-              res.send err
-              return
-          res.render 'matchs/list.ejs', message: req.flash('loginMessage'), lists: list, user: req.user
-          return
-      return
-   */
   app.get('/logout', function(req, res) {
     req.logout();
     res.redirect('/');

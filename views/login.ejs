@@ -2,21 +2,9 @@
 <!doctype html>
 <html>
 <head>
-	<title>Node Authentication</title>
-	<script>
-		if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-			
-		}else{
-			
-		}
-	</script>
-	<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no; target-densityDpi=device-dpi"/>
-	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.css">
-	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<title><%= title %></title>
 
-	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-	<script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+	<% include html/scripts_css %>
 
 	<script>
 		$(document).ready( function() {
@@ -24,20 +12,34 @@
 				$(location).attr('href','http://localhost:8080/auth/facebook');
 			});
 		});
+
+		if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+			
+		}else{
+			
+		}
 	</script>
+	<style type="text/css">
+		body { padding-top: 45px; }
+	</style>
 </head>
 <body>
-	<div data-role="page" id="index">
-		<div data-role="content">
-			<div class="jumbotron text-center">
-				<p>Login or Register with:</p>
-				<a id="comclick" class="ui-btn ui-corner-all btn btn-primary"><span class="fa fa-facebook"></span> Facebook</a>
-			</div>
-		</div>
+	<% include html/top %>
+	<div class="jumbotron">
+		<div id="loadedContainer">
+			<div data-role="page" id="index">
+				<div data-role="content">
+					<div class="jumbotron text-center">
+						<p>Login or Register with:</p>
+						<a id="comclick" class="ui-btn ui-corner-all btn btn-primary"><span class="fa fa-facebook"></span> Facebook</a>
+					</div>
+				</div>
 
-		<div data-theme="a" data-role="footer" data-position="fixed">
+				<div data-theme="a" data-role="footer" data-position="fixed">
+				</div>
+			</div>   
 		</div>
-	</div>    
+	</div> 
 </body>
 </html>
 

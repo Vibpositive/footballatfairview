@@ -216,3 +216,42 @@ describe('Matches list', function()
 
 	});
 });
+
+describe('Create List post', function()
+{
+	this.timeout(15000);
+	it('should get 200 message', function(done)
+	{
+		request
+		.post('http://localhost:8080/crud/list/create')
+		.send(
+			{
+				names       : [
+				{
+					first_name : sillyName.split(' ')[0],
+					last_name  : sillyName.split(' ')[1],
+					full_name  : sillyName.split(' ')[0] + ' ' + sillyName.split(' ')[1],
+					datetime   : Date.now(),
+					player_id  : '01',
+					status     : 'playing'
+				},{
+					first_name : sillyName2.split(' ')[0],
+					last_name  : sillyName2.split(' ')[1],
+					full_name  : sillyName2.split(' ')[0] + ' ' + sillyName.split(' ')[1],
+					datetime   : Date.now(),
+					player_id  : '01',
+					status     : 'playing'
+				}],
+				list_status : 'active',
+				list_size   : '21',
+				list_date   : moment.now()
+		})
+		.end(function(err, res)
+		{
+			expect(res).to.exist;
+			expect(res.status).to.equal(200)
+			expect(res.text).to.match(/\b\w{24}\b/);
+			done();
+		});
+	});
+});

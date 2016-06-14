@@ -16,7 +16,9 @@ isLoggedIn = function(req, res, next) {
 };
 
 router.get('/', isLoggedIn, function(req, res) {
-  res.render('cp/index.ejs');
+  res.render('cp/index.ejs', {
+    title: 'Control Panel'
+  });
 });
 
 router.post('/matchs/list', isLoggedIn, function(req, res) {
@@ -29,7 +31,8 @@ router.post('/matchs/list', isLoggedIn, function(req, res) {
     res.render('matchs/list.ejs', {
       message: req.flash('loginMessage'),
       lists: list,
-      user: req.user
+      user: req.user,
+      title: "Matches Lists"
     });
   });
 });

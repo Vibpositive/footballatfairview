@@ -2,15 +2,11 @@
 <!doctype html>
 <html>
 	<head>
-		<title>Node Authentication</title>
+		<title><%= title %></title>
 
-		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no; target-densityDpi=device-dpi"/>
+		<% include ../html/scripts_css %>
 		
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-		<script type="text/javascript" src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 		<script type="text/javascript" src="/public/js/bootstrap-toggle.min.js"></script>
-
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"        integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 		<link rel="stylesheet" href="/public/css/bootstrap-toggle.min.css">
 		
 
@@ -49,25 +45,31 @@
 
 	</head>
 	<body>
-		<nav class="navbar navbar-default">
-		  <div class="container-fluid">
-		  </div>
-		</nav>
-		<div class="page-header">
-			<h1><%= match_date %></h1>
-			<h2><small>Subtext for header</small></h2>
-		</div>
-		<p class="text-center">
-			<%if (player_on_list == true) { %>
-				<input type="checkbox" id="toggle-event" checked data-toggle="toggle" data-on="Yes" data-off="No">
-			<% }else{ %>
-				<input type="checkbox" id="toggle-event" data-toggle="toggle" data-on="Yes" data-off="No">
-			<% } %>
-		</p>
-		<div id="list_container">
-			<div>
-				<% include list_details %>
+		<% include ../html/top %>
+		<div class="jumbotron">
+			<div class="page-header">
+					<h3>
+						<p class="text-center">
+							<title><%= title %></title>
+						</p>
+					</h3>
+				
+			</div>
+			<p class="text-center">
+				<%if (player_on_list == true) { %>
+					<input type="checkbox" id="toggle-event" checked data-toggle="toggle" data-on="Yes" data-off="No">
+				<% }else{ %>
+					<input type="checkbox" id="toggle-event" data-toggle="toggle" data-on="Yes" data-off="No">
+				<% } %>
+			</p>
+			<div id="list_container">
+				<div>
+					<% include list_details %>
+				</div>
+			</div>
+			<div id="loadedContainer">
 			</div>
 		</div>
+		
 	</body>
 </html>

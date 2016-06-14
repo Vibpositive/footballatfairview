@@ -31,12 +31,25 @@ addMatchToUserList = (user, match, operation, next) ->
           else
             return { message : numAffected }
 
+router.get '/', isLoggedIn, (req, res) ->
+    List.find {}, (err, list) ->
+        if err
+            return console.log err
+        res.render 'index.ejs',
+        message: req.flash('loginMessage')
+        lists: list
+        user: req.user
+        moment: moment
+        title: 'Matches List'
+        return
+    return
+
 router.post '/deactivate', (req, res)->
   res.send 'ok'
   return
 
 router.post '/views/create', isLoggedIn, (req, res)->
-  res.render 'matchs/create.ejs'
+  res.render 'matchs/create.ejs', title: 'Create a match'
   return
 
 router.post '/views/list', isLoggedIn, (req, res)->
@@ -45,7 +58,12 @@ router.post '/views/list', isLoggedIn, (req, res)->
         if err
             res.send err
             return
-        res.render 'matchs/list.ejs', message: req.flash('loginMessage'), lists: list, user: req.user, moment: moment
+        res.render 'matchs/list.ejs',
+        message : req.flash('loginMessage')
+        lists   : list
+        user    : req.user
+        moment  : moment
+        title   : "Matches index"
         return
 
 router.post '/participate', isLoggedIn, (req, res)->
@@ -107,6 +125,7 @@ router.get '/match/:listid', isLoggedIn,(req, res) ->
                 match_date     : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
                 user           : req.user
                 player_on_list : player_on_list
+                title          : "Match"
                 return
         return
 
@@ -121,50 +140,52 @@ router.get '/match/details/:listid', isLoggedIn, (req, res) ->
         list       : list
         match_date : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
         user       : req.user
+        title      : "Match: details"
         return
     return
 
 router.post '/match/create', isLoggedIn, (req, res, next) ->
-        isParticipating = req.body.names
+    # TODO: Validate if Match already exists - Based on Date and Time
+    isParticipating = req.body.names
 
-        if isParticipating == 'true'
-            names = [{
-                player_id  : req.user.facebook.id
-                datetime   : 'date'
-                last_name  : req.user.facebook.last_name
-                first_name : req.user.facebook.first_name
-                full_name  : req.user.facebook.first_name + " " + req.user.facebook.last_name
-                status     : 'playing'
-            }]
+    if isParticipating == 'true'
+        names = [{
+            player_id  : req.user.facebook.id
+            datetime   : 'date'
+            last_name  : req.user.facebook.last_name
+            first_name : req.user.facebook.first_name
+            full_name  : req.user.facebook.first_name + " " + req.user.facebook.last_name
+            status     : 'playing'
+        }]
+    else
+        names = []
+
+    list_date   = req.body.list_date
+    list_size   = req.body.list_size
+    list_status = req.body.list_status
+
+    errMessage = ''
+
+    match = new List(
+            list_date   : list_date,
+            list_size   : list_size,
+            names       : names,
+            list_status : list_status,
+            date        : Date.now(),
+            url         : uuid.v1()
+        )
+    match.save (err)->
+        if err
+
+            for errName of err.errors
+                
+                errMessage += err.errors[errName].message
+
+            res.send errMessage
+            return
         else
-            names = []
-
-        list_date   = req.body.list_date
-        list_size   = req.body.list_size
-        list_status = req.body.list_status
-
-        errMessage = ''
-
-        match = new List(
-                list_date   : list_date,
-                list_size   : list_size,
-                names       : names,
-                list_status : list_status,
-                date        : Date.now(),
-                url         : uuid.v1()
-            )
-        match.save (err)->
-            if err
-
-                for errName of err.errors
-                    
-                    errMessage += err.errors[errName].message
-
-                res.send errMessage
-                return
-            else
-                res.send match._id
-                return
+            res.send match._id
+            return
 
 router.post '/match/edit/status', isLoggedIn, (req, res, next) ->
     
