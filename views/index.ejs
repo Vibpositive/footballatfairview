@@ -2,13 +2,10 @@
 <!doctype html>
 <html>
 	<head>
-		<title>Node Authentication</title>
-		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no; target-densityDpi=device-dpi"/>
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<title><%= title %></title>
 
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-		<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-
+		<% include html/scripts_css %>
+		
 		<script>
 
 			if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
@@ -27,54 +24,82 @@
 			})
 
 		</script>
+		<style type="text/css">
+			body { padding-top: 15px; }
+		</style>
 	</head>
 	<body>
-		<table class="table table-reflow">
-			<thead>
-				<tr>
-					<th>#</th>
-					<th>Date</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-			<%= user.facebook.name %>
-			<%if (lists.length > 0) { %>
-				<% for(var i=0; i<lists.length; i++) { %>
-					<tr>
-						<th scope="row"><%= i+1 %></th>
-						<td>
-							<p><%= lists[i].list_date %></p>
-						</td>
-						<td>
-							<%if (lists[i].list_status == 'inactive') { %>
-								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
-							<% }else{ %>
-								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
-							<% } %>
-						</td>
-					</tr>
-				<% } %>
-			<% }else{ %>
-				<tr>
-					<th scope="row"><%= 1 %></th>
-					<td>
-						<p>
-							<%= lists.list_date %>
-						</p>
-					</td>
-					<td>
-						<%if (lists.list_status == 'inactive') { %>
-							<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
-						<% }else{ %>
-							<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
-						<% } %>
-					</td>
-				</tr>
-			<% } %>
-
+		<% include html/top %>
+		
+		<div class="jumbotron">
+			<div class="page-header">
+			        <!-- <div class="btn-group btn-breadcrumb">
+			            <a href="#" class="btn btn-primary"><i class="glyphicon glyphicon-home"></i></a>
+			            <a href="#" class="btn btn-primary">Snippets</a>
+			            <a href="#" class="btn btn-primary">Breadcrumbs</a>
+			            <a href="#" class="btn btn-primary">Primary</a>
+			        </div> -->
 				
-		  </tbody>
-		</table>
+					<h3>
+						<p class="text-center">
+							<title><%= title %></title>
+						</p>
+					</h3>
+				
+			</div>
+			<div id="loadedContainer">
+				<table class="table table-reflow">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Date</th>
+							<th>Time</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+					<%if (lists.length > 0) { %>
+						<% for(var i=0; i<lists.length; i++) { %>
+							<tr>
+								<th scope="row"><%= i+1 %></th>
+								<td>
+									<p><%= moment(lists[i].list_date,'x').format('DD/MM/YYYY') %></p>
+								</td>
+								<td>
+									<p><%= moment(lists[i].list_date,'x').format('hh:mm') %></p>
+								</td>
+								<td>
+									<%if (lists[i].list_status == 'inactive') { %>
+										<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
+									<% }else{ %>
+										<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
+									<% } %>
+								</td>
+							</tr>
+						<% } %>
+					<% }else{ %>
+						<tr>
+							<th scope="row"><%= 1 %></th>
+							<td>
+								<p>
+									<%= lists.list_date %>
+								</p>
+							</td>
+							<td>
+								<%if (lists.list_status == 'inactive') { %>
+									<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
+								<% }else{ %>
+									<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
+								<% } %>
+							</td>
+						</tr>
+					<% } %>
+
+						
+				  </tbody>
+				</table>
+			</div>
+		</div>
+
 	</body>
 </html>

@@ -65,12 +65,29 @@ addMatchToUserList = function(user, match, operation, next) {
   }
 };
 
+router.get('/', isLoggedIn, function(req, res) {
+  List.find({}, function(err, list) {
+    if (err) {
+      return console.log(err);
+    }
+    res.render('index.ejs', {
+      message: req.flash('loginMessage'),
+      lists: list,
+      user: req.user,
+      moment: moment,
+      title: 'Matches List'
+    });
+  });
+});
+
 router.post('/deactivate', function(req, res) {
   res.send('ok');
 });
 
 router.post('/views/create', isLoggedIn, function(req, res) {
-  res.render('matchs/create.ejs');
+  res.render('matchs/create.ejs', {
+    title: 'Create a match'
+  });
 });
 
 router.post('/views/list', isLoggedIn, function(req, res) {
@@ -84,7 +101,8 @@ router.post('/views/list', isLoggedIn, function(req, res) {
       message: req.flash('loginMessage'),
       lists: list,
       user: req.user,
-      moment: moment
+      moment: moment,
+      title: "Matches index"
     });
   });
 });
@@ -173,7 +191,8 @@ router.get('/match/:listid', isLoggedIn, function(req, res) {
         list: list,
         match_date: moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a"),
         user: req.user,
-        player_on_list: player_on_list
+        player_on_list: player_on_list,
+        title: "Match"
       });
     });
   });
@@ -191,7 +210,8 @@ router.get('/match/details/:listid', isLoggedIn, function(req, res) {
       message: req.flash('loginMessage'),
       list: list,
       match_date: moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a"),
-      user: req.user
+      user: req.user,
+      title: "Match: details"
     });
   });
 });

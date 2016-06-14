@@ -10,7 +10,8 @@ isLoggedIn = (req, res, next) ->
   return
 
 router.get '/', isLoggedIn, (req, res) ->
-    res.render 'cp/index.ejs'
+    res.render 'cp/index.ejs',
+    title: 'Control Panel'
     return
     
 router.post '/matchs/list', isLoggedIn, (req, res) ->
@@ -19,7 +20,11 @@ router.post '/matchs/list', isLoggedIn, (req, res) ->
         if err
             res.send err
             return
-        res.render 'matchs/list.ejs', message: req.flash('loginMessage'), lists: list, user: req.user
+        res.render 'matchs/list.ejs',
+        message : req.flash('loginMessage')
+        lists   : list,
+        user    : req.user
+        title   : "Matches Lists"
         return
     return
 
