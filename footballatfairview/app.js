@@ -1,5 +1,5 @@
 'use strict';
-var app, bodyParser, configDB, controlpanel, cookieParser, express, flash, gabriel, matches, mongoose, morgan, passport, port, profile, session;
+var acl, app, bodyParser, configDB, controlpanel, cookieParser, dbconnection, express, flash, gabriel, matches, mongoose, morgan, passport, port, profile, session;
 
 express = require('express');
 
@@ -23,6 +23,8 @@ session = require('express-session');
 
 configDB = require('./app/config/database.js');
 
+acl = require('acl');
+
 gabriel = require('express-session');
 
 matches = require('./app/routes/matches');
@@ -32,6 +34,29 @@ profile = require('./app/routes/profile');
 controlpanel = require('./app/routes/controlpanel');
 
 mongoose.connect(configDB.url);
+
+dbconnection = mongoose.connect(configDB.url, function(err) {
+  if (err) {
+    return console.log('MongoDb: Connection error: ' + err);
+  }
+});
+
+mongoose.connection.on('open', function(ref) {
+  console.log('Connected to mongo server.');
+  acl = new acl(new acl.mongodbBackend(dbconnection.connection.db, "acl_"));
+  acl.allow('guest', '/a', '*');
+  acl.addUserRoles('Vibpositive', 'guest');
+  app.use(acl.middleware());
+  return app.get('/a', acl.middleware(), function(req, res, next) {
+    res.send('a');
+    return acl.isAllowed('Vibpositive', 'a', 'get', function(err, res) {
+      if (res) {
+        console.log("User joed is allowed to view blogs");
+        return console.log(res);
+      }
+    });
+  });
+});
 
 require('./app/config/passport')(passport);
 

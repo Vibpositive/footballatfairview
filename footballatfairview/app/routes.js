@@ -68,10 +68,13 @@ module.exports = function(app, passport) {
     message: 'The entered credentials are incorrect',
     redirect: '/login'
   };
-  app.get('/newindex', isLoggedIn, function(req, res) {
-    return res.render('newindex.ejs');
+  app.get('/newindex', function(req, res) {
+    return res.render('newindex.ejs', {
+      title: 'newindex'
+    });
   });
   app.get('/', function(req, res) {
+    req.session.userId = 'Vibpositive';
     res.render('login.ejs', {
       message: req.flash('loginMessage'),
       title: "Login page"
