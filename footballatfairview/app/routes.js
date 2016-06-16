@@ -36,9 +36,17 @@ errorNotification = function(err, str, req) {
 };
 
 module.exports = function(app, passport) {
-  var notAuthenticated;
   app.use(function(req, res, next) {
-    var err, error1;
+    var e, err, error, error1;
+    try {
+      if (req.user !== void 0) {
+        console.log('set up role');
+        req.user['role'] = 'guest';
+      }
+    } catch (error) {
+      e = error;
+      console.log(e);
+    }
     if (_.contains(nonSecurePaths, req.path)) {
       return next();
     }
@@ -63,15 +71,8 @@ module.exports = function(app, passport) {
       return next();
     }
   });
-  notAuthenticated = {
-    flashType: 'error',
-    message: 'The entered credentials are incorrect',
-    redirect: '/login'
-  };
-  app.get('/newindex', isLoggedIn, function(req, res) {
-    return res.render('newindex.ejs');
-  });
   app.get('/', function(req, res) {
+    req.session.userId = 'Vibpositive';
     res.render('login.ejs', {
       message: req.flash('loginMessage'),
       title: "Login page"
@@ -106,24 +107,4 @@ module.exports = function(app, passport) {
     req.logout();
     res.redirect('/');
   });
-  app.use(function(error, req, res, next) {
-    res.status(400);
-    res.render('errors/404.ejs', {
-      title: '404',
-      error: error
-    });
-    return;
-  });
-  app.use(function(error, req, res, next) {
-    res.status(500);
-    res.render('errors/500.ejs', {
-      title: '500: Internal Server Error',
-      error: error
-    });
-  });
-  if (process.env.NODE_ENV === 'development') {
-    app.use(errorhandler({
-      log: errorNotification
-    }));
-  }
 };

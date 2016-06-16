@@ -1,10 +1,12 @@
-var FacebookStrategy, User, configAuth;
+var FacebookStrategy, User, configAuth, util;
 
 FacebookStrategy = require('passport-facebook').Strategy;
 
 User = require('../models/user');
 
 configAuth = require('./auth');
+
+util = require('util');
 
 module.exports = function(passport) {
   passport.serializeUser(function(user, done) {

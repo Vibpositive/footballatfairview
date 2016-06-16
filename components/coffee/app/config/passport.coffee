@@ -5,6 +5,7 @@ FacebookStrategy = require('passport-facebook').Strategy
 User = require('../models/user')
 # load the auth variables
 configAuth = require('./auth')
+util = require 'util'
 
 module.exports = (passport) ->
   # used to serialize the user for the session

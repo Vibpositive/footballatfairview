@@ -1,5 +1,5 @@
 'use strict';
-var app, bodyParser, configDB, controlpanel, cookieParser, express, flash, gabriel, matches, mongoose, morgan, passport, port, profile, session;
+var app, bodyParser, configDB, controlpanel, cookieParser, dbconnection, express, flash, gabriel, matches, mongoose, morgan, notAuthenticated, notAuthorized, passport, port, profile, session;
 
 express = require('express');
 
@@ -33,7 +33,57 @@ controlpanel = require('./app/routes/controlpanel');
 
 mongoose.connect(configDB.url);
 
+dbconnection = mongoose.connect(configDB.url, function(err) {
+  if (err) {
+    return console.log('MongoDb: Connection error: ' + err);
+  }
+});
+
+app.use(function(error, req, res, next) {
+  res.status(400);
+  res.render('errors/404.ejs', {
+    title: '404',
+    error: error
+  });
+});
+
+app.use(function(error, req, res, next) {
+  res.status(500);
+  res.render('errors/500.ejs', {
+    title: '500: Internal Server Error',
+    error: error
+  });
+});
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(errorhandler({
+    log: errorNotification
+  }));
+}
+
+mongoose.connection.on('open', function(ref) {
+  return console.log('Connected to mongo server.');
+});
+
 require('./app/config/passport')(passport);
+
+notAuthenticated = {
+  flashType: 'error',
+  message: 'The entered credentials are incorrect',
+  redirect: '/'
+};
+
+notAuthorized = {
+  flashType: 'error',
+  message: 'You have no access to this',
+  redirect: '/index'
+};
+
+app.set('permission', {
+  role: 'role',
+  notAuthenticated: notAuthenticated,
+  notAuthorized: notAuthorized
+});
 
 app.use(morgan('dev'));
 

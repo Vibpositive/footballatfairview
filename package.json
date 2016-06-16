@@ -2,6 +2,7 @@
   "name": "AuthWithNode",
   "main": "server.js",
   "dependencies": {
+    "acl": "^0.4.9",
     "bcrypt-nodejs": "latest",
     "body-parser": "~1.0.0",
     "connect-flash": "~0.1.1",
@@ -42,6 +43,7 @@
     "gulp-util": "^3.0.7",
     "mocha": "*",
     "node-notifier": "^4.6.0",
+    "print_r": "0.0.1",
     "request": "*",
     "sillyname": "^0.1.0",
     "superagent": "^2.0.0",
