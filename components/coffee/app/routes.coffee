@@ -26,7 +26,15 @@ errorNotification = (err, str, req) ->
 
 module.exports = (app, passport) ->
 
+
     app.use (req, res, next) ->
+
+        try
+            if req.user != undefined
+                console.log 'set up role'
+                req.user['role'] = 'guest'
+        catch e
+            console.log e
 
         if _.contains(nonSecurePaths, req.path)
             return next()
@@ -47,24 +55,14 @@ module.exports = (app, passport) ->
         catch err
             return next()
 
-    notAuthenticated = 
-        flashType: 'error',
-        message: 'The entered credentials are incorrect',
-        redirect: '/login'
-
-    app.get '/newindex',(req, res) ->
-        res.render 'newindex.ejs',
-        title: 'newindex'
-
     app.get '/', (req, res) ->
         req.session.userId = 'Vibpositive'
         res.render 'login.ejs',
         message : req.flash('loginMessage')
         title   : "Login page"
         return
-        
-    app.get '/index', isLoggedIn, (req, res) ->
 
+    app.get '/index', isLoggedIn, (req, res) ->
         List.find {}, (err, list) ->
             if err
                 return console.log err
@@ -89,23 +87,5 @@ module.exports = (app, passport) ->
         req.logout()
         res.redirect '/'
         return
-
-    app.use (error, req, res, next) ->
-        res.status 400
-        res.render 'errors/404.ejs',
-            title: '404'
-            error: error
-        return
-        return
-    # Handle 500
-    app.use (error, req, res, next) ->
-        res.status 500
-        res.render 'errors/500.ejs',
-            title: '500: Internal Server Error'
-            error: error
-        return
-
-    if process.env.NODE_ENV == 'development'
-        app.use errorhandler {log: errorNotification}
 
     return

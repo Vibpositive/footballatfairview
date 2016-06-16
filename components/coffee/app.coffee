@@ -10,7 +10,6 @@ cookieParser = require('cookie-parser')
 bodyParser   = require('body-parser')
 session      = require('express-session')
 configDB     = require('./app/config/database.js')
-acl          = require('acl');
 gabriel      = require('express-session')
 matches      = require './app/routes/matches'
 profile      = require './app/routes/profile'
@@ -22,27 +21,42 @@ dbconnection = mongoose.connect configDB.url, (err) ->
 	if err
 		console.log 'MongoDb: Connection error: ' + err
 
+app.use (error, req, res, next) ->
+        res.status 400
+        res.render 'errors/404.ejs',
+            title: '404'
+            error: error
+        return
+# Handle 500
+app.use (error, req, res, next) ->
+    res.status 500
+    res.render 'errors/500.ejs',
+        title: '500: Internal Server Error'
+        error: error
+    return
+
+if process.env.NODE_ENV == 'development'
+    app.use errorhandler {log: errorNotification}
+
 mongoose.connection.on 'open', (ref) ->
 	console.log 'Connected to mongo server.'
-	# console.log dbconnection.connection.db
-
-	acl = new acl(new acl.mongodbBackend(dbconnection.connection.db, "acl_"));
-	# acl = new acl(new acl.memoryBackend());
-
-	acl.allow('guest', '/a', '*')
-
-	acl.addUserRoles 'Vibpositive', 'guest'
-
-	app.use acl.middleware()
-
-	app.get '/a', acl.middleware(), (req, res, next)->
-		res.send 'a'
-		acl.isAllowed 'Vibpositive', 'a', 'get', (err, res)->
-			if res
-				console.log "User joed is allowed to view blogs"
-				console.log res
 	
 require('./app/config/passport') passport
+
+notAuthenticated = 
+	flashType: 'error',
+	message: 'The entered credentials are incorrect',
+	redirect: '/'
+
+notAuthorized = 
+	flashType: 'error',
+	message: 'You have no access to this',
+	redirect: '/index'
+
+app.set 'permission',
+	role: 'role',
+	notAuthenticated: notAuthenticated,
+	notAuthorized: notAuthorized 
 
 app.use morgan('dev')
 app.use cookieParser()
