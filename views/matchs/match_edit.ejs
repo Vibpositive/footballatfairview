@@ -1,0 +1,68 @@
+<script type="text/javascript" src="/public/js/addNumberPicker.min.js"></script>
+<script type="text/javascript" src="/public/js/Obj.min.js"></script>
+
+<link rel="stylesheet" href="/public/css/addNumberPicker.min.css" />
+
+<p class="text-center">
+	<div style="overflow:hidden;">
+	    <div class="form-group">
+	        <div class="row">
+	        	<div class="col-md-4">
+	        	</div>
+	            <div class="col-md-4">
+	                <div id="datetimepicker12"></div>
+	            </div>
+	            <div class="col-md-4">
+	        	</div>
+	        </div>
+	    </div>
+	</div>
+</p>
+
+ <script type="text/javascript">
+	        $( document ).ready(function()
+			{
+	        	var list_date;
+
+	            $('#datetimepicker12').datetimepicker({
+	                inline: true,
+	                sideBySide: false,
+	                defaultDate: <%= moment(list.list_date, 'x').format('DD/MM/YYYY HH:mm') %>,
+	            })
+	            .on("dp.change", function (e)
+	            {
+	            	list_date = moment(e.date).format('x');
+
+		            $("#create").removeClass('disabled');
+		        });
+
+				$('#create').click(function()
+				{
+					var list_size = $('.addui-numberPicker-input').val();
+					var isParticipating = $("#creatorOnList").is(':checked')
+					
+
+					$.post("/matches/match/create",
+					{
+						names       : isParticipating,
+						list_date   : list_date,
+				        list_size   : list_size,
+				        list_status : 'pending'
+					},
+					function(data, status)
+					{
+						console.log(data);
+					});
+				});
+	        });
+	    </script>
+
+<p class="text-center">
+	<label class="checkbox-inline">
+		Participants <input data-addui='numberpicker' value='21' class="participantsNumber">
+	</label>
+</p>
+
+<p class="text-center">
+	<button type="button" class="btn btn-primary disabled" id="create">Create</button>
+</p>

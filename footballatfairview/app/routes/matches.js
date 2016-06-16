@@ -192,6 +192,8 @@ router.get('/match/:listid', isLoggedIn, function(req, res) {
         match_date: moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a"),
         user: req.user,
         player_on_list: player_on_list,
+        moment: moment,
+        disabled: list.list_status === 'deactivate' ? 'disabled' : '',
         title: "Match"
       });
     });
@@ -281,6 +283,28 @@ router.post('/match/edit/status', isLoggedIn, function(req, res, next) {
           message: '0 rows affected'
         });
       }
+    }
+  });
+});
+
+router.post('/match/edit/:listid', isLoggedIn, function(req, res, next) {
+  var listid;
+  listid = req.params.listid;
+  return List.findOne({
+    _id: listid
+  }, {}, function(err, listFound) {
+    if (err) {
+      return {
+        message: err
+      };
+    } else {
+      res.render('matchs/match_edit.ejs', {
+        message: '',
+        list: listFound,
+        user: req.user,
+        moment: moment,
+        title: 'Matches List'
+      });
     }
   });
 });

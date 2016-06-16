@@ -125,6 +125,8 @@ router.get '/match/:listid', isLoggedIn,(req, res) ->
                 match_date     : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
                 user           : req.user
                 player_on_list : player_on_list
+                moment         : moment
+                disabled       : if list.list_status == 'deactivate' then 'disabled' else ''
                 title          : "Match"
                 return
         return
@@ -200,6 +202,22 @@ router.post '/match/edit/status', isLoggedIn, (req, res, next) ->
                 res.send { message: 'ok' }
             else
                 res.send { message: '0 rows affected' }
+            return
+
+router.post '/match/edit/:listid', isLoggedIn, (req, res, next) ->
+    
+    listid     = req.params.listid
+
+    List.findOne { _id : listid }, {},(err, listFound) ->
+        if err
+            return { message: err }
+        else
+            res.render 'matchs/match_edit.ejs',
+            message: ''
+            list: listFound
+            user: req.user
+            moment: moment
+            title: 'Matches List'
             return
 
 module.exports = router;

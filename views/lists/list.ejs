@@ -48,18 +48,32 @@
 		<% include ../html/top %>
 		<div class="jumbotron">
 			<div class="page-header">
-					<h3>
-						<p class="text-center">
-							<title><%= title %></title>
-						</p>
-					</h3>
-				
+				<div class="container">
+					<div class="row">
+						<div class="col-sm-4">
+							<p class="text-center">
+								Status: <%= list.list_status %>
+							</p>
+						</div>
+						<div class="col-sm-4">
+							<p class="text-center">
+								Date: <%= moment(list.list_date,'x').format('DD/MM/YYYY HH:mm') %><br/>
+							</p>
+						</div>
+						<div class="col-sm-4">
+							<p class="text-center">
+								People Playing: <%= list.list_size %>
+							</p>
+						</div>
+					</div>
+				</div>
+
 			</div>
 			<p class="text-center">
 				<%if (player_on_list == true) { %>
-					<input type="checkbox" id="toggle-event" checked data-toggle="toggle" data-on="Yes" data-off="No">
+					<input type="checkbox" id="toggle-event" <%= disabled %> checked data-toggle="toggle" data-on="Yes" data-off="No">
 				<% }else{ %>
-					<input type="checkbox" id="toggle-event" data-toggle="toggle" data-on="Yes" data-off="No">
+					<input type="checkbox" id="toggle-event" <%= disabled %> data-toggle="toggle" data-on="Yes" data-off="No">
 				<% } %>
 			</p>
 			<div id="list_container">

@@ -42,7 +42,7 @@
                         </td>
 
                         <td>
-                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-sm btn-primary btn-sm view">View</button>
+                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-sm btn-primary btn-sm edit">Edit</button>
                         </td>
                     </tr>
                 <% } %>
@@ -68,6 +68,19 @@
 
 <script>
     $(document).ready(function(){
+        
+
+        $('.edit').click(function(e)
+        {
+            var currentListId = $(this).val();
+
+            $.post("/matches/match/edit/" + currentListId,
+            {},
+            function(data, status)
+            {
+                $("#loadedContainer").html( data );
+            });
+        });
 
         $('button[action]').click(function(e)
         {
@@ -81,7 +94,7 @@
             },
             function(data, status)
             {
-                console.log(data);
+                console.log('aaaa' + data);
                 $.post("/matches/views/list", function(data)
                 {
                     $("#loadedContainer").html( data );
