@@ -107,14 +107,32 @@ router.post('/views/list', isLoggedIn, function(req, res) {
   });
 });
 
+router.post('/views/playerslist', function(req, res) {
+  return List.findOne({
+    _id: req.body.list_id
+  }, function(err, list) {
+    console.log(list);
+    if (err) {
+      res.send(err);
+      return;
+    }
+    res.render('matchs/names/names_list.ejs', {
+      message: req.flash('loginMessage'),
+      list: list,
+      user: req.user,
+      moment: moment,
+      title: "Matches index"
+    });
+  });
+});
+
 router.post('/participate', isLoggedIn, function(req, res) {
-  var datetime, first_name, full_name, last_name, list_id, player_id, status;
+  var datetime, first_name, full_name, last_name, list_id, player_id;
   player_id = req.user.facebook.id;
   datetime = 'date';
   last_name = req.user.facebook.last_name;
   first_name = req.user.facebook.first_name;
   full_name = req.user.facebook.first_name + " " + req.user.facebook.last_name;
-  status = 'playing';
   list_id = req.body.list_id;
   if (req.body.player_status === 'true') {
     addMatchToUserList(req.user, list_id, 'push');
@@ -128,7 +146,7 @@ router.post('/participate', isLoggedIn, function(req, res) {
           last_name: last_name,
           first_name: first_name,
           full_name: full_name,
-          status: status
+          status: 'playing'
         }
       }
     }, function(err, numAffected) {
@@ -287,7 +305,36 @@ router.post('/match/edit/status', isLoggedIn, function(req, res, next) {
   });
 });
 
-router.post('/match/edit/:listid', isLoggedIn, function(req, res, next) {
+router.post('/match/edit/match', function(req, res, next) {
+  var list_id, player_id, player_status;
+  list_id = req.body.list_id;
+  player_status = req.body.player_status;
+  player_id = req.body.player_id;
+  return List.update({
+    '_id': list_id,
+    "names.player_id": player_id
+  }, {
+    '$set': {
+      'names.$.status': player_status
+    }
+  }, function(err, numAffected) {
+    if (err) {
+      return res.send('err: ' + String(err));
+    } else {
+      if (numAffected > 0) {
+        return res.json({
+          message: 'ok'
+        });
+      } else {
+        res.json({
+          message: '0 rows affected'
+        });
+      }
+    }
+  });
+});
+
+router.post('/match/edit/:listid', function(req, res, next) {
   var listid;
   listid = req.params.listid;
   return List.findOne({

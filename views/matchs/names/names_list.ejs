@@ -1,0 +1,76 @@
+<div class="row">
+	<div class="col-md-4">
+	</div>
+	<div class="col-md-4">
+		<table class="table table-reflow">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Name</th>
+					<th>Status</th>
+					<th>UnBlock</th>
+					<th>Block</th>
+					<th>Remove</th>
+				</tr>
+			</thead>
+			<tbody>
+				<%if (list.names.length > 0) { %>
+					<% for(var i=0; i<list.names.length; i++) { %>
+						<tr>
+							<th scope="row"><%= i+1 %></th>
+							<td>
+								<%= list.names[i].full_name %>
+							</td>
+							<td>
+								<%= list.names[i].status %>
+							</td>
+
+							<td>
+								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-sm btn-success btn-sm" action="playing">UnBlock</button>
+							</td>
+
+							<td>
+								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-sm btn-warning btn-sm" action="block">Block</button>
+							</td>
+
+							<td>
+								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-sm btn-danger btn-sm" action="remove">REMOVE</button>
+							</td>
+						</tr>
+					<% } %>
+				<% } %>   
+			</tbody>
+		</table>
+	</div>
+	<div class="col-md-4">
+	</div>
+</div>
+<script type="text/javascript">
+	$( document ).ready(function()
+	{
+		$('button[action]').click(function(e)
+		{
+			var currentAction = $(this).attr('action');
+			var player_id     = $(this).val();
+			var list_id       = "<%= list._id %>";
+
+			console.log('currentAction' + currentAction);
+			console.log('player_id' + player_id);
+
+			$.post("/matches/match/edit/match/",
+			{
+				list_id       : list_id,
+				player_id     : player_id,
+				player_status : currentAction
+			},
+			function(data, status)
+			{
+				console.log(data);
+				$.post("/matches/views/playerslist", {list_id : list_id}, function(data)
+				{
+					$("#loadedContainer_internal").html( data );
+				});
+			});
+		});
+	});
+</script>

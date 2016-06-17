@@ -66,13 +66,27 @@ router.post '/views/list', isLoggedIn, (req, res)->
         title   : "Matches index"
         return
 
+# router.post '/views/playerslist', isLoggedIn, (req, res)->
+router.post '/views/playerslist',  (req, res)->
+    List.findOne {_id : req.body.list_id }, (err, list) ->
+        console.log list
+        if err
+            res.send err
+            return
+        res.render 'matchs/names/names_list.ejs',
+        message : req.flash('loginMessage')
+        list    : list
+        user    : req.user
+        moment  : moment
+        title   : "Matches index"
+        return
+
 router.post '/participate', isLoggedIn, (req, res)->
     player_id  = req.user.facebook.id
     datetime   = 'date'
     last_name  = req.user.facebook.last_name
     first_name = req.user.facebook.first_name
     full_name  = req.user.facebook.first_name + " " + req.user.facebook.last_name
-    status     = 'playing'
     list_id    = req.body.list_id
 
     if req.body.player_status == 'true'
@@ -88,7 +102,7 @@ router.post '/participate', isLoggedIn, (req, res)->
         last_name  : last_name
         first_name : first_name
         full_name  : full_name
-        status     : status
+        status     : 'playing'
         } } },(err, numAffected) ->
           if err
             res.send 'err: ' + String(err)
@@ -204,7 +218,26 @@ router.post '/match/edit/status', isLoggedIn, (req, res, next) ->
                 res.send { message: '0 rows affected' }
             return
 
-router.post '/match/edit/:listid', isLoggedIn, (req, res, next) ->
+# TODO: Improve route trying using just one
+# router.post '/match/edit/match', isLoggedIn, (req, res, next) ->
+router.post '/match/edit/match', (req, res, next) ->
+    
+    list_id       = req.body.list_id
+    player_status = req.body.player_status
+    player_id     = req.body.player_id
+
+    List.update { '_id' : list_id, "names.player_id" : player_id }, { '$set' : { 'names.$.status' : player_status} },(err, numAffected) ->
+          if err
+            res.send 'err: ' + String(err)
+          else
+            if numAffected > 0
+              res.json({ message: 'ok' });
+            else
+              res.json({ message: '0 rows affected' });
+              return
+
+# router.post '/match/edit/:listid', isLoggedIn, (req, res, next) ->
+router.post '/match/edit/:listid', (req, res, next) ->
     
     listid     = req.params.listid
 
