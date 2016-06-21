@@ -1,0 +1,29 @@
+// tests/part1/cart-summary-test.js
+var chai = require('chai');
+var expect = chai.expect; // we are using the "expect" style of Chai
+var app = require('../footballatfairview/app.js');
+
+describe('List', function() {
+	it('getSubtotal() should return 0 if no items are passed in', function() {
+		console.log(app)
+		/*var List = new List([]);
+		expect(List.getSubtotal()).to.equal(0);*/
+	});
+	/*it('getSubtotal() should return the sum of the price * quantity for all items', function() {
+		var List = new List([{
+			id: 1,
+			quantity: 4,
+			price: 50
+		}, {
+			id: 2,
+			quantity: 2,
+			price: 30
+		}, {
+			id: 3,
+			quantity: 1,
+			price: 40
+		}]);
+
+		expect(List.getSubtotal()).to.equal(300);
+	});*/
+});

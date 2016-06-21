@@ -3,20 +3,95 @@
 	<head>
 		<title><%= title %></title>
 
-		<% include ../html/scripts_css %>
-		<script type="text/javascript" src="/public/js/addNumberPicker.min.js"></script>
-		<script type="text/javascript" src="/public/js/Obj.min.js"></script>
-		<link rel="stylesheet" href="/public/css/addNumberPicker.min.css" />
-		
-		<script>
+		<!-- <% include ../html/scripts_css %> -->
+		<script type="text/javascript" src="/public/js/jquery.bootstrap-touchspin.min.js"></script>
+		<link rel="stylesheet" href="/public/css/jquery.bootstrap-touchspin.min.css" />
+		<link rel="stylesheet" href="/public/css/toggle-switch.css" />
 
-			if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-				
-			}else{
-				
-			}
+		<script type="text/javascript">
 
-		</script>
+		/**
+		Types of alerts -- "alert-error","alert-success","alert-info"
+		**/
+
+		function showalert(message,alerttype)
+		{
+			$('#alert-info').append('<div id="alertdiv" class="alert ' +  alerttype + '"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
+			setTimeout(function()
+			{
+				$("#alertdiv").remove();
+			}, 5000);
+		}
+
+
+		$( document ).ready(function()
+		{
+			var list_date   = "<%= list.list_date %>";
+			var list_status = "<%= list.list_status %>";
+			var list_size   = "<%= list.list_size %>";
+
+			$("input[name='demo3']").TouchSpin({
+				min: 0,
+				initval: <%=list.list_size%>
+			});
+
+			$("input[name='demo3']").on('change', function(e){
+				$("#update").removeClass('disabled');
+			})
+
+			$('input[type="radio"]').click(function(e)
+	        {
+	        	list_status = $(this).attr('matchstatus');
+	        	console.log('list_status: ' + list_status)
+	        	$("#update").removeClass('disabled');
+	        });
+			
+			$('#datetimepicker12').datetimepicker({
+				inline: true,
+				sideBySide: false,
+				defaultDate: "<%= moment(list.list_date, 'x').format('MM/DD/YYYY HH:mm') %>"
+			})
+			.on("dp.change", function (e)
+			{
+				list_date = moment(e.date).format('x');
+				$("#update").removeClass('disabled');
+			});
+
+			$('#update').click(function()
+			{
+				if ($(this).hasClass('disabled')){
+					return false;
+				}
+
+				list_size = $("input[name='demo3']").val();
+
+				$.ajax({
+					type: 'POST',
+					url: '/matches/update',
+					data: {
+						list_id     : "<%= list._id %>",
+						list_date   : list_date,
+						list_size   : list_size,
+						list_status : list_status
+					},
+					success: success,
+					async:true
+				});
+
+				function success(e)
+				{
+					console.log(e.message)
+					if(e.message == 'ok')
+					{
+						showalert('Successfuly updated','alert-success')
+					}else{
+						showalert('Not updated: ' + String(e.message.message),'alert-info')
+					}
+				}
+			});
+		});
+	</script>
+
 		<style type="text/css">
 			body { padding-top: 15px; }
 		</style>
@@ -49,77 +124,71 @@
 				</div>
 			</p>
 
+			<p class="text-center">
+				<div style="overflow:hidden;">
+					<div class="form-group">
+						<div class="row">
+							<div class="col-md-4">
+							</div>
+							<div class="col-md-4">
+								<fieldset>
+									<p class="text-center">
+
+										<legend>Match Status</legend>
+									</p>
+
+									<div class="switch-toggle well">
+
+										<input matchstatus="active" id="all" name="view1" type="radio" <%= list.list_status == 'active' ? 'checked' : '' %> >
+										<label for="all" onclick="">All</label>
+
+										<input matchstatus="preferential" id="preferential" name="view1" type="radio" <%= list.list_status == 'preferential' ? 'checked' : '' %> >
+										<label for="preferential" onclick="">Preferential</label>
+
+										<input matchstatus="deactivate" id="cancelled" name="view1" type="radio" <%= list.list_status == 'deactive' ? 'checked' : '' %> >
+										<label for="cancelled" onclick="">Cancelled</label>
+
+										<input matchstatus="pending" id="pending" name="view1" type="radio" <%= list.list_status == 'pending' ? 'checked' : '' %> >
+										<label for="pending" onclick="">Pending</label>
+
+										<a class="btn btn-xs btn-block btn-primary"></a>
+									</div>
+								</fieldset>
+							</div>
+							<div class="col-md-4">
+							</div>			
+						</div>
+					</div>
+				</div>
+			</p>
+								
+
 			<div id="loadedContainer_internal">
 				<% include names/names_list %>
 			</div>
+			<div class="col-md-4">
+			</div>
+			<div class="col-md-4">
 			<p class="text-center">
-				<label class="checkbox-inline">
-					Participants <input data-addui='numberpicker' value='21' class="participantsNumber">
+				<label class="checkbox-inline">	
+						Players: <input id="demo3" type="text" value="" name="demo3">
+					 
 				</label>
+			</p>
+			</div>
+			<div class="col-md-4">
+			</div>
 			</p>
 
 			<p class="text-center">
-				<button type="button" class="btn btn-primary disabled" id="update">update</button>
+				<button type="button" class="btn btn-xs btn-block btn-primary disabled" id="update">update</button>
 			</p>
+			
+			<div id="alert-info">
+
+			</div>
 		</div>
 
 	</body>
-	<script type="text/javascript">
-		$( document ).ready(function()
-		{
-			var list_date;
-
-			$('#datetimepicker12').datetimepicker({
-				inline: true,
-				sideBySide: false,
-				defaultDate: "<%= moment(list.list_date, 'x').format('MM/DD/YYYY HH:mm') %>"
-			})
-			.on("dp.change", function (e)
-			{
-				list_date = moment(e.date).format('x');
-				$("#update").removeClass('disabled');
-			});
-
-			$('#update').click(function()
-			{
-				var list_size = $('.addui-numberPicker-input').val();
-
-				$.post("/matches/match/update",
-				{
-					list_date   : list_date,
-					list_size   : list_size,
-					list_status : 'pending'
-				},
-				function(data, status)
-				{
-					console.log(data);
-				});
-			});
-
-			/*$('button[action]').click(function(e)
-			{
-				var currentAction = $(this).attr('action');
-				var player_id     = $(this).val();
-				var list_id       = "<%= list._id %>";
-
-				console.log('currentAction' + currentAction);
-				console.log('player_id' + player_id);
-
-				$.post("/matches/match/edit/match/",
-				{
-					list_id       : list_id,
-					player_id     : player_id,
-					player_status : currentAction
-				},
-				function(data, status)
-				{
-					console.log(data);
-					$.post("/matches/views/playerslist", {list_id : list_id}, function(data)
-					{
-						$("#loadedContainer_internal").html( data );
-					});
-				});
-			});*/
-		});
-	</script>
+	
 </html>

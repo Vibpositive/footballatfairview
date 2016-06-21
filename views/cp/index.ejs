@@ -16,35 +16,32 @@
 
 			$( document ).ready(function()
 			{
-
 				$('.createMatch').click(function()
 				{
-					$.post("/matches/views/create",
-					{
-						/*list_id       : listid,
-						player_status : $(this).prop('checked')*/
-					},
-					function(data, status)
-					{
-						$("#loadedContainer").html( data );
-
-					});
+					$.ajax({
+			            type: 'POST',
+			            url: '/matches/views/create',
+			            data: {},
+			            success: success,
+			            async:true
+			        });
 				});
 				
 				$('#manageMatch').click(function()
 				{
-					$.post("/matches/views/list",
-					{
-						/*list_id       : listid,
-						player_status : $(this).prop('checked')*/
-					},
-					function(data, status)
-					{
-						$("#loadedContainer").html( data );
-
-					});
+					$.ajax({
+			            type: 'POST',
+			            url: '/matches/views/list',
+			            data: {},
+			            success: success,
+			            async:true
+			        });
 				});
-				
+
+				function success(e)
+	            {
+	                $("#loadedContainer").html( e );
+	            }
 			})
 
 		</script>

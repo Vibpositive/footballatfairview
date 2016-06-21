@@ -3,54 +3,58 @@
 
 <link rel="stylesheet" href="/public/css/addNumberPicker.min.css" />
 
+<script type="text/javascript">
+	$( document ).ready(function()
+	{
+		var list_date;
+
+		$('#datetimepicker12').datetimepicker({
+			inline: true,
+			sideBySide: false
+		})
+		.on("dp.change", function (e)
+		{
+			list_date = moment(e.date).format('x');
+
+			$("#createMatch").removeClass('disabled');
+		});
+
+		$('#createMatch').click(function()
+		{
+			var list_size = $('.addui-numberPicker-input').val();
+			var isParticipating = $("#creatorOnList").is(':checked')
+			
+
+			$.post("/matches/create",
+			{
+				names       : isParticipating,
+				list_date   : list_date,
+				list_size   : list_size,
+				list_status : 'pending'
+			},
+			function(data, status)
+			{
+				console.log(data);
+			});
+		});
+	});
+</script>
+
 <p class="text-center">
 	<div style="overflow:hidden;">
-	    <div class="form-group">
-	        <div class="row">
-	            <div class="col-md-8">
-	                <div id="datetimepicker12"></div>
-	            </div>
-	        </div>
-	    </div>
+		<div class="form-group">
+			<div class="row">
+				<div class="col-md-4">
+				</div>
+				<div class="col-md-4">
+					<div id="datetimepicker12"></div>
+				</div>
+				<div class="col-md-4">
+				</div>
+			</div>
+		</div>
 	</div>
 </p>
-
- <script type="text/javascript">
-	        $( document ).ready(function()
-			{
-	        	var list_date;
-
-	            $('#datetimepicker12').datetimepicker({
-	                inline: true,
-	                sideBySide: true
-	            })
-	            .on("dp.change", function (e)
-	            {
-	            	list_date = moment(e.date).format('x');
-
-		            $("#createMatch").removeClass('disabled');
-		        });
-
-				$('#createMatch').click(function()
-				{
-					var list_size = $('.addui-numberPicker-input').val();
-					var isParticipating = $("#creatorOnList").is(':checked')
-					
-
-					$.post("/matches/match/create",
-					{
-						names       : isParticipating,
-						list_date   : list_date,
-				        list_size   : list_size,
-				        list_status : 'pending'
-					},
-					function(data, status)
-					{
-						console.log(data);
-					});
-				});
-	        });
-	    </script>
 
 <p class="text-center">
 	<label class="checkbox-inline">

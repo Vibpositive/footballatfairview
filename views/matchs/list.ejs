@@ -1,4 +1,6 @@
-
+<div class="col-md-4">
+</div>
+<div class="col-md-4">
     <table class="table table-reflow">
         <thead>
             <tr>
@@ -7,9 +9,11 @@
                 <th>Time</th>
                 <th>WD</th>
                 <th>Status</th>
+                <!--
                 <th>Preferential</th>
                 <th>All</th>
                 <th>Cancel</th>
+                -->
                 <th>Details</th>
             </tr>
         </thead>
@@ -17,32 +21,38 @@
             <%if (lists.length > 0) { %>
                 <% for(var i=0; i<lists.length; i++) { %>
                     <tr>
-                        <th scope="row"><%= i+1 %></th>
+                        <th scope='row'><%= i+1 %></th>
                         <td>
-                            <p><%= moment(lists[i].list_date,'x').format('DD/MM/YYYY') %></p>
+                            <small>
+                                <%= moment(lists[i].list_date,'x').format('DD/MM') %>
+                            </small>
                         </td>
                         <td>
-                            
-                            <p><%= moment(lists[i].list_date,'x').format('h:mm a') %></p>
+                            <small>
+                                <%= moment(lists[i].list_date,'x').format('HH:mm') %>
+                            </small>
                         </td>
                         <td>
-                            <p><%= moment(lists[i].list_date,'x').format('ddd') %></p>
+                            <%= moment(lists[i].list_date,'x').format('ddd') %>
                         </td>
                         <td>
                             <%= lists[i].list_status %>
                         </td>
+                        <!--
                         <td>
-                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-sm btn-warning btn-sm approve_preferential" action="preferential">Approve</button>
+                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-xs btn-block btn-warning approve_preferential" action="preferential">Approve</button>
                         </td>
                         <td>
-                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-sm btn-success btn-sm approve_all" action="active">Approve</button>
+                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-xs btn-block btn-success approve_all" action="active">Approve</button>
                         </td>
                         <td>
-                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-sm btn-danger btn-sm deactivate"  action="deactivate">Deactivate</button>
+                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-xs btn-block btn-danger deactivate"  action="deactivate">Deactivate</button>
                         </td>
-
+                        -->
                         <td>
-                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-sm btn-primary btn-sm edit">Edit</button>
+                            <small>
+                                <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-xs btn-block btn-primary edit">Edit</button>
+                            </small>
                         </td>
                     </tr>
                 <% } %>
@@ -56,9 +66,9 @@
                     </td>
                     <td>
                         <%if (lists.list_status == 'inactive') { %>
-                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
+                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger participate disabled">Participate</button>
                         <% }else{ %>
-                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
+                            <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary participate">Participate</button>
                         <% } %>
                     </td>
                 </tr>
@@ -74,34 +84,26 @@
         {
             var currentListId = $(this).val();
 
-            $.post("/matches/match/edit/" + currentListId,
+            $.ajax({
+                type: 'POST',
+                url: '/matches/edit/' + String(currentListId),
+                data: {},
+                success: success,
+                async:true
+            });
+
+            function success(e)
+            {
+                $("#loadedContainer").html( e );
+            }
+
+            /*$.post("/matches/edit/" + currentListId,
             {},
             function(data, status)
             {
                 $("#loadedContainer").html( data );
-            });
+            });*/
         });
-
-        $('button[action]').click(function(e)
-        {
-            var currentAction = $(this).attr('action');
-            var currentListId = $(this).val();
-
-            $.post("/matches/match/edit/status",
-            {
-                list_id     : currentListId,
-                list_status : currentAction
-            },
-            function(data, status)
-            {
-                console.log('aaaa' + data);
-                $.post("/matches/views/list", function(data)
-                {
-                    $("#loadedContainer").html( data );
-                });
-
-            });
-        });
-
     })
 </script>
+</div>

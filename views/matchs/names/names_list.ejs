@@ -26,15 +26,21 @@
 							</td>
 
 							<td>
-								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-sm btn-success btn-sm" action="playing">UnBlock</button>
+								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-xs btn-block btn-success" action="playing">
+									UnBlock
+								</button>
 							</td>
 
 							<td>
-								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-sm btn-warning btn-sm" action="block">Block</button>
+								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-xs btn-block btn-warning" action="block">
+									Block
+								</button>
 							</td>
 
 							<td>
-								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-sm btn-danger btn-sm" action="remove">REMOVE</button>
+								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-xs btn-block btn-danger" action="remove">
+									REMOVE
+								</button>
 							</td>
 						</tr>
 					<% } %>
@@ -57,7 +63,7 @@
 			console.log('currentAction' + currentAction);
 			console.log('player_id' + player_id);
 
-			$.post("/matches/match/edit/match/",
+			$.post("/matches/edit/match/",
 			{
 				list_id       : list_id,
 				player_id     : player_id,
