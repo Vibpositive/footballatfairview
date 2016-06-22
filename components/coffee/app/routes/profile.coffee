@@ -1,5 +1,3 @@
-express = require 'express'
-router  = express.Router()
 User    = require '../models/user'
 
 isLoggedIn = (req, res, next) ->
@@ -8,31 +6,31 @@ isLoggedIn = (req, res, next) ->
   res.redirect '/'
   return
 
-router.get '/', isLoggedIn, (req, res) ->
-    res.render 'profile/profile.ejs',
-    user: req.user
-    title: 'Profile'
-    return
+module.exports = (app) ->
 
-router.post '/edit/phoneNumber', (req, res) ->
+    app.get '/profile', isLoggedIn, (req, res) ->
+        res.render 'profile/profile.ejs',
+        user: req.user
+        title: 'Profile'
+        return
 
-    phoneNumber = req.body.phoneNumber
-    userId      = req.user.id
+    app.post '/profile/edit/phoneNumber', (req, res) ->
 
-    User.update _id : userId, { 'phone': phoneNumber },(err, numAffected) ->
-        if err
-            return { message: err }
-        else
-            if numAffected > 0
-                res.send { message: 'ok' }
+        phoneNumber = req.body.phoneNumber
+        userId      = req.user.id
+
+        User.update _id : userId, { 'phone': phoneNumber },(err, numAffected) ->
+            if err
+                return { message: err }
             else
-                res.send { message: '0 rows affected' }
+                if numAffected > 0
+                    res.send { message: 'ok' }
+                else
+                    res.send { message: '0 rows affected' }
 
-router.get '/view/details', (req, res) ->
-    res.render 'profile/details.ejs',
-    message    : req.flash('loginMessage')
-    user       : req.user
-    title      : 'Profile Details: ' + String(req.user.fullname)
-    return
-    
-module.exports = router;
+    app.get '/profile/view/details', (req, res) ->
+        res.render 'profile/details.ejs',
+        message    : req.flash('loginMessage')
+        user       : req.user
+        title      : 'Profile Details: ' + String(req.user.fullname)
+        return

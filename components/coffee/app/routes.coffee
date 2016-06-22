@@ -1,28 +1,17 @@
 # app/routes.js
 List         = require '../app/models/list'
 User         = require '../app/models/user'
-errorhandler = require 'errorhandler'
-uuid         = require 'node-uuid'
 moment       = require 'moment'
-notifier     = require 'node-notifier'
 _            = require 'underscore'
 
 process.env.NODE_ENV = 'development'
-nonSecurePaths = ['/', '/profile', '/auth/facebook', '/auth/facebook/callback', '/profile/edit/phoneNumber', '/profile/crud/details', '/cp/matchs']
+nonSecurePaths = ['/', '/profile', '/auth/facebook', '/auth/facebook/callback', '/profile/edit/phoneNumber', '/profile/crud/details', '/cp/matches']
 
 isLoggedIn = (req, res, next) ->
   if req.isAuthenticated()
     return next()
   res.redirect '/'
   return
-
-errorNotification = (err, str, req) ->
-    title = 'Error in ' + req.method + ' ' + req.url
-    notifier.notify
-    {
-        title: title,
-        message: str
-    }
 
 module.exports = (app, passport) ->
 
@@ -31,7 +20,6 @@ module.exports = (app, passport) ->
 
         try
             if req.user != undefined
-                console.log 'set up role'
                 req.user['role'] = 'guest'
         catch e
             console.log e
@@ -71,7 +59,7 @@ module.exports = (app, passport) ->
             lists: list
             user: req.user
             moment: moment
-            title: 'Matches List'
+            title: 'List'
             return
         return
         

@@ -1,22 +1,16 @@
-var List, User, _, errorNotification, errorhandler, isLoggedIn, moment, nonSecurePaths, notifier, uuid;
+var List, User, _, isLoggedIn, moment, nonSecurePaths;
 
 List = require('../app/models/list');
 
 User = require('../app/models/user');
 
-errorhandler = require('errorhandler');
-
-uuid = require('node-uuid');
-
 moment = require('moment');
-
-notifier = require('node-notifier');
 
 _ = require('underscore');
 
 process.env.NODE_ENV = 'development';
 
-nonSecurePaths = ['/', '/profile', '/auth/facebook', '/auth/facebook/callback', '/profile/edit/phoneNumber', '/profile/crud/details', '/cp/matchs'];
+nonSecurePaths = ['/', '/profile', '/auth/facebook', '/auth/facebook/callback', '/profile/edit/phoneNumber', '/profile/crud/details', '/cp/matches'];
 
 isLoggedIn = function(req, res, next) {
   if (req.isAuthenticated()) {
@@ -25,22 +19,11 @@ isLoggedIn = function(req, res, next) {
   res.redirect('/');
 };
 
-errorNotification = function(err, str, req) {
-  var title;
-  title = 'Error in ' + req.method + ' ' + req.url;
-  notifier.notify;
-  return {
-    title: title,
-    message: str
-  };
-};
-
 module.exports = function(app, passport) {
   app.use(function(req, res, next) {
     var e, err, error, error1;
     try {
       if (req.user !== void 0) {
-        console.log('set up role');
         req.user['role'] = 'guest';
       }
     } catch (error) {
@@ -88,7 +71,7 @@ module.exports = function(app, passport) {
         lists: list,
         user: req.user,
         moment: moment,
-        title: 'Matches List'
+        title: 'List'
       });
     });
   });

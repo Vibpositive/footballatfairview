@@ -1,0 +1,104 @@
+<script>
+    $(document).ready(function()
+    {
+        $('.edit').click(function(e)
+        {
+            var currentListId = $(this).val();
+
+            $.ajax({
+                type: 'POST',
+                url: '/matches/edit/' + String(currentListId),
+                data: {},
+                success: success,
+                async:true
+            });
+
+            function success(e)
+            {
+                $("#loadedContainer").html( e );
+            }
+        });
+    })
+</script>
+
+<div class="row">
+    <div class="col-md-4">
+    </div>
+    <div class="col-md-4">
+        <table class="table table-reflow">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>WD</th>
+                    <th>Status</th>
+                    <!--
+                    <th>Preferential</th>
+                    <th>All</th>
+                    <th>Cancel</th>
+                    -->
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <%if (lists.length > 0) { %>
+                    <% for(var i=0; i<lists.length; i++) { %>
+                        <tr>
+                            <th scope='row'><%= i+1 %></th>
+                            <td>
+                                <small>
+                                    <%= moment(lists[i].list_date,'x').format('DD/MM') %>
+                                </small>
+                            </td>
+                            <td>
+                                <small>
+                                    <%= moment(lists[i].list_date,'x').format('HH:mm') %>
+                                </small>
+                            </td>
+                            <td>
+                                <%= moment(lists[i].list_date,'x').format('ddd') %>
+                            </td>
+                            <td>
+                                <%= lists[i].list_status %>
+                            </td>
+                            <!--
+                            <td>
+                                <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-xs btn-block btn-warning approve_preferential" action="preferential">Approve</button>
+                            </td>
+                            <td>
+                                <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-xs btn-block btn-success approve_all" action="active">Approve</button>
+                            </td>
+                            <td>
+                                <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-xs btn-block btn-danger deactivate"  action="deactivate">Deactivate</button>
+                            </td>
+                            -->
+                            <td>
+                                <small>
+                                    <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-xs btn-block btn-primary edit">Edit</button>
+                                </small>
+                            </td>
+                        </tr>
+                    <% } %>
+                <% }else{ %>
+                    <tr>
+                        <th scope="row"><%= 1 %></th>
+                        <td>
+                            <p>
+                                <%= lists.list_date %>
+                            </p>
+                        </td>
+                        <td>
+                            <%if (lists.list_status == 'inactive') { %>
+                                <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger participate disabled">Participate</button>
+                            <% }else{ %>
+                                <button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary participate">Participate</button>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% } %>        
+            </tbody>
+        </table>
+
+    </div>
+</div>

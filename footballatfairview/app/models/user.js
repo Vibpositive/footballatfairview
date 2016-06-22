@@ -17,7 +17,7 @@ userSchema = mongoose.Schema({
       "default": Date.now
     }
   },
-  matchs: {
+  matches: {
     type: Array,
     "default": []
   },
