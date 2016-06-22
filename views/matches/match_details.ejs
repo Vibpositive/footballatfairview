@@ -51,37 +51,45 @@
 				<div class="container">
 					<div class="row">
 						<div class="col-sm-4">
+						</div>
+						<div class="col-sm-4">
 							<p class="text-center">
 								Status: <%= list.list_status %>
 							</p>
-						</div>
-						<div class="col-sm-4">
 							<p class="text-center">
 								Date: <%= moment(list.list_date,'x').format('DD/MM/YYYY HH:mm') %><br/>
 							</p>
-						</div>
-						<div class="col-sm-4">
 							<p class="text-center">
 								People Playing: <%= list.list_size %>
 							</p>
+						</div>
+						<div class="col-sm-4">
 						</div>
 					</div>
 				</div>
 
 			</div>
-			<p class="text-center">
-				<%if (player_on_list == true) { %>
-					<input type="checkbox" id="toggle-event" <%= disabled %> checked data-toggle="toggle" data-on="Yes" data-off="No">
-				<% }else{ %>
-					<input type="checkbox" id="toggle-event" <%= disabled %> data-toggle="toggle" data-on="Yes" data-off="No">
-				<% } %>
-			</p>
-			<div id="list_container">
-				<div>
-					<% include list_details %>
+			<div class="row">
+				<div class="col-sm-4">
 				</div>
-			</div>
-			<div id="loadedContainer">
+				<div class="col-sm-4">
+					<p class="text-center">
+						<%if (player_on_list == true) { %>
+							<input type="checkbox" id="toggle-event" <%= disabled %> checked data-toggle="toggle" data-on="Yes" data-off="No">
+						<% }else{ %>
+							<input type="checkbox" id="toggle-event" <%= disabled %> data-toggle="toggle" data-on="Yes" data-off="No">
+						<% } %>
+					</p>
+					<div id="list_container">
+						<div>
+							<% include match_list_details %>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-4">
+				</div>
+				<div id="loadedContainer">
+				</div>
 			</div>
 		</div>
 		

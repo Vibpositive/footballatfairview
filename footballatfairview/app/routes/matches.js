@@ -22,7 +22,7 @@ addMatchToUserList = function(user, match, operation, next) {
       _id: user.id
     }, {
       $addToSet: {
-        'matchs': match
+        'matches': match
       }
     }, function(err, numAffected) {
       if (err) {
@@ -46,7 +46,7 @@ addMatchToUserList = function(user, match, operation, next) {
       _id: user.id
     }, {
       $pull: {
-        'matchs': match
+        'matches': match
       }
     }, function(err, numAffected) {
       if (err) {
@@ -68,7 +68,7 @@ module.exports = function(app) {
       if (err) {
         return console.log(err);
       }
-      res.render('index.ejs', {
+      res.render('matches/index.ejs', {
         message: req.flash('loginMessage'),
         lists: list,
         user: req.user,
@@ -77,11 +77,8 @@ module.exports = function(app) {
       });
     });
   });
-  app.post('/matches/deactivate', function(req, res) {
-    res.send('ok');
-  });
   app.post('/matches/views/create', isLoggedIn, function(req, res) {
-    res.render('matchs/create.ejs', {
+    res.render('matches/create.ejs', {
       title: 'Create a match'
     });
   });
@@ -92,7 +89,7 @@ module.exports = function(app) {
         res.send(err);
         return;
       }
-      res.render('matchs/list.ejs', {
+      res.render('matches/list.ejs', {
         message: req.flash('loginMessage'),
         lists: list,
         user: req.user,
@@ -110,7 +107,7 @@ module.exports = function(app) {
         res.send(err);
         return;
       }
-      res.render('matchs/names/names_list.ejs', {
+      res.render('matches/names/names_list.ejs', {
         message: req.flash('loginMessage'),
         list: list,
         user: req.user,
@@ -196,7 +193,7 @@ module.exports = function(app) {
           console.log(err);
           return;
         }
-        res.render('lists/list.ejs', {
+        res.render('matches/match_details.ejs', {
           message: req.flash('loginMessage'),
           list: list,
           match_date: moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a"),
@@ -217,7 +214,7 @@ module.exports = function(app) {
         console.log(err);
         return;
       }
-      res.render('lists/list_details.ejs', {
+      res.render('matches/match_list_details.ejs', {
         message: req.flash('loginMessage'),
         list: list,
         match_date: moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a"),
@@ -332,7 +329,7 @@ module.exports = function(app) {
           message: err
         };
       } else {
-        res.render('matchs/match_edit.ejs', {
+        res.render('matches/match_edit.ejs', {
           message: '',
           list: listFound,
           user: req.user,

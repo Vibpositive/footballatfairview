@@ -5,7 +5,7 @@ moment       = require 'moment'
 _            = require 'underscore'
 
 process.env.NODE_ENV = 'development'
-nonSecurePaths = ['/', '/profile', '/auth/facebook', '/auth/facebook/callback', '/profile/edit/phoneNumber', '/profile/crud/details', '/cp/matchs']
+nonSecurePaths = ['/', '/profile', '/auth/facebook', '/auth/facebook/callback', '/profile/edit/phoneNumber', '/profile/crud/details', '/cp/matches']
 
 isLoggedIn = (req, res, next) ->
   if req.isAuthenticated()

@@ -41,7 +41,7 @@
 
 			$('input[type="radio"]').click(function(e)
 	        {
-	        	list_status = $(this).attr('matchstatus');
+	        	list_status = $(this).attr('matchestatus');
 	        	console.log('list_status: ' + list_status)
 	        	$("#update").removeClass('disabled');
 	        });
@@ -139,16 +139,16 @@
 
 									<div class="switch-toggle well">
 
-										<input matchstatus="active" id="all" name="view1" type="radio" <%= list.list_status == 'active' ? 'checked' : '' %> >
+										<input matchestatus="active" id="all" name="view1" type="radio" <%= list.list_status == 'active' ? 'checked' : '' %> >
 										<label for="all" onclick="">All</label>
 
-										<input matchstatus="preferential" id="preferential" name="view1" type="radio" <%= list.list_status == 'preferential' ? 'checked' : '' %> >
+										<input matchestatus="preferential" id="preferential" name="view1" type="radio" <%= list.list_status == 'preferential' ? 'checked' : '' %> >
 										<label for="preferential" onclick="">Preferential</label>
 
-										<input matchstatus="deactivate" id="cancelled" name="view1" type="radio" <%= list.list_status == 'deactive' ? 'checked' : '' %> >
+										<input matchestatus="deactivate" id="cancelled" name="view1" type="radio" <%= list.list_status == 'deactive' ? 'checked' : '' %> >
 										<label for="cancelled" onclick="">Cancelled</label>
 
-										<input matchstatus="pending" id="pending" name="view1" type="radio" <%= list.list_status == 'pending' ? 'checked' : '' %> >
+										<input matchestatus="pending" id="pending" name="view1" type="radio" <%= list.list_status == 'pending' ? 'checked' : '' %> >
 										<label for="pending" onclick="">Pending</label>
 
 										<a class="btn btn-xs btn-block btn-primary"></a>

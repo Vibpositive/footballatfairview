@@ -11,7 +11,7 @@ userSchema = mongoose.Schema(
     date       :
       type     : Date
       default  : Date.now
-  matchs       :
+  matches       :
     type       : Array
     default    : []
   phone        :

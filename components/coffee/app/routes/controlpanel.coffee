@@ -10,17 +10,17 @@ isLoggedIn = (req, res, next) ->
 module.exports = (app) ->
 
     app.get '/controlpanel', isLoggedIn, (req, res) ->
-        res.render 'cp/index.ejs',
+        res.render 'controlpanel/index.ejs',
         title: 'Control Panel'
         return
         
-    app.post '/controlpanel/matchs/list', isLoggedIn, (req, res) ->
+    app.post '/controlpanel/matches/list', isLoggedIn, (req, res) ->
         List.find {}, (err, list) ->
             console.log list
             if err
                 res.send err
                 return
-            res.render 'matchs/list.ejs',
+            res.render 'matches/list.ejs',
             message : req.flash('loginMessage')
             lists   : list,
             user    : req.user

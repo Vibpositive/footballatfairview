@@ -13,7 +13,7 @@ isLoggedIn = (req, res, next) ->
 addMatchToUserList = (user, match, operation, next) ->
     if operation == 'push'
 
-        User.update { _id : user.id }, { $addToSet : { 'matchs' : match } },(err, numAffected) ->
+        User.update { _id : user.id }, { $addToSet : { 'matches' : match } },(err, numAffected) ->
             if err
                 return { message: err }
             else
@@ -24,7 +24,7 @@ addMatchToUserList = (user, match, operation, next) ->
                 return
 
     else
-        User.findByIdAndUpdate { _id : user.id }, { $pull: 'matchs' : match }, (err, numAffected) ->
+        User.findByIdAndUpdate { _id : user.id }, { $pull: 'matches' : match }, (err, numAffected) ->
           if err
             return { message : err }
           else
@@ -36,7 +36,7 @@ module.exports = (app) ->
         List.find {}, (err, list) ->
             if err
                 return console.log err
-            res.render 'index.ejs',
+            res.render 'matches/index.ejs',
             message: req.flash('loginMessage')
             lists: list
             user: req.user
@@ -45,12 +45,8 @@ module.exports = (app) ->
             return
         return
 
-    app.post '/matches/deactivate', (req, res)->
-      res.send 'ok'
-      return
-
     app.post '/matches/views/create', isLoggedIn, (req, res)->
-      res.render 'matchs/create.ejs', title: 'Create a match'
+      res.render 'matches/create.ejs', title: 'Create a match'
       return
 
     app.post '/matches/views/list', isLoggedIn, (req, res)->
@@ -59,7 +55,7 @@ module.exports = (app) ->
             if err
                 res.send err
                 return
-            res.render 'matchs/list.ejs',
+            res.render 'matches/list.ejs',
             message : req.flash('loginMessage')
             lists   : list
             user    : req.user
@@ -74,7 +70,7 @@ module.exports = (app) ->
             if err
                 res.send err
                 return
-            res.render 'matchs/names/names_list.ejs',
+            res.render 'matches/names/names_list.ejs',
             message : req.flash('loginMessage')
             list    : list
             user    : req.user
@@ -134,7 +130,7 @@ module.exports = (app) ->
                         console.log err
                         return
                     # return
-                    res.render     'lists/list.ejs',
+                    res.render     'matches/match_details.ejs',
                     message        : req.flash('loginMessage')
                     list           : list
                     match_date     : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
@@ -152,7 +148,7 @@ module.exports = (app) ->
                 console.log err
                 return
             # return
-            res.render 'lists/list_details.ejs',
+            res.render 'matches/match_list_details.ejs',
             message    : req.flash('loginMessage')
             list       : list
             match_date : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
@@ -245,7 +241,7 @@ module.exports = (app) ->
             if err
                 return { message: err }
             else
-                res.render 'matchs/match_edit.ejs',
+                res.render 'matches/match_edit.ejs',
                 message: ''
                 list: listFound
                 user: req.user
