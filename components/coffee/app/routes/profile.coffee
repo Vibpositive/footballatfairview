@@ -14,7 +14,7 @@ module.exports = (app) ->
         title: 'Profile'
         return
 
-    app.post '/profile/edit/phoneNumber', (req, res) ->
+    app.post '/profile/edit/phoneNumber', isLoggedIn,(req, res) ->
 
         phoneNumber = req.body.phoneNumber
         userId      = req.user.id
@@ -28,7 +28,7 @@ module.exports = (app) ->
                 else
                     res.send { message: '0 rows affected' }
 
-    app.get '/profile/view/details', (req, res) ->
+    app.get '/profile/view/details', isLoggedIn,(req, res) ->
         res.render 'profile/details.ejs',
         message    : req.flash('loginMessage')
         user       : req.user

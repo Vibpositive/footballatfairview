@@ -33,4 +33,36 @@ describe('Control Panel', function()
 		});
 		
 	});
+
+	describe('When requested at /matches/create', function ()
+	{
+		it('should return a 200 status code for a get', function(done)
+		{
+			request
+			.get(baseUrl + '/matches/create')
+			.send(
+			{})
+			.end(function(err, res){
+				expect(res).to.exist;
+				expect(res.status).to.equal(200);
+				expect(res.text).to.contain('ok');
+				done();
+			});
+		});
+
+		it('should return a 200 status code for a post', function(done)
+		{
+			request
+			.post(baseUrl + '/matches/create')
+			.send(
+			{})
+			.end(function(err, res){
+				expect(res).to.exist;
+				expect(res.status).to.equal(200);
+				expect(res.text).to.contain('ok');
+				done();
+			});
+		});
+		
+	});
 })

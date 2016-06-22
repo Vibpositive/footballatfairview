@@ -1,72 +1,198 @@
-<script type="text/javascript" src="/public/js/addNumberPicker.min.js"></script>
-<script type="text/javascript" src="/public/js/Obj.min.js"></script>
+<!-- views/index.ejs -->
+<!doctype html>
+<html>
+	<head>
+		<title><%= title %></title>
 
-<link rel="stylesheet" href="/public/css/addNumberPicker.min.css" />
+		<% include ../html/scripts_css %>
 
-<script type="text/javascript">
-	$( document ).ready(function()
-	{
-		var list_date;
+		<script type="text/javascript" src="/public/js/jquery.bootstrap-touchspin.min.js"></script>
+		<script type="text/javascript" src="/public/js/bootstrap-switch.min.js"></script>
 
-		$('#datetimepicker12').datetimepicker({
-			inline: true,
-			sideBySide: false
-		})
-		.on("dp.change", function (e)
-		{
-			list_date = moment(e.date).format('x');
+		<link rel="stylesheet" href="/public/css/jquery.bootstrap-touchspin.min.css" />
+		<link rel="stylesheet" href="/public/css/bootstrap3/bootstrap-switch.min.css" />
+		<link rel="stylesheet" href="/public/css/toggle-switch.css" />
 
-			$("#createMatch").removeClass('disabled');
-		});
-
-		$('#createMatch').click(function()
-		{
-			var list_size = $('.addui-numberPicker-input').val();
-			var isParticipating = $("#creatorOnList").is(':checked')
-			
-
-			$.post("/matches/create",
+		<script type="text/javascript">
+			$( document ).ready(function()
 			{
-				names       : isParticipating,
-				list_date   : list_date,
-				list_size   : list_size,
-				list_status : 'pending'
-			},
-			function(data, status)
-			{
-				console.log(data);
+				var list_date = moment(Math.floor(Date.now() / 1000)).format('x');
+				var list_status = 'pending';
+				var list_size = 21;
+				var isParticipating = "false";
+
+				$("input[name='demo3']").TouchSpin({
+					min: 0,
+					initval: 21
+				}).on('change', function(e)
+				{
+					$("#createMatch").removeClass('disabled');
+					list_size = $(this).val();
+				})
+
+				$('input[type="radio"]').click(function(e)
+				{
+					list_status = $(this).attr('matchestatus');
+					$("#createMatch").removeClass('disabled');
+				});
+
+				$("#creatorOnList").bootstrapSwitch({
+					labelText     : "Include name on Match?",
+					onText        : "Yes",
+					offText       : "No",
+					labelWidth    : "175",
+					offColor      : "danger",
+					indeterminate : "true"
+				}).on('switchChange.bootstrapSwitch', function(event, state)
+				{
+					isParticipating = state;
+					$("#createMatch").removeClass('disabled');
+				});
+
+				$('#datetimepicker').datetimepicker({
+					inline: true,
+					sideBySide: false
+				})
+				.on("dp.change", function (e)
+				{
+					list_date = moment(e.date).format('x');
+
+					$("#createMatch").removeClass('disabled');
+				});
+
+				$('#createMatch').click(function()
+				{
+					/*$.post("/matches/create",
+					{
+						names       : isParticipating,
+						list_date   : list_date,
+						list_size   : list_size,
+						list_status : list_status
+					},
+					function(data, status)
+					{
+						console.log(data);
+					});*/
+
+					if ($(this).hasClass('disabled')){
+						return false;
+					}
+					
+					$.ajax({
+						type: 'POST',
+						url: '/matches/create',
+						data: {
+							names       : isParticipating,
+							list_date   : list_date,
+							list_size   : list_size,
+							list_status : list_status
+						},
+						success: success,
+						async:true
+					});
+
+					function success(e)
+					{
+						if(e.message == 'ok')
+						{
+							showalert('Successfuly updated','alert-success')
+						}else{
+							showalert('Not updated: ' + String(e.message),'alert-info')
+						}
+					}
+				});
+
 			});
-		});
-	});
-</script>
+		</script>
+		
+	</head>
+	<body>
+		<% include ../html/top %>
+		<div class="jumbotron">
+			<div class="page-header">
+					<h3>
+						<p class="text-center">
+							<title><%= title %></title>
+						</p>
+					</h3>
+				
+			</div>
+			<% include ../controlpanel/matches_admin_edit_buttons %>
+			<div id="loadedContainer">
+				<p class="text-center">
+					<div style="overflow:hidden;">
+						<div class="form-group">
+							<div class="row">
+								<div class="col-md-4">
+								</div>
+								<div class="col-md-4">
+									<div id="datetimepicker"></div>
+								</div>
+								<div class="col-md-4">
+								</div>
+							</div>
+						</div>
+					</div>
+				</p>
 
-<p class="text-center">
-	<div style="overflow:hidden;">
-		<div class="form-group">
-			<div class="row">
-				<div class="col-md-4">
+				<div class="row">
+					<div class="col-md-4">
+					</div>
+					<div class="col-md-4">
+						<p class="text-center">
+							<label class="checkbox-inline">
+								<input type="checkbox" id="creatorOnList" value="option">
+							</label>
+						</p>
+
+						<fieldset>
+							<p class="text-center">
+
+								<legend>Match Status</legend>
+							</p>
+
+							<div class="switch-toggle well">
+
+								<input matchestatus="active" id="all" name="view1" type="radio">
+								<label for="all" onclick="">All</label>
+
+								<input matchestatus="preferential" id="preferential" name="view1" type="radio">
+								<label for="preferential" onclick="">Preferential</label>
+
+								<input matchestatus="deactivate" id="cancelled" name="view1" type="radio">
+								<label for="cancelled" onclick="">Cancelled</label>
+
+								<input matchestatus="pending" id="pending" name="view1" type="radio" checked>
+								<label for="pending" onclick="">Pending</label>
+
+								<a class="btn btn-xs btn-block btn-primary"></a>
+							</div>
+						</fieldset>
+					</div>
+					<div class="col-md-4">
+						
+					</div>
 				</div>
-				<div class="col-md-4">
-					<div id="datetimepicker12"></div>
+				<div class="row">
+					<div class="col-md-4">
+					</div>
+					<div class="col-md-4">
+					<p class="text-center">
+						<label class="checkbox-inline">	
+							Players: <input id="demo3" type="text" value="" name="demo3">
+						</label>
+						</p>
+						<p class="text-center">
+							<button type="button" class="btn btn-primary disabled" id="createMatch">Create</button>
+						</p>
+					</div>
+					<div class="col-md-4">
+					</div>
 				</div>
-				<div class="col-md-4">
+				<div id="alert-info">
+
 				</div>
 			</div>
 		</div>
-	</div>
-</p>
-
-<p class="text-center">
-	<label class="checkbox-inline">
-		<input type="checkbox" id="creatorOnList" value="option"> Participate?
-	</label>
-</p>
-<p class="text-center">
-	<label class="checkbox-inline">
-		Participants <input data-addui='numberpicker' class="participantsNumber">
-	</label>
-</p>
-
-<p class="text-center">
-	<button type="button" class="btn btn-primary disabled" id="createMatch">Create</button>
-</p>
+	</body>
+</html>

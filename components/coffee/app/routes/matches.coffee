@@ -45,26 +45,7 @@ module.exports = (app) ->
             return
         return
 
-    app.post '/matches/views/create', isLoggedIn, (req, res)->
-      res.render 'matches/create.ejs', title: 'Create a match'
-      return
-
-    app.post '/matches/views/list', isLoggedIn, (req, res)->
-        List.find {}, (err, list) ->
-            console.log list
-            if err
-                res.send err
-                return
-            res.render 'matches/list.ejs',
-            message : req.flash('loginMessage')
-            lists   : list
-            user    : req.user
-            moment  : moment
-            title   : "Matches index"
-            return
-
-    # app.post '/matches/views/playerslist', isLoggedIn, (req, res)->
-    app.post '/matches/views/playerslist',  (req, res)->
+    app.post '/matches/views/playerslist', isLoggedIn, (req, res)->
         List.findOne {_id : req.body.list_id }, (err, list) ->
             console.log list
             if err
@@ -157,7 +138,73 @@ module.exports = (app) ->
             return
         return
 
-    app.post '/matches/create', isLoggedIn, (req, res, next) ->
+    app.get '/matches/create', isLoggedIn, (req, res)->
+      res.render 'matches/create.ejs', title: 'Create a match'
+      return
+
+    app.get '/matches/edit', isLoggedIn, (req, res)->
+        List.find {}, (err, list) ->
+            console.log list
+            if err
+                res.send err
+                return
+            res.render 'matches/list.ejs',
+            message : req.flash('loginMessage')
+            lists   : list
+            user    : req.user
+            moment  : moment
+            title   : "Matches index"
+            return
+
+    app.get '/matches/edit/:listid', isLoggedIn, (req, res, next) ->
+        
+        listid     = req.params.listid
+
+        List.findOne { _id : listid }, {},(err, listFound) ->
+            if err
+                return { message: err }
+            else
+                res.render 'matches/edit.ejs',
+                message: ''
+                list: listFound
+                user: req.user
+                moment: moment
+                title: 'Matches List'
+                return
+
+    app.post '/matches/edit/status', isLoggedIn, (req, res, next) ->
+        
+        list_id     = req.body.list_id
+        list_status = req.body.list_status
+
+        List.update { _id : list_id }, { 'list_status' : String(list_status) },(err, numAffected) ->
+            if err
+                return { message: err }
+            else
+                if numAffected > 0
+                    res.send { message: 'ok' }
+                else
+                    res.send { message: '0 rows affected' }
+                return
+
+    # TODO: Improve route trying using just one
+    app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
+        
+        list_id       = req.body.list_id
+        player_status = req.body.player_status
+        player_id     = req.body.player_id
+
+        List.update { '_id' : list_id, "names.player_id" : player_id }, { '$set' : { 'names.$.status' : player_status} },(err, numAffected) ->
+              if err
+                res.send 'err: ' + String(err)
+              else
+                if numAffected > 0
+                  res.json({ message: 'ok' });
+                else
+                  res.json({ message: '0 rows affected' });
+                  return
+
+     app.post '/matches/create', isLoggedIn, (req, res, next) ->
         # TODO: Validate if Match already exists - Based on Date and Time
         isParticipating = req.body.names
 
@@ -180,76 +227,30 @@ module.exports = (app) ->
         errMessage = ''
 
         match = new List(
-                list_date   : list_date,
-                list_size   : list_size,
-                names       : names,
-                list_status : list_status,
-                date        : Date.now(),
-                url         : uuid.v1()
-            )
-        match.save (err)->
+            list_date   : list_date,
+            list_size   : list_size,
+            names       : names,
+            list_status : list_status,
+            date        : Date.now(),
+            url         : uuid.v1()
+        )
+        match.save (err, result, numAffected)->
+            util = require('util')
             if err
-
-                for errName of err.errors
-                    
-                    errMessage += err.errors[errName].message
-
-                res.send errMessage
+                if typeof(err) == 'object'
+                    res.json( { message : 'Object already exists' } )
+                else
+                    res.json( { message : err } )
                 return
-            else
-                res.send match._id
-                return
-
-    app.post '/matches/edit/status', isLoggedIn, (req, res, next) ->
-        
-        list_id     = req.body.list_id
-        list_status = req.body.list_status
-
-        List.update { _id : list_id }, { 'list_status' : String(list_status) },(err, numAffected) ->
-            if err
-                return { message: err }
             else
                 if numAffected > 0
-                    res.send { message: 'ok' }
+                    res.json({ message: 'ok' });
                 else
-                    res.send { message: '0 rows affected' }
-                return
-
-    # TODO: Improve route trying using just one
-    # app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
-    app.post '/matches/edit/match', (req, res, next) ->
+                    res.json({ message: String(numAffected) + ' rows affected' });
+                    return
         
-        list_id       = req.body.list_id
-        player_status = req.body.player_status
-        player_id     = req.body.player_id
 
-        List.update { '_id' : list_id, "names.player_id" : player_id }, { '$set' : { 'names.$.status' : player_status} },(err, numAffected) ->
-              if err
-                res.send 'err: ' + String(err)
-              else
-                if numAffected > 0
-                  res.json({ message: 'ok' });
-                else
-                  res.json({ message: '0 rows affected' });
-                  return
-
-    app.post '/matches/edit/:listid', isLoggedIn, (req, res, next) ->
-        
-        listid     = req.params.listid
-
-        List.findOne { _id : listid }, {},(err, listFound) ->
-            if err
-                return { message: err }
-            else
-                res.render 'matches/match_edit.ejs',
-                message: ''
-                list: listFound
-                user: req.user
-                moment: moment
-                title: 'Matches List'
-                return
-
-    app.post '/matches/update', (req, res, next) ->
+    app.post '/matches/update', isLoggedIn, (req, res, next) ->
 
         list_id     = req.body.list_id
         list_date   = req.body.list_date

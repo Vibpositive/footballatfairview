@@ -6,24 +6,6 @@
 
 		<% include ../html/scripts_css %>
 		
-		<script>
-
-			if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-				
-			}else{
-				
-			}
-
-			$( document ).ready(function(){
-				$(".participate").click(function(res)
-				{
-					$(location).attr('href','/matches/match/' + $(this).attr('value'));
-				});
-
-				$('#menu').slicknav();
-			})
-
-		</script>
 		<style type="text/css">
 			body { padding-top: 15px; }
 		</style>
