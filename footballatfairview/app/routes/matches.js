@@ -9,7 +9,6 @@ moment = require('moment');
 uuid = require('node-uuid');
 
 isLoggedIn = function(req, res, next) {
-  return next();
   if (req.isAuthenticated()) {
     return next();
   }
@@ -331,6 +330,7 @@ module.exports = function(app) {
       var util;
       util = require('util');
       if (err) {
+        console.log(err);
         if (typeof err === 'object') {
           res.json({
             message: 'Object already exists'

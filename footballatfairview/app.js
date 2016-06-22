@@ -107,6 +107,8 @@ require('./app/routes/profile.js')(app);
 
 require('./app/routes/controlpanel.js')(app);
 
+require('./app/routes/users.js')(app);
+
 app.listen(port);
 
 console.log('The magic happens on port ' + port);

@@ -1,6 +1,7 @@
 <div class="row">
     <div class="col-md-4">
     </div>
+
     <div class="col-md-4">
 		<table class="table table-reflow">
 			<thead>
@@ -24,9 +25,13 @@
 						</td>
 						<td>
 							<%if (lists[i].list_status == 'inactive') { %>
-								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
+								<a href="matches/match/<%= lists[i]._id %>">
+									<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
+								</a>
 							<% }else{ %>
-								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
+								<a href="matches/match/<%= lists[i]._id %>">
+									<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
+								</a>
 							<% } %>
 						</td>
 					</tr>
@@ -39,11 +44,16 @@
 							<%= lists.list_date %>
 						</p>
 					</td>
+
 					<td>
 						<%if (lists.list_status == 'inactive') { %>
-							<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
+							<a href="matches/match/lists[i]._id">
+								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
+							</a>
 						<% }else{ %>
-							<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
+							<a href="matches/match/lists[i]._id">
+								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
+							</a>
 						<% } %>
 					</td>
 				</tr>

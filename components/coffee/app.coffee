@@ -11,9 +11,6 @@ bodyParser   = require('body-parser')
 session      = require('express-session')
 configDB     = require('./app/config/database.js')
 gabriel      = require('express-session')
-# matches      = require './app/routes/matches'
-# profile      = require './app/routes/profile'
-# controlpanel = require './app/routes/controlpanel'
 
 mongoose.connect configDB.url
 
@@ -71,6 +68,7 @@ require('./app/routes.js') app, passport
 require('./app/routes/matches.js') app
 require('./app/routes/profile.js') app
 require('./app/routes/controlpanel.js') app
+require('./app/routes/users.js') app
 # app.use '/matches'      , matches
 # app.use '/profile'      , profile
 # app.use '/controlpanel' , controlpanel

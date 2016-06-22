@@ -51,6 +51,7 @@ module.exports = function(passport) {
           newUser.facebook.first_name = profile._json.first_name;
           newUser.facebook.last_name = profile._json.last_name;
           newUser.facebook.email = profile._json.email;
+          newUser.status = 'active';
           newUser.save(function(err) {
             if (err) {
               throw err;

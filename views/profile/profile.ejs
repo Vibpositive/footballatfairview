@@ -62,16 +62,23 @@
             </div>
 
             <div class="row">
-                <% include details %>
-            </div>
-            <form>
-                <div class="form-group">
-                    <label for="PhoneNumber">Phone Number</label>
-                    <input type="text" class="form-control" id="PhoneNumber" placeholder="000 000 0000">
+                <div class="col-md-4">
                 </div>
-                <button type="button" class="btn btn-default" id="submit">Submit</button>
-            </form>
+                <div class="col-md-4">
+                    <% include details %>
+                    <form>
+                        <div class="form-group">
+                            <label for="PhoneNumber">Phone Number</label>
+                            <input type="text" class="form-control" id="PhoneNumber" placeholder="000 000 0000">
+                        </div>
+                        <button type="button" class="btn btn-default" id="submit">Submit</button>
+                    </form>
+                </div>
+                <div class="col-md-4">
+                </div>
+            </div>
         </div>
     </div>
 </body>
 </html>
+

@@ -68,6 +68,7 @@ module.exports = (passport) ->
           newUser.facebook.last_name = profile._json.last_name
           # look at the passport user profile to see how names are returned
           newUser.facebook.email = profile._json.email
+          newUser.status = 'active'
           # facebook can return multiple emails so we'll take the first
           # save our user to the database
           newUser.save (err) ->

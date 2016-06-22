@@ -4,7 +4,6 @@ moment  = require 'moment'
 uuid    = require 'node-uuid'
 
 isLoggedIn = (req, res, next) ->
-    return next()
     if req.isAuthenticated()
         return next()
     res.redirect '/'
@@ -205,7 +204,6 @@ module.exports = (app) ->
                   return
 
      app.post '/matches/create', isLoggedIn, (req, res, next) ->
-        # TODO: Validate if Match already exists - Based on Date and Time
         isParticipating = req.body.names
 
         if isParticipating == 'true'
@@ -237,6 +235,7 @@ module.exports = (app) ->
         match.save (err, result, numAffected)->
             util = require('util')
             if err
+                console.log err
                 if typeof(err) == 'object'
                     res.json( { message : 'Object already exists' } )
                 else

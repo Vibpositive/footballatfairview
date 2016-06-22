@@ -21,6 +21,14 @@ userSchema = mongoose.Schema({
     type: Array,
     "default": []
   },
+  penalties: {
+    type: Array,
+    "default": []
+  },
+  status: {
+    type: String,
+    required: true
+  },
   phone: {
     type: String,
     validate: {
