@@ -43,7 +43,8 @@ module.exports = function(app) {
     });
   });
   return app.get('/profile/view/details', isLoggedIn, function(req, res) {
-    res.render('profile/details.ejs', {
+    res.render('profile/details.ejs');
+    ({
       message: req.flash('loginMessage'),
       user: req.user,
       title: 'Profile Details: ' + String(req.user.fullname)

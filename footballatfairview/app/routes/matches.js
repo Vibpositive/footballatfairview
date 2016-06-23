@@ -96,7 +96,7 @@ module.exports = function(app) {
   });
   app.post('/matches/participate', isLoggedIn, function(req, res) {
     var datetime, first_name, full_name, last_name, list_id, player_id;
-    player_id = req.user.facebook.id;
+    player_id = req.user.id;
     datetime = 'date';
     last_name = req.user.facebook.last_name;
     first_name = req.user.facebook.first_name;
@@ -303,7 +303,7 @@ module.exports = function(app) {
     if (isParticipating === 'true') {
       names = [
         {
-          player_id: req.user.facebook.id,
+          player_id: req.user.id,
           datetime: 'date',
           last_name: req.user.facebook.last_name,
           first_name: req.user.facebook.first_name,

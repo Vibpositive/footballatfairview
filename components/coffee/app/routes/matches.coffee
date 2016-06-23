@@ -59,7 +59,7 @@ module.exports = (app) ->
             return
 
     app.post '/matches/participate', isLoggedIn, (req, res)->
-        player_id  = req.user.facebook.id
+        player_id  = req.user.id
         datetime   = 'date'
         last_name  = req.user.facebook.last_name
         first_name = req.user.facebook.first_name
@@ -208,7 +208,7 @@ module.exports = (app) ->
 
         if isParticipating == 'true'
             names = [{
-                player_id  : req.user.facebook.id
+                player_id  : req.user.id
                 datetime   : 'date'
                 last_name  : req.user.facebook.last_name
                 first_name : req.user.facebook.first_name

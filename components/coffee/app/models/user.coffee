@@ -8,6 +8,7 @@ userSchema = mongoose.Schema(
     full_name  : String
     first_name : String
     last_name  : String
+    photos     : Array
     date       :
       type     : Date
       default  : Date.now

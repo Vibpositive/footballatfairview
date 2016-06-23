@@ -1,6 +1,12 @@
-var User, isLoggedIn;
+var List, User, _, isLoggedIn, moment;
 
 User = require('../models/user');
+
+List = require('../models/list');
+
+_ = require('underscore');
+
+moment = require('moment');
 
 isLoggedIn = function(req, res, next) {
   if (req.isAuthenticated()) {
@@ -10,18 +16,49 @@ isLoggedIn = function(req, res, next) {
 };
 
 module.exports = function(app) {
-  app.get('/user', isLoggedIn, function(req, res) {
-    res.render('users/index.ejs', {
-      user: req.user,
-      title: 'users'
+  app.get('/users', isLoggedIn, function(req, res) {
+    return User.find({}, function(err, list) {
+      res.render('users/index.ejs', {
+        list: list,
+        user: req.user,
+        users: list,
+        title: 'users'
+      });
     });
   });
-  return app.post('/users/nada', isLoggedIn, function(req, res) {
+  app.post('/users', function(req, res) {
     User.find({}, function(err, list) {
-      if (err) {
-        return console.log(err);
-      }
-      res.send('matches/index.ejs');
+      return res.json(list);
+    });
+  });
+  app.get('/user/:user_id', function(req, res) {
+    return User.findOne({
+      _id: req.params.user_id
+    }, function(err, userResultes_query) {
+      return List.find({
+        list_status: 'active'
+      }, function(l_err, listResultes_query) {
+        var isUserInTheList, userActiveLists;
+        userActiveLists = [];
+        isUserInTheList = false;
+        _.each(userResultes_query.matches, function(userList) {
+          _.each(listResultes_query, function(list) {
+            _.find(list.names, function(list_) {
+              isUserInTheList = String(list_.player_id) === String(userResultes_query._id);
+              return isUserInTheList;
+            });
+            if (String(userList) === String(list._id) && isUserInTheList === true) {
+              userActiveLists.push(list);
+            }
+          });
+        });
+        res.render('users/details.ejs', {
+          user_found: userResultes_query,
+          user_lists: userActiveLists,
+          title: 'users',
+          moment: moment
+        });
+      });
     });
   });
 };

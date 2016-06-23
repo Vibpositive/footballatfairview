@@ -1,31 +1,93 @@
-<!-- views/index.ejs -->
 <!doctype html>
 <html>
-	<head>
-		<title><%= title %></title>
+    <head>
+        <title><%= title %></title>
 
-		<% include ../html/scripts_css %>
-		
-		<style type="text/css">
-			body { padding-top: 15px; }
-		</style>
-	</head>
-	<body>
-		<% include ../html/top %>
-		
-		<div class="jumbotron">
-			<div class="page-header">
-					<h3>
-						<p class="text-center">
-							<title><%= title %></title>
-						</p>
-					</h3>
-				
-			</div>
-			<div id="loadedContainer">
-			
-			</div>
-		</div>
+        <% include ../html/scripts_css %>
+        <link rel="stylesheet" href="/public/css/users.css" />
 
-	</body>
+        <script>
+            $(document).ready(function()
+            {
+                $('.edit').click(function(e)
+                {
+                    var currentListId = $(this).val();
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/matches/edit/' + String(currentListId),
+                        data: {},
+                        success: success,
+                        async:true
+                    });
+
+                    function success(e)
+                    {
+                        $("#loadedContainer").html( e );
+                    }
+                });
+            })
+        </script>
+        
+    </head>
+    <body>
+        <% include ../html/top %>
+        <div class="jumbotron">
+            <div class="page-header">
+                    <h3>
+                        <p class="text-center">
+                            <title><%= title %></title>
+                        </p>
+                    </h3>
+                
+            </div>
+
+            <div id="loadedContainer">
+                <div class="row">
+                    <div class="col-md-4">
+                    </div>
+                    <div class="col-md-4">
+                        <table class="table table-reflow">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                    <th></th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <%if (users.length > 0) { %>
+                                    <% for(var i=0; i<users.length; i++) { %>
+                                        <tr>
+                                            <th scope='row'><%= i+1 %></th>
+                                            <td>
+                                                <%= users[i].facebook.full_name %>
+                                            </td>
+                                            <td>
+                                                <%= users[i].status %>
+                                            </td>
+                                            <td>
+                                                
+                                            </td>
+                                            <td>
+                                                <img class="center-small-cropped img-responsive round-image" src="<%= users[i].facebook.photos[0].value %>">
+                                            </td>
+                                            <td>
+                                                <a href='/user/<%= users[i]._id %>'>
+                                                    <button id="participate" value="<%= users %>" type="button" class="btn btn-xs btn-block btn-primary edit">Edit</button>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                <% }%>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>

@@ -40,6 +40,8 @@ module.exports = (passport) ->
       'id'
       'emails'
       'name'
+      'gender'
+      'picture.type(large)'
     ]
   }, (token, refreshToken, profile, done) ->
     # asynchronous
@@ -59,6 +61,7 @@ module.exports = (passport) ->
           newUser = new User
           # set all of the facebook information in our user model
           newUser.facebook.id = profile.id
+          newUser.facebook.photos = profile.photos
           # set the users facebook id
           newUser.facebook.token = token
           # we will save the token that facebook provides to the user

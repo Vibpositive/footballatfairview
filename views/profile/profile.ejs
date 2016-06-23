@@ -26,7 +26,12 @@
                     },
                     function(data, status)
                     {
-                        $.get("/profile/view/details", function(data) {
+                        setTimeout(function()
+                        {
+                            $(location).attr('href', '/index')
+                        }, 2000);
+                        // TODO: Improve operation message
+                        /*$.get("/profile/view/details", function(data) {
 
                             $(".row").html( data );
 
@@ -36,7 +41,7 @@
                             {
                                 $(location).attr('href', '/index')
                             }, 2000);
-                        });
+                        });*/
                     });
                 }
             });
@@ -65,7 +70,18 @@
                 <div class="col-md-4">
                 </div>
                 <div class="col-md-4">
-                    <% include details %>
+                    <div class="col-sm-12">
+                        <div class="well">
+                            <p>
+                                Name: 
+                                <strong><%= user.facebook.full_name %></strong>
+                            </p>
+                            <p>
+                                Phone Number
+                                <strong><%= user.phone %></strong>
+                            </p>
+                        </div>
+                    </div>
                     <form>
                         <div class="form-group">
                             <label for="PhoneNumber">Phone Number</label>

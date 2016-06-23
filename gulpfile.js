@@ -18,7 +18,7 @@ var options = {
 
 	// SASS / CSS
 	SASS_SOURCE     : "components/sass/**/*.scss",
-	SASS_DEST       : "footballatfairview/assets/css/",
+	SASS_DEST       : "public/css",
 
 	// JavaScript
 	COFFEE_SOURCE   : 'components/coffee/**/*.coffee',
@@ -37,10 +37,7 @@ var options = {
 gulp.task('sass', function() {
 	gulp.src( options.SASS_SOURCE )
 	.pipe(plumber())
-	.pipe(sass({
-		outputStyle: 'compressed',
-			// sourceComments: 'map'
-		}))
+	.pipe(sass())
 	.on("error", notify.onError())
 	.on("error", function (err) {
 		console.log("Error:", err);

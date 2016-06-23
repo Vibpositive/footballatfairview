@@ -21,15 +21,15 @@ dbconnection = mongoose.connect configDB.url, (err) ->
 app.use (error, req, res, next) ->
         res.status 400
         res.render 'errors/404.ejs',
-            title: '404'
-            error: error
+            title : '404'
+            error : error
         return
-# Handle 500
+
 app.use (error, req, res, next) ->
     res.status 500
     res.render 'errors/500.ejs',
-        title: '500: Internal Server Error'
-        error: error
+        title : '500  : Internal Server Error'
+        error : error
     return
 
 if process.env.NODE_ENV == 'development'
@@ -41,19 +41,19 @@ mongoose.connection.on 'open', (ref) ->
 require('./app/config/passport') passport
 
 notAuthenticated = 
-	flashType: 'error',
-	message: 'The entered credentials are incorrect',
-	redirect: '/'
+	flashType : 'error',
+	message   : 'The entered credentials are incorrect',
+	redirect  : '/'
 
 notAuthorized = 
-	flashType: 'error',
-	message: 'You have no access to this',
-	redirect: '/index'
+	flashType : 'error',
+	message   : 'You have no access to this',
+	redirect  : '/index'
 
 app.set 'permission',
-	role: 'role',
-	notAuthenticated: notAuthenticated,
-	notAuthorized: notAuthorized 
+	role             : 'role',
+	notAuthenticated : notAuthenticated,
+	notAuthorized    : notAuthorized
 
 app.use morgan('dev')
 app.use cookieParser()
@@ -64,13 +64,11 @@ app.use session(secret: 'ilovescotchscotchyscotchscotch')
 app.use passport.initialize()
 app.use passport.session()
 app.use flash()
-require('./app/routes.js') app, passport
-require('./app/routes/matches.js') app
-require('./app/routes/profile.js') app
+
+require('./app/routes.js')              app , passport
+require('./app/routes/matches.js')      app
+require('./app/routes/profile.js')      app
 require('./app/routes/controlpanel.js') app
-require('./app/routes/users.js') app
-# app.use '/matches'      , matches
-# app.use '/profile'      , profile
-# app.use '/controlpanel' , controlpanel
+require('./app/routes/users.js')        app
 app.listen port
 console.log 'The magic happens on port ' + port

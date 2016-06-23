@@ -1,5 +1,6 @@
 var request          = require('superagent');
-var expect           = require('expect.js');
+// var expect           = require('expect.js');
+var expect           = require('chai').expect;
 
 var port             = 8080;
 var baseUrl          = 'http://localhost:' + port
@@ -35,21 +36,6 @@ describe('Control Panel', function()
 		
 	});
 
-	describe('Testing GETs', function ()
-	{
-		it('should return a 200 status code for a get on users', function(done)
-		{
-			request
-			.post(baseUrl + '/users')
-			.send(
-			{})
-			.end(function(err, res){
-				expect(res).to.exist;
-				expect(res.status).to.equal(200);
-				done();
-			});
-		});
-	})
 	describe('Testing main routes', function ()
 	{
 		it('should return a 200 status code for a get on matches/create', function(done)
@@ -66,7 +52,35 @@ describe('Control Panel', function()
 			});
 		});
 
-		it('should return a 200 status code for a post on matches/create', function(done)
+		it('should return an array on users', function(done)
+		{
+			request
+			.post(baseUrl + '/users')
+			.send(
+			{})
+			.end(function(err, res){
+				expect(res).to.exist;
+				expect(res.status).to.equal(200);
+				expect(res.body).to.be.an('array');
+				done();
+			});
+		});
+
+		it('should return 200 on get on user', function(done)
+		{
+			request
+			.get(baseUrl + '/user')
+			.send(
+			{})
+			.end(function(err, res){
+				expect(res).to.exist;
+				expect(res.status).to.equal(200);
+				// expect(res.body).to.be.an('array');
+				done();
+			});
+		});
+
+		/*it('should return a 200 status code for a post on matches/create', function(done)
 		{
 			request
 			.post(baseUrl + '/matches/create')
@@ -82,7 +96,7 @@ describe('Control Panel', function()
 				expect(res.text).to.contain('exist');
 				done();
 			});
-		});
+		});*/
 		
 	});
 })
