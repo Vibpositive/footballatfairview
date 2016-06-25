@@ -1,0 +1,176 @@
+<!-- views/index.ejs -->
+<!doctype html>
+<html>
+<head>
+	<title><%= title %></title>
+
+	<% include ../html/scripts_css %>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"/>
+	<link rel="stylesheet" href="/public/css/user_edit.css" />
+	<style type="text/css">
+		:invalid {
+			box-shadow: none; /* FF */
+			outline: 0;       /* IE 10 */
+		}
+	</style>
+
+	<script type="text/javascript">
+
+		$(function()
+		{
+
+			$("form").submit(function(e){
+		        e.preventDefault();
+		    });
+
+			var Accordion = function(el, multiple)
+			{
+				this.el = el || {};
+				this.multiple = multiple || false;
+
+				// Variables privadas
+				var links = this.el.find('.link');
+				// Evento
+				links.on('click', {el: this.el, multiple: this.multiple}, this.dropdown)
+			}
+
+			Accordion.prototype.dropdown = function(e)
+			{
+				var $el = e.data.el;
+				$this = $(this),
+				$next = $this.next();
+
+				$next.slideToggle();
+				$this.parent().toggleClass('open');
+
+				if (!e.data.multiple) {
+					$el.find('.submenu').not($next).slideUp().parent().removeClass('open');
+				};
+			}
+
+			var accordion = new Accordion($('#accordion'), false);
+
+			var isNameValid = false;
+			var isPhoneValid = false;
+			var isEmailValid = false;
+
+			$("#Email").bind('input propertychange', function(e) {
+				console.log(e.target.validity.valid);
+			})
+
+			document.getElementById('Name').addEventListener('change', function(event)
+			{
+				if (event.target.validity.valid && isEmailValid == true && isPhoneValid)
+				{
+				    isNameValid = true;
+			    	$("#submit").removeClass("disabled")
+			    	$("#submit").prop('disabled', false);
+
+				} else {
+				    isNameValid = false;
+				    $("#submit").addClass('disabled');
+				    $("#submit").prop('disabled', true);
+				}
+			}, false);
+
+			document.getElementById('Phone').addEventListener('change', function(event)
+			{
+				if (event.target.validity.valid && isEmailValid == true && isNameValid)
+				{
+				    isPhoneValid = true;
+			    	$("#submit").removeClass("disabled")
+			    	$("#submit").prop('disabled', false);
+
+				} else {
+				    isPhoneValid = false;
+				    $("#submit").addClass('disabled');
+				    $("#submit").prop('disabled', true);
+				}
+			}, false);
+
+			document.getElementById('Email').addEventListener('change', function(event)
+			{
+				if (event.target.validity.valid && isPhoneValid == true && isNameValid)
+				{
+				    isEmailValid = true;
+			    	$("#submit").removeClass("disabled")
+			    	$("#submit").prop('disabled', false);
+				} else {
+				    isEmailValid = false;
+				    $("#submit").addClass('disabled');
+				    $("#submit").prop('disabled', true);
+				}
+			}, false);
+
+			$("#submit").click(function(e)
+			{
+				var user_name = $("#Name").val();
+				var user_email = $("#Email").val();
+				var user_phone = $("#Phone").val();
+
+				console.log(document.getElementById('Name').checkValidity())
+				console.log(document.getElementById('Email').checkValidity())
+				console.log(document.getElementById('Phone').checkValidity())
+
+				console.log(user_name, user_email, user_phone)
+			})
+		});
+
+		</script>
+	</head>
+	<body>
+		<% include ../html/top %>
+		
+		<div class="jumbotron">
+			<div class="page-header">
+				<h3>
+					<p class="text-center">
+						<title><%= title %></title>
+					</p>
+				</h3>
+				
+			</div>
+			<div id="loadedContainer">
+				<div class="container">
+					<div class="row">
+						<ul id="accordion" class="accordion">
+							<li>
+								<div class="col col_4 iamgurdeep-pic">
+									<img class="center-cropped img-responsive round-image iamgurdeeposahan" alt="iamgurdeeposahan" src="<%= user_found.facebook.photos[0].value %>">
+								</div>
+							</li>
+							<li class="default open">
+								<div class="link">
+									<i class="fa fa-info-circle">
+									</i>About<i class="fa fa-chevron-down">
+								</i>
+							</div>
+							<ul class="submenu">
+								<form>
+									<div class="form-group">
+										<label for="Name">Name</label>
+										<input type="name" required class="form-control" id="Name" placeholder="<%= user_found.facebook.full_name %>">
+									</div>
+
+									<div class="form-group">
+										<label for="Email">Email</label>
+										<input type="email" required class="form-control" id="Email" placeholder="<%= user_found.facebook.email %>">
+									</div>
+
+									<div class="form-group">
+										<label for="Phone">Phone</label>
+										<input type="tel" required class="form-control" id="Phone" pattern='\+?\d{3}[\-\( ]?[\(]?\d{3}[\-\ \)]?[\)\- ]?\d{3}[\- ]?\d{4}' title='Phone Number (Format: +99(99)9999-9999)' placeholder="+353 <%= user_found.phone %>">
+									</div>
+									<p class="text-center">
+										<button class="btn btn-info disabled" disabled id="submit">Submit Information</button>
+									</p>
+								</form>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

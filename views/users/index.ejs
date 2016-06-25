@@ -55,7 +55,6 @@
                                     <th>Status</th>
                                     <th></th>
                                     <th></th>
-                                    <th>Details</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -72,12 +71,17 @@
                                             <td>
                                                 
                                             </td>
-                                            <td>
+                                            <!-- <td>
                                                 <img class="center-small-cropped img-responsive round-image" src="<%= users[i].facebook.photos[0].value %>">
+                                            </td> -->
+                                            <td>
+                                                <a href='/user/view/<%= users[i]._id %>'>
+                                                    <button id="participate" value="<%= users %>" type="button" class="btn btn-xs btn-block btn-primary view">View</button>
+                                                </a>
                                             </td>
                                             <td>
-                                                <a href='/user/<%= users[i]._id %>'>
-                                                    <button id="participate" value="<%= users %>" type="button" class="btn btn-xs btn-block btn-primary edit">Edit</button>
+                                                <a href='/user/edit/<%= users[i]._id %>'>
+                                                    <button id="participate" value="<%= users %>" type="button" class="btn btn-xs btn-block btn-danger edit">Edit</button>
                                                 </a>
                                             </td>
                                         </tr>

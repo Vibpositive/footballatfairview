@@ -5,7 +5,7 @@ var expect           = require('chai').expect;
 var port             = 8080;
 var baseUrl          = 'http://localhost:' + port
 var list_id          = '575f2401c3fe8d106f774237'
-var user_id          = '575f23d0c3fe8d106f774236'
+var user_id          = "576c64860246493a57afb09c"
 var list_date_update = '1479998200000';
 var list_date        = '1488998200000';
 var list_size        = 21;
@@ -66,10 +66,38 @@ describe('Control Panel', function()
 			});
 		});
 
-		it('should return 200 on get on user', function(done)
+		it('should return 200 on get on user view', function(done)
 		{
 			request
-			.get(baseUrl + '/user')
+			.get(baseUrl + '/user/view/' + user_id)
+			.send(
+			{})
+			.end(function(err, res){
+				expect(res).to.exist;
+				expect(res.status).to.equal(200);
+				// expect(res.body).to.be.an('array');
+				done();
+			});
+		});
+
+		it('should return 200 on get on edit user', function(done)
+		{
+			request
+			.get(baseUrl + '/user/edit/' + user_id)
+			.send(
+			{})
+			.end(function(err, res){
+				expect(res).to.exist;
+				expect(res.status).to.equal(200);
+				// expect(res.body).to.be.an('array');
+				done();
+			});
+		});
+
+		it('should return 200 on post on edit user', function(done)
+		{
+			request
+			.post(baseUrl + '/user/edit/' + user_id)
 			.send(
 			{})
 			.end(function(err, res){
