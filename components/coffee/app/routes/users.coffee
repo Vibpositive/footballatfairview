@@ -9,6 +9,15 @@ isLoggedIn = (req, res, next) ->
   res.redirect '/'
   return
 
+callback = (err, numAffected)->
+  # TOOD: improve err catch
+  # console.log err, numAffected
+  if err
+    return err
+  else
+    return numAffected
+  return
+
 module.exports = (app) ->
   app.get '/users', isLoggedIn, (req, res) ->
     User.find {}, (err, list) ->
@@ -95,6 +104,40 @@ module.exports = (app) ->
         return
       return
     return
+
   app.post '/user/edit/:user_id', (req, res) ->
-    res.send 'ok'
+    user_id = req.params.user_id
+
+    user_name = req.body.name
+    user_phone = req.body.phone
+    user_email = req.body.email
+
+    if user_name != "" and user_phone != "" and user_email != ""
+
+      User.findOne _id : user_id, (err, user) ->
+        console.log user
+        user.phone = user_phone
+        user.facebook.email = user_email
+        user.facebook.full_name = user_name
+        user.save(callback)
+        user.save (err)->
+          if err
+            console.log err
+            res.json { message : err }
+            return
+          res.json { message: "ok" }
+        return
+    else
+      res.json { message: "fill in all fields" }
+
+      ###res.send [user_name, user_phone, user_email]
+      return
+
+      User.update { '_id' : user_id }, { '$set' : { 'facebook.$.full_name' : user_name, phone : user_phone, 'facebook.$.email' : user_email } },(err, numAffected) ->
+      User.update { '_id' : user_id }, { 'phone' : user_phone } ,(err, numAffected) ->
+      res.send numAffected
+      return###
+
+
+
   return

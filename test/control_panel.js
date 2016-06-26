@@ -4,12 +4,18 @@ var expect           = require('chai').expect;
 
 var port             = 8080;
 var baseUrl          = 'http://localhost:' + port
+
 var list_id          = '575f2401c3fe8d106f774237'
-var user_id          = "576c64860246493a57afb09c"
 var list_date_update = '1479998200000';
 var list_date        = '1488998200000';
 var list_size        = 21;
 var list_status      = 'pending';
+
+var user_id          = "576c64860246493a57afb09c"
+var user_name        = "AAAAAAAAAA";
+var user_phone       = "1111111111";
+var user_email       = "1111111@111.111";
+
 
 describe('Control Panel', function()
 {
@@ -99,11 +105,15 @@ describe('Control Panel', function()
 			request
 			.post(baseUrl + '/user/edit/' + user_id)
 			.send(
-			{})
+			{
+				name : user_name,
+				phone : user_phone,
+				email : user_email
+			})
 			.end(function(err, res){
 				expect(res).to.exist;
 				expect(res.status).to.equal(200);
-				// expect(res.body).to.be.an('array');
+				expect(res.text).to.contain("ok");
 				done();
 			});
 		});

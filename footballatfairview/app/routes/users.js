@@ -1,4 +1,4 @@
-var List, User, _, isLoggedIn, moment;
+var List, User, _, callback, isLoggedIn, moment;
 
 User = require('../models/user');
 
@@ -13,6 +13,14 @@ isLoggedIn = function(req, res, next) {
     return next();
   }
   res.redirect('/');
+};
+
+callback = function(err, numAffected) {
+  if (err) {
+    return err;
+  } else {
+    return numAffected;
+  }
 };
 
 module.exports = function(app) {
@@ -96,6 +104,46 @@ module.exports = function(app) {
     });
   });
   app.post('/user/edit/:user_id', function(req, res) {
-    return res.send('ok');
+    var user_email, user_id, user_name, user_phone;
+    user_id = req.params.user_id;
+    user_name = req.body.name;
+    user_phone = req.body.phone;
+    user_email = req.body.email;
+    if (user_name !== "" && user_phone !== "" && user_email !== "") {
+      return User.findOne({
+        _id: user_id
+      }, function(err, user) {
+        console.log(user);
+        user.phone = user_phone;
+        user.facebook.email = user_email;
+        user.facebook.full_name = user_name;
+        user.save(callback);
+        user.save(function(err) {
+          if (err) {
+            console.log(err);
+            res.json({
+              message: err
+            });
+            return;
+          }
+          return res.json({
+            message: "ok"
+          });
+        });
+      });
+    } else {
+      return res.json({
+        message: "fill in all fields"
+      });
+
+      /*res.send [user_name, user_phone, user_email]
+      return
+      
+      User.update { '_id' : user_id }, { '$set' : { 'facebook.$.full_name' : user_name, phone : user_phone, 'facebook.$.email' : user_email } },(err, numAffected) ->
+      User.update { '_id' : user_id }, { 'phone' : user_phone } ,(err, numAffected) ->
+      res.send numAffected
+      return
+       */
+    }
   });
 };

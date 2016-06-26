@@ -12,6 +12,7 @@
     "express-session": "~1.0.0",
     "method-override": "~1.0.0",
     "moment": "^2.13.0",
+    "mongo-sanitize": "^1.0.0",
     "mongoose": "~3.8.1",
     "morgan": "~1.0.0",
     "node-uuid": "^1.4.7",
