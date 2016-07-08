@@ -1,0 +1,162 @@
+<!-- views/index.ejs -->
+<!doctype html>
+<html>
+<head>
+	<title><%= title %></title>
+
+	<% include ../html/scripts_css %>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"/>
+	<link rel="stylesheet" href="/public/css/user.css" />
+
+	<script type="text/javascript">
+
+		$(function()
+		{
+			var Accordion = function(el, multiple)
+			{
+				this.el = el || {};
+				this.multiple = multiple || false;
+
+					// Variables privadas
+					var links = this.el.find('.link');
+					// Evento
+					links.on('click', {el: this.el, multiple: this.multiple}, this.dropdown)
+				}
+
+				Accordion.prototype.dropdown = function(e)
+				{
+					var $el = e.data.el;
+					$this = $(this),
+					$next = $this.next();
+
+					$next.slideToggle();
+					$this.parent().toggleClass('open');
+
+					if (!e.data.multiple) {
+						$el.find('.submenu').not($next).slideUp().parent().removeClass('open');
+					};
+				}
+
+				var accordion = new Accordion($('#accordion'), false);
+			});
+
+		</script>
+	</head>
+	<body>
+		<% include ../html/top %>
+		
+		<div class="jumbotron">
+			<div class="page-header">
+				<h3>
+					<p class="text-center">
+						<title><%= title %></title>
+					</p>
+				</h3>
+				
+			</div>
+			<div id="loadedContainer">
+				<div class="container">
+					<div class="row">
+						<ul id="accordion" class="accordion">
+							<li>
+								<div class="col col_4 iamgurdeep-pic">
+									<img class="center-cropped img-responsive round-image iamgurdeeposahan" alt="iamgurdeeposahan" src="<%= user_found.facebook.photos[0].value %>">
+								</div>
+							</li>
+							<li>
+								<div class="link">
+									<i class="fa fa-info-circle">
+									</i>About<i class="fa fa-chevron-down">
+								</i>
+							</div>
+							<ul class="submenu">
+								<li>
+									<a href="#">
+										<i class="fa fa-calendar left-none">
+										</i>
+										Full Name: <%= user_found.facebook.full_name %>
+									</a>
+								</li>
+								<li>
+									<a href="#">
+										Email: <%= user_found.facebook.email %>
+									</a>
+								</li>
+								<li>
+									<a href="#">
+										Phone:  +353 <%= user_found.phone %>
+									</a>
+								</li>
+								</ul>
+							</li>
+							<li class="default open">
+								<div class="link">
+									<i class="fa fa-futbol-o">
+									</i>Matches<i class="fa fa-chevron-down">
+								</i>
+							</div>
+							<ul class="submenu">
+								<li>
+									<%if (user_lists.length > 0) { %>
+										<% for(var i=0; i < user_lists.length; i++) { %>
+											<p class="text-center">
+												<a href="/matches/edit/<%= user_lists[i]._id %>">
+													<span class="tags">
+														<%= moment(user_lists[i].list_date, 'x').format("dddd, MMMM Do YYYY, h : mm : ss a") %><br>
+													</span>
+												</a>
+											</p>
+										<% } %>
+									<% }else{ %>
+										<p class="text-center">
+											<a href="">
+												<span class="tags">
+													No Matches<br>
+												</span>
+											</a>
+										</p>
+									<% } %>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<div class="link">
+								<i class="fa fa-exclamation-triangle">
+								</i>
+								Penalties
+								<i class="fa fa-chevron-down">
+								</i>
+							</div>
+							<ul class="submenu">
+								<li>
+									<p class="text-center">
+										<a href="tecuy">
+											<span class="tags">
+												Adobe Photoshop  Adobe Photoshop<br>
+											</span>
+										</a>
+									</p>
+									<p class="text-center">
+										<a href="tecuy">
+											<span class="tags">
+												Adobe Photoshop  Adobe Photoshop<br>
+											</span>
+										</a>
+									</p>
+									<p class="text-center">
+										<a href="tecuy">
+											<span class="tags">
+												Adobe Photoshop  Adobe Photoshop<br>
+											</span>
+										</a>
+									</p>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

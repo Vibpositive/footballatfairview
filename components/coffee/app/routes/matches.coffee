@@ -4,7 +4,6 @@ moment  = require 'moment'
 uuid    = require 'node-uuid'
 
 isLoggedIn = (req, res, next) ->
-    return next()
     if req.isAuthenticated()
         return next()
     res.redirect '/'
@@ -45,26 +44,7 @@ module.exports = (app) ->
             return
         return
 
-    app.post '/matches/views/create', isLoggedIn, (req, res)->
-      res.render 'matches/create.ejs', title: 'Create a match'
-      return
-
-    app.post '/matches/views/list', isLoggedIn, (req, res)->
-        List.find {}, (err, list) ->
-            console.log list
-            if err
-                res.send err
-                return
-            res.render 'matches/list.ejs',
-            message : req.flash('loginMessage')
-            lists   : list
-            user    : req.user
-            moment  : moment
-            title   : "Matches index"
-            return
-
-    # app.post '/matches/views/playerslist', isLoggedIn, (req, res)->
-    app.post '/matches/views/playerslist',  (req, res)->
+    app.post '/matches/views/playerslist', isLoggedIn, (req, res)->
         List.findOne {_id : req.body.list_id }, (err, list) ->
             console.log list
             if err
@@ -79,7 +59,7 @@ module.exports = (app) ->
             return
 
     app.post '/matches/participate', isLoggedIn, (req, res)->
-        player_id  = req.user.facebook.id
+        player_id  = req.user.id
         datetime   = 'date'
         last_name  = req.user.facebook.last_name
         first_name = req.user.facebook.first_name
@@ -157,47 +137,38 @@ module.exports = (app) ->
             return
         return
 
-    app.post '/matches/create', isLoggedIn, (req, res, next) ->
-        # TODO: Validate if Match already exists - Based on Date and Time
-        isParticipating = req.body.names
+    app.get '/matches/create', isLoggedIn, (req, res)->
+      res.render 'matches/create.ejs', title: 'Create a match'
+      return
 
-        if isParticipating == 'true'
-            names = [{
-                player_id  : req.user.facebook.id
-                datetime   : 'date'
-                last_name  : req.user.facebook.last_name
-                first_name : req.user.facebook.first_name
-                full_name  : req.user.facebook.first_name + " " + req.user.facebook.last_name
-                status     : 'playing'
-            }]
-        else
-            names = []
-
-        list_date   = req.body.list_date
-        list_size   = req.body.list_size
-        list_status = req.body.list_status
-
-        errMessage = ''
-
-        match = new List(
-                list_date   : list_date,
-                list_size   : list_size,
-                names       : names,
-                list_status : list_status,
-                date        : Date.now(),
-                url         : uuid.v1()
-            )
-        match.save (err)->
+    app.get '/matches/edit', isLoggedIn, (req, res)->
+        List.find {}, (err, list) ->
+            console.log list
             if err
-
-                for errName of err.errors
-                    
-                    errMessage += err.errors[errName].message
-
-                res.send errMessage
+                res.send err
                 return
+            res.render 'matches/list.ejs',
+            message : req.flash('loginMessage')
+            lists   : list
+            user    : req.user
+            moment  : moment
+            title   : "Matches index"
+            return
+
+    app.get '/matches/edit/:listid', isLoggedIn, (req, res, next) ->
+        
+        listid     = req.params.listid
+
+        List.findOne { _id : listid }, {},(err, listFound) ->
+            if err
+                return { message: err }
             else
-                res.send match._id
+                res.render 'matches/edit.ejs',
+                message: ''
+                list: listFound
+                user: req.user
+                moment: moment
+                title: 'Matches List'
                 return
 
     app.post '/matches/edit/status', isLoggedIn, (req, res, next) ->
@@ -216,8 +187,7 @@ module.exports = (app) ->
                 return
 
     # TODO: Improve route trying using just one
-    # app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
-    app.post '/matches/edit/match', (req, res, next) ->
+    app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
         
         list_id       = req.body.list_id
         player_status = req.body.player_status
@@ -233,23 +203,53 @@ module.exports = (app) ->
                   res.json({ message: '0 rows affected' });
                   return
 
-    app.post '/matches/edit/:listid', isLoggedIn, (req, res, next) ->
-        
-        listid     = req.params.listid
+     app.post '/matches/create', isLoggedIn, (req, res, next) ->
+        isParticipating = req.body.names
 
-        List.findOne { _id : listid }, {},(err, listFound) ->
+        if isParticipating == 'true'
+            names = [{
+                player_id  : req.user.id
+                datetime   : 'date'
+                last_name  : req.user.facebook.last_name
+                first_name : req.user.facebook.first_name
+                full_name  : req.user.facebook.first_name + " " + req.user.facebook.last_name
+                status     : 'playing'
+            }]
+        else
+            names = []
+
+        list_date   = req.body.list_date
+        list_size   = req.body.list_size
+        list_status = req.body.list_status
+
+        errMessage = ''
+
+        match = new List(
+            list_date   : list_date,
+            list_size   : list_size,
+            names       : names,
+            list_status : list_status,
+            date        : Date.now(),
+            url         : uuid.v1()
+        )
+        match.save (err, result, numAffected)->
+            util = require('util')
             if err
-                return { message: err }
-            else
-                res.render 'matches/match_edit.ejs',
-                message: ''
-                list: listFound
-                user: req.user
-                moment: moment
-                title: 'Matches List'
+                console.log err
+                if typeof(err) == 'object'
+                    res.json( { message : 'Object already exists' } )
+                else
+                    res.json( { message : err } )
                 return
+            else
+                if numAffected > 0
+                    res.json({ message: 'ok' });
+                else
+                    res.json({ message: String(numAffected) + ' rows affected' });
+                    return
+        
 
-    app.post '/matches/update', (req, res, next) ->
+    app.post '/matches/update', isLoggedIn, (req, res, next) ->
 
         list_id     = req.body.list_id
         list_date   = req.body.list_date

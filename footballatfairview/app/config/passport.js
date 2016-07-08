@@ -31,7 +31,7 @@ module.exports = function(passport) {
     clientID: configAuth.facebookAuth.clientID,
     clientSecret: configAuth.facebookAuth.clientSecret,
     callbackURL: configAuth.facebookAuth.callbackURL,
-    profileFields: ['id', 'emails', 'name']
+    profileFields: ['id', 'emails', 'name', 'gender', 'picture.type(large)']
   }, function(token, refreshToken, profile, done) {
     process.nextTick(function() {
       User.findOne({
@@ -46,11 +46,13 @@ module.exports = function(passport) {
         } else {
           newUser = new User;
           newUser.facebook.id = profile.id;
+          newUser.facebook.photos = profile.photos;
           newUser.facebook.token = token;
           newUser.facebook.full_name = profile._json.first_name + ' ' + profile._json.last_name;
           newUser.facebook.first_name = profile._json.first_name;
           newUser.facebook.last_name = profile._json.last_name;
           newUser.facebook.email = profile._json.email;
+          newUser.status = 'active';
           newUser.save(function(err) {
             if (err) {
               throw err;

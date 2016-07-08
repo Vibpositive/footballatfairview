@@ -9,7 +9,6 @@ moment = require('moment');
 uuid = require('node-uuid');
 
 isLoggedIn = function(req, res, next) {
-  return next();
   if (req.isAuthenticated()) {
     return next();
   }
@@ -77,28 +76,7 @@ module.exports = function(app) {
       });
     });
   });
-  app.post('/matches/views/create', isLoggedIn, function(req, res) {
-    res.render('matches/create.ejs', {
-      title: 'Create a match'
-    });
-  });
-  app.post('/matches/views/list', isLoggedIn, function(req, res) {
-    return List.find({}, function(err, list) {
-      console.log(list);
-      if (err) {
-        res.send(err);
-        return;
-      }
-      res.render('matches/list.ejs', {
-        message: req.flash('loginMessage'),
-        lists: list,
-        user: req.user,
-        moment: moment,
-        title: "Matches index"
-      });
-    });
-  });
-  app.post('/matches/views/playerslist', function(req, res) {
+  app.post('/matches/views/playerslist', isLoggedIn, function(req, res) {
     return List.findOne({
       _id: req.body.list_id
     }, function(err, list) {
@@ -118,7 +96,7 @@ module.exports = function(app) {
   });
   app.post('/matches/participate', isLoggedIn, function(req, res) {
     var datetime, first_name, full_name, last_name, list_id, player_id;
-    player_id = req.user.facebook.id;
+    player_id = req.user.id;
     datetime = 'date';
     last_name = req.user.facebook.last_name;
     first_name = req.user.facebook.first_name;
@@ -223,44 +201,45 @@ module.exports = function(app) {
       });
     });
   });
-  app.post('/matches/create', isLoggedIn, function(req, res, next) {
-    var errMessage, isParticipating, list_date, list_size, list_status, match, names;
-    isParticipating = req.body.names;
-    if (isParticipating === 'true') {
-      names = [
-        {
-          player_id: req.user.facebook.id,
-          datetime: 'date',
-          last_name: req.user.facebook.last_name,
-          first_name: req.user.facebook.first_name,
-          full_name: req.user.facebook.first_name + " " + req.user.facebook.last_name,
-          status: 'playing'
-        }
-      ];
-    } else {
-      names = [];
-    }
-    list_date = req.body.list_date;
-    list_size = req.body.list_size;
-    list_status = req.body.list_status;
-    errMessage = '';
-    match = new List({
-      list_date: list_date,
-      list_size: list_size,
-      names: names,
-      list_status: list_status,
-      date: Date.now(),
-      url: uuid.v1()
+  app.get('/matches/create', isLoggedIn, function(req, res) {
+    res.render('matches/create.ejs', {
+      title: 'Create a match'
     });
-    return match.save(function(err) {
-      var errName;
+  });
+  app.get('/matches/edit', isLoggedIn, function(req, res) {
+    return List.find({}, function(err, list) {
+      console.log(list);
       if (err) {
-        for (errName in err.errors) {
-          errMessage += err.errors[errName].message;
-        }
-        res.send(errMessage);
+        res.send(err);
+        return;
+      }
+      res.render('matches/list.ejs', {
+        message: req.flash('loginMessage'),
+        lists: list,
+        user: req.user,
+        moment: moment,
+        title: "Matches index"
+      });
+    });
+  });
+  app.get('/matches/edit/:listid', isLoggedIn, function(req, res, next) {
+    var listid;
+    listid = req.params.listid;
+    return List.findOne({
+      _id: listid
+    }, {}, function(err, listFound) {
+      if (err) {
+        return {
+          message: err
+        };
       } else {
-        res.send(match._id);
+        res.render('matches/edit.ejs', {
+          message: '',
+          list: listFound,
+          user: req.user,
+          moment: moment,
+          title: 'Matches List'
+        });
       }
     });
   });
@@ -290,7 +269,7 @@ module.exports = function(app) {
       }
     });
   });
-  app.post('/matches/edit/match', function(req, res, next) {
+  app.post('/matches/edit/match', isLoggedIn, function(req, res, next) {
     var list_id, player_id, player_status;
     list_id = req.body.list_id;
     player_status = req.body.player_status;
@@ -318,28 +297,63 @@ module.exports = function(app) {
       }
     });
   });
-  app.post('/matches/edit/:listid', isLoggedIn, function(req, res, next) {
-    var listid;
-    listid = req.params.listid;
-    return List.findOne({
-      _id: listid
-    }, {}, function(err, listFound) {
+  app.post('/matches/create', isLoggedIn, function(req, res, next) {
+    var errMessage, isParticipating, list_date, list_size, list_status, match, names;
+    isParticipating = req.body.names;
+    if (isParticipating === 'true') {
+      names = [
+        {
+          player_id: req.user.id,
+          datetime: 'date',
+          last_name: req.user.facebook.last_name,
+          first_name: req.user.facebook.first_name,
+          full_name: req.user.facebook.first_name + " " + req.user.facebook.last_name,
+          status: 'playing'
+        }
+      ];
+    } else {
+      names = [];
+    }
+    list_date = req.body.list_date;
+    list_size = req.body.list_size;
+    list_status = req.body.list_status;
+    errMessage = '';
+    match = new List({
+      list_date: list_date,
+      list_size: list_size,
+      names: names,
+      list_status: list_status,
+      date: Date.now(),
+      url: uuid.v1()
+    });
+    return match.save(function(err, result, numAffected) {
+      var util;
+      util = require('util');
       if (err) {
-        return {
-          message: err
-        };
+        console.log(err);
+        if (typeof err === 'object') {
+          res.json({
+            message: 'Object already exists'
+          });
+        } else {
+          res.json({
+            message: err
+          });
+        }
       } else {
-        res.render('matches/match_edit.ejs', {
-          message: '',
-          list: listFound,
-          user: req.user,
-          moment: moment,
-          title: 'Matches List'
-        });
+        if (numAffected > 0) {
+          return res.json({
+            message: 'ok'
+          });
+        } else {
+          res.json({
+            message: String(numAffected) + ' rows affected'
+          });
+        }
       }
     });
   });
-  app.post('/matches/update', function(req, res, next) {
+  app.post('/matches/update', isLoggedIn, function(req, res, next) {
     var list_date, list_id, list_size, list_status;
     list_id = req.body.list_id;
     list_date = req.body.list_date;

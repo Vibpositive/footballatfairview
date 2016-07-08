@@ -1,4 +1,4 @@
-var bcrypt, listSchema, moment, mongoose;
+var bcrypt, listModel, listSchema, moment, mongoose;
 
 mongoose = require('mongoose');
 
@@ -10,7 +10,8 @@ listSchema = mongoose.Schema({
   id: String,
   list_date: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   list_size: {
     type: String,
@@ -29,6 +30,22 @@ listSchema = mongoose.Schema({
   timestamps: {
     createdAt: 'created_at'
   }
+});
+
+listModel = mongoose.model('List', listSchema);
+
+listSchema.pre('save', function(next) {
+  var self;
+  self = this;
+  listModel.find({
+    list_date: self.list_date
+  }, function(err, docs) {
+    if (!docs.length) {
+      next();
+    } else {
+      next(new Error('Match exists!'));
+    }
+  });
 });
 
 module.exports = mongoose.model('List', listSchema);

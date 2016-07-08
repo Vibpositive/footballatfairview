@@ -16,7 +16,7 @@ module.exports = function(app) {
       title: 'Profile'
     });
   });
-  app.post('/profile/edit/phoneNumber', function(req, res) {
+  app.post('/profile/edit/phoneNumber', isLoggedIn, function(req, res) {
     var phoneNumber, userId;
     phoneNumber = req.body.phoneNumber;
     userId = req.user.id;
@@ -42,8 +42,9 @@ module.exports = function(app) {
       }
     });
   });
-  return app.get('/profile/view/details', function(req, res) {
-    res.render('profile/details.ejs', {
+  return app.get('/profile/view/details', isLoggedIn, function(req, res) {
+    res.render('profile/details.ejs');
+    ({
       message: req.flash('loginMessage'),
       user: req.user,
       title: 'Profile Details: ' + String(req.user.fullname)

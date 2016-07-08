@@ -1,0 +1,79 @@
+<!-- views/index.ejs -->
+<!doctype html>
+<html>
+<head>
+	<title><%= title %></title>
+
+	<% include ../html/scripts_css %>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"/>
+	<link rel="stylesheet" href="/public/css/user_edit.css" />
+	<style type="text/css">
+		:invalid {
+			box-shadow: none; /* FF */
+			outline: 0;       /* IE 10 */
+		}
+	</style>
+	<script type="text/javascript">
+		// TODO: Pass Variable to external JS
+		var user_found = {"<%= user_found.id %>")
+	</script>
+	<script type="text/javascript" src="/public/js/user/edit.js">                            </script>
+
+	</head>
+	<body>
+		<% include ../html/top %>
+		
+		<div class="jumbotron">
+			<div class="page-header">
+				<h3>
+					<p class="text-center">
+						<title><%= title %></title>
+					</p>
+				</h3>
+				
+			</div>
+			<div id="loadedContainer">
+				<div class="container">
+					<div class="row">
+						<ul id="accordion" class="accordion">
+							<li>
+								<div class="col col_4 iamgurdeep-pic">
+									<img class="center-cropped img-responsive round-image iamgurdeeposahan" alt="iamgurdeeposahan" src="<%= user_found.facebook.photos[0].value %>">
+								</div>
+							</li>
+							<li class="default open">
+								<div class="link">
+									<i class="fa fa-info-circle">
+									</i>About<i class="fa fa-chevron-down">
+								</i>
+							</div>
+							<ul class="submenu">
+								<form>
+									<div class="form-group">
+										<label for="Name">Name</label>
+										<input type="name" required class="form-control" min="2" id="Name" placeholder="<%= user_found.facebook.full_name %>">
+									</div>
+
+									<div class="form-group">
+										<label for="Email">Email</label>
+										<input type="email" required class="form-control" id="Email" placeholder="<%= user_found.facebook.email %>">
+									</div>
+
+									<div class="form-group">
+										<label for="Phone">Phone</label>
+										<input type="tel" required class="form-control" id="Phone" pattern='\+?(\d{3})?[\-\( ]?[\(]?([0-9]\d{1,2})[\-\ \)]?[\)\- ]?\d{3}[\- ]?\d{4}' title='Phone Number (Format: (099) 999 9999)' placeholder="+353 <%= user_found.phone %>">
+									</div>
+									<p class="text-center">
+										<!-- <button class="btn btn-info disabled" disabled id="submit">Submit Information</button> -->
+										<button class="btn btn-info" id="submit">Submit Information</button>
+									</p>
+								</form>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

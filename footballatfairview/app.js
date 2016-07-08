@@ -44,7 +44,7 @@ app.use(function(error, req, res, next) {
 app.use(function(error, req, res, next) {
   res.status(500);
   res.render('errors/500.ejs', {
-    title: '500: Internal Server Error',
+    title: '500  : Internal Server Error',
     error: error
   });
 });
@@ -106,6 +106,8 @@ require('./app/routes/matches.js')(app);
 require('./app/routes/profile.js')(app);
 
 require('./app/routes/controlpanel.js')(app);
+
+require('./app/routes/users.js')(app);
 
 app.listen(port);
 

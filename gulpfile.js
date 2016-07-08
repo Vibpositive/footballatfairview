@@ -9,8 +9,10 @@ concat      = require('gulp-concat'),
 plumber     = require('gulp-plumber'),
 changed     = require('gulp-changed'),
 uglify      = require('gulp-uglify'),
-notify      = require("gulp-notify");
-var nodemon = require('gulp-nodemon');
+notify      = require("gulp-notify"),
+minify      = require('gulp-minify'),
+nodemon     = require('gulp-nodemon'),
+sourcemaps  = require('gulp-sourcemaps');
 
 var options = {
 	// HTML
@@ -18,11 +20,14 @@ var options = {
 
 	// SASS / CSS
 	SASS_SOURCE     : "components/sass/**/*.scss",
-	SASS_DEST       : "footballatfairview/assets/css/",
+	SASS_DEST       : "public/css",
 
 	// JavaScript
 	COFFEE_SOURCE   : 'components/coffee/**/*.coffee',
 	COFFEE_DEST     : "footballatfairview/",
+	//Public
+	PUBLIC_SOURCE   : 'components/public/**/*.coffee',
+	PUBLIC_DEST     : "public/js",
 	// Images
 	IMAGE_SOURCE    : "components/images/**/*",
 	IMAGE_DEST      : "footballatfairview/assets/images",
@@ -37,10 +42,7 @@ var options = {
 gulp.task('sass', function() {
 	gulp.src( options.SASS_SOURCE )
 	.pipe(plumber())
-	.pipe(sass({
-		outputStyle: 'compressed',
-			// sourceComments: 'map'
-		}))
+	.pipe(sass())
 	.on("error", notify.onError())
 	.on("error", function (err) {
 		console.log("Error:", err);
@@ -64,6 +66,17 @@ gulp.task('coffee', function () {
 });
 */
 
+gulp.task('public', function(){
+	console.log('PUBLIC')
+	gulp.src(options.PUBLIC_SOURCE)
+	.pipe(sourcemaps.init())
+	.pipe(coffee({bare : true}))
+	.on('error', gutil.log)
+	.pipe(minify({ ext:{ src:'.js', min:'.min.js' } }))
+	.pipe(sourcemaps.write('.'))
+	.pipe(gulp.dest(options.PUBLIC_DEST));
+});
+
 gulp.task('coffee', function(){
 	gulp.src(options.COFFEE_SOURCE)
 	.pipe(coffee({bare : true}))
@@ -80,11 +93,13 @@ gulp.task('lint', function () {
 gulp.task('default', function () {
 	gulp.watch( options.SASS_SOURCE , ['sass']);
 	gulp.watch( options.COFFEE_SOURCE , ['coffee','lint'] );
+	gulp.watch( options.PUBLIC_SOURCE , ['public','lint'] );
 });
 
 gulp.task('watch', function () {
 	// Watch .SCSS files
 	gulp.watch( options.COFFEE_SOURCE , [ 'coffee','lint'] );
+	gulp.watch( options.PUBLIC_SOURCE , [ 'public','lint'] );
 	gulp.watch( options.SASS_SOURCE , ['sass']);
 	// gulp.watch( options.HTML_SOURCE , ['html'] );
 	// gulp.watch( options.IMAGE_SOURCE , ['images'] );
@@ -115,5 +130,5 @@ gulp.task('serve', function (cb) {
   })
 })*/
 
-gulp.task('default', ['serve', 'watch', 'coffee']);
+gulp.task('default', ['watch', 'coffee', 'public', 'serve']);
 // gulp.task('default', ['watch']);

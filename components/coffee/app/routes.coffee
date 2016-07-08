@@ -54,7 +54,7 @@ module.exports = (app, passport) ->
         List.find {}, (err, list) ->
             if err
                 return console.log err
-            res.render 'index.ejs',
+            res.render 'matches/index.ejs',
             message: req.flash('loginMessage')
             lists: list
             user: req.user

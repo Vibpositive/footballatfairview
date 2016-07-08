@@ -8,12 +8,19 @@ userSchema = mongoose.Schema(
     full_name  : String
     first_name : String
     last_name  : String
+    photos     : Array
     date       :
       type     : Date
       default  : Date.now
   matches       :
     type       : Array
     default    : []
+  penalties    :
+    type       : Array
+    default    : []
+  status       : 
+    type       : String
+    required   : true
   phone        :
     type       : String
     validate   :
