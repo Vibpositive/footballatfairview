@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+	<head>
+		<title><%= title %></title>
+
+		<% include ../html/scripts_css %>
+		
+		<style type="text/css">
+			body { padding-top: 15px; }
+		</style>
+	</head>
+	<body>
+		<% include ../html/top %>
+		
+		<div class="jumbotron">
+			<div class="page-header">
+					<h3>
+						<p class="text-center">
+							<title><%= title %></title>
+						</p>
+					</h3>
+				
+			</div>
+			<div id="loadedContainer">
+				<p class="text-center">
+					<a href="/penalties/create">
+						<button type="button" class="btn btn-primary" id="createPenalty">Add</button>
+					</a>
+					<a href="/penalties/edit">
+						<button type="button" class="btn btn-primary" id="managePanelty">Manage</button>
+					</a>
+					<a href="/penalties/list">
+						<button type="button" class="btn btn-primary" id="listPenalties">List</button>
+					</a>
+				</p>
+			</div>
+		</div>
+
+	</body>
+</html>
