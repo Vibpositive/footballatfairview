@@ -1,4 +1,4 @@
-var List, User, addMatchToUserList, isLoggedIn, moment, uuid;
+var List, ObjectId, User, _, addMatchToUserList, isLoggedIn, moment, uuid;
 
 List = require('../models/list');
 
@@ -7,6 +7,10 @@ User = require('../models/user');
 moment = require('moment');
 
 uuid = require('node-uuid');
+
+_ = require("underscore");
+
+ObjectId = require('mongodb').ObjectID;
 
 isLoggedIn = function(req, res, next) {
   if (req.isAuthenticated()) {
@@ -80,7 +84,6 @@ module.exports = function(app) {
     return List.findOne({
       _id: req.body.list_id
     }, function(err, list) {
-      console.log(list);
       if (err) {
         res.send(err);
         return;
@@ -94,14 +97,39 @@ module.exports = function(app) {
       });
     });
   });
+  app.post('/matches/addusertomatch', function(req, res) {
+    var list_id;
+    list_id = req.body.list_id;
+    return User.find({}, function(err, result) {
+      _.each(result, function(item) {
+        List.update({
+          '_id': list_id
+        }, {
+          $addToSet: {
+            'names': {
+              player_id: item._id,
+              datetime: "",
+              last_name: item.facebook.last_name,
+              first_name: item.facebook.first_name,
+              full_name: item.facebook.full_name,
+              phone: item.phone,
+              status: 'playing'
+            }
+          }
+        }, function(err, numAffected) {});
+      });
+      return res.send("ok");
+    });
+  });
   app.post('/matches/participate', isLoggedIn, function(req, res) {
-    var datetime, first_name, full_name, last_name, list_id, player_id;
-    player_id = req.user.id;
+    var datetime, first_name, full_name, last_name, list_id, phone, player_id;
+    player_id = new ObjectId(req.user.id);
     datetime = 'date';
     last_name = req.user.facebook.last_name;
     first_name = req.user.facebook.first_name;
     full_name = req.user.facebook.first_name + " " + req.user.facebook.last_name;
     list_id = req.body.list_id;
+    phone = req.user.phone;
     if (req.body.player_status === 'true') {
       addMatchToUserList(req.user, list_id, 'push');
       return List.update({
@@ -114,7 +142,8 @@ module.exports = function(app) {
             last_name: last_name,
             first_name: first_name,
             full_name: full_name,
-            status: 'playing'
+            status: 'playing',
+            phone: phone
           }
         }
       }, function(err, numAffected) {
@@ -208,7 +237,6 @@ module.exports = function(app) {
   });
   app.get('/matches/edit', isLoggedIn, function(req, res) {
     return List.find({}, function(err, list) {
-      console.log(list);
       if (err) {
         res.send(err);
         return;
@@ -243,59 +271,40 @@ module.exports = function(app) {
       }
     });
   });
-  app.post('/matches/edit/status', isLoggedIn, function(req, res, next) {
-    var list_id, list_status;
-    list_id = req.body.list_id;
-    list_status = req.body.list_status;
-    return List.update({
-      _id: list_id
-    }, {
-      'list_status': String(list_status)
-    }, function(err, numAffected) {
-      if (err) {
-        return {
-          message: err
-        };
-      } else {
-        if (numAffected > 0) {
-          res.send({
-            message: 'ok'
-          });
-        } else {
-          res.send({
-            message: '0 rows affected'
-          });
-        }
-      }
-    });
-  });
-  app.post('/matches/edit/match', isLoggedIn, function(req, res, next) {
-    var list_id, player_id, player_status;
+  app.post('/matches/edit/match', function(req, res, next) {
+    var full_name, list_id, player_id, player_status;
     list_id = req.body.list_id;
     player_status = req.body.player_status;
-    player_id = req.body.player_id;
-    return List.update({
-      '_id': list_id,
-      "names.player_id": player_id
-    }, {
-      '$set': {
-        'names.$.status': player_status
-      }
-    }, function(err, numAffected) {
-      if (err) {
-        return res.send('err: ' + String(err));
-      } else {
-        if (numAffected > 0) {
-          return res.json({
-            message: 'ok'
-          });
-        } else {
-          res.json({
-            message: '0 rows affected'
-          });
+    full_name = req.body.full_name;
+    player_id = new ObjectId(req.body.player_id);
+    if (player_status === "remove") {
+      List.findByIdAndUpdate({
+        '_id': list_id
+      }, {
+        $pull: {
+          names: {
+            full_name: full_name,
+            player_id: new ObjectId(player_id)
+          }
         }
-      }
-    });
+      }, function(err, model) {
+        if (err) {
+          return res.status(422).json(err);
+        }
+        console.log('model', model);
+        return List.findOne({
+          _id: list_id,
+          'names.full_name': full_name
+        }, function(err2, model2) {
+          if (err) {
+            return res.status(422).json(err2);
+          }
+          console.log('model2', model2);
+          return res.status(200).json(model2);
+        });
+      });
+      return;
+    }
   });
   app.post('/matches/create', isLoggedIn, function(req, res, next) {
     var errMessage, isParticipating, list_date, list_size, list_status, match, names;
@@ -303,11 +312,12 @@ module.exports = function(app) {
     if (isParticipating === 'true') {
       names = [
         {
-          player_id: req.user.id,
+          player_id: new ObjectId(req.user.id),
           datetime: 'date',
           last_name: req.user.facebook.last_name,
           first_name: req.user.facebook.first_name,
           full_name: req.user.facebook.first_name + " " + req.user.facebook.last_name,
+          phone: req.user.phone,
           status: 'playing'
         }
       ];

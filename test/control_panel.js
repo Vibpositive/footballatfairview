@@ -118,10 +118,10 @@ describe('Control Panel', function()
 			});
 		});
 
-		/*it('should return a 200 status code for a post on matches/create', function(done)
+		it('should return a 200 status code for a post on matches/create', function(done)
 		{
 			request
-			.post(baseUrl + '/matches/create')
+			.post(baseUrl + '/panelties')
 			.send(
 			{
 				list_date : list_date,
@@ -131,10 +131,10 @@ describe('Control Panel', function()
 			.end(function(err, res){
 				expect(res).to.exist;
 				expect(res.status).to.equal(200);
-				expect(res.text).to.contain('exist');
+				// expect(res.text).to.contain('exist');
 				done();
 			});
-		});*/
+		});
 		
 	});
 })

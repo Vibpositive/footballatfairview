@@ -26,19 +26,19 @@
 							</td>
 
 							<td>
-								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-xs btn-block btn-success" action="playing">
+								<button id="participate" value="<%= list.names[i].player_id %>" fn="<%= list.names[i].full_name %>" type="button" class="btn btn-xs btn-block btn-success" action="playing">
 									UnBlock
 								</button>
 							</td>
 
 							<td>
-								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-xs btn-block btn-warning" action="block">
+								<button id="participate" value="<%= list.names[i].player_id %>" fn="<%= list.names[i].full_name %>" type="button" class="btn btn-xs btn-block btn-warning" action="block">
 									Block
 								</button>
 							</td>
 
 							<td>
-								<button id="participate" value="<%= list.names[i].player_id %>" type="button" class="btn btn-xs btn-block btn-danger" action="remove">
+								<button id="participate" value="<%= list.names[i].player_id %>" fn="<%= list.names[i].full_name %>" type="button" class="btn btn-xs btn-block btn-danger" action="remove">
 									REMOVE
 								</button>
 							</td>
@@ -58,16 +58,15 @@
 		{
 			var currentAction = $(this).attr('action');
 			var player_id     = $(this).val();
+			var full_name     = $(this).attr("fn");
 			var list_id       = "<%= list._id %>";
-
-			console.log('currentAction' + currentAction);
-			console.log('player_id' + player_id);
 
 			$.post("/matches/edit/match/",
 			{
 				list_id       : list_id,
 				player_id     : player_id,
-				player_status : currentAction
+				player_status : currentAction,
+				full_name     : full_name
 			},
 			function(data, status)
 			{

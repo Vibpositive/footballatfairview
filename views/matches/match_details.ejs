@@ -5,10 +5,9 @@
 		<title><%= title %></title>
 
 		<% include ../html/scripts_css %>
-		
-		<script type="text/javascript" src="/public/js/bootstrap-toggle.min.js"></script>
-		<link rel="stylesheet" href="/public/css/bootstrap-toggle.min.css">
-		
+
+		<script type="text/javascript" src="/public/js/bootstrap-switch.min.js"></script>
+		<link rel="stylesheet" href="/public/css/bootstrap3/bootstrap-switch.min.css" />
 
 		<script>
 
@@ -37,6 +36,29 @@
 
 					});
 
+				});
+
+				$("#creatorOnList").bootstrapSwitch({
+					labelText     : "Include name on match?",
+					onText        : "Yes",
+					offText       : "No",
+					labelWidth    : "175",
+					offColor      : "danger",
+					state         : <%= player_on_list %>
+				}).on('switchChange.bootstrapSwitch', function(event, state)
+				{
+					$.post("/matches/participate",
+					{
+						list_id       : listid,
+						player_status : state
+					},
+					function(data, status)
+					{
+						$.get("/matches/match/details/" + listid + " #list_container", function(data) {
+							$("#list_container").html( data );
+						});
+
+					});
 				});
 				
 			})
@@ -74,11 +96,9 @@
 				</div>
 				<div class="col-sm-4">
 					<p class="text-center">
-						<%if (player_on_list == true) { %>
-							<input type="checkbox" id="toggle-event" <%= disabled %> checked data-toggle="toggle" data-on="Yes" data-off="No">
-						<% }else{ %>
-							<input type="checkbox" id="toggle-event" <%= disabled %> data-toggle="toggle" data-on="Yes" data-off="No">
-						<% } %>
+						<label class="checkbox-inline">
+							<input type="checkbox" id="creatorOnList" value="option">
+						</label>
 					</p>
 					<div id="list_container">
 						<div>

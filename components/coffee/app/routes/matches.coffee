@@ -2,6 +2,8 @@ List    = require '../models/list'
 User    = require '../models/user'
 moment  = require 'moment'
 uuid    = require 'node-uuid'
+_       = require "underscore"
+ObjectId = require('mongodb').ObjectID;
 
 isLoggedIn = (req, res, next) ->
     if req.isAuthenticated()
@@ -46,7 +48,6 @@ module.exports = (app) ->
 
     app.post '/matches/views/playerslist', isLoggedIn, (req, res)->
         List.findOne {_id : req.body.list_id }, (err, list) ->
-            console.log list
             if err
                 res.send err
                 return
@@ -58,13 +59,35 @@ module.exports = (app) ->
             title   : "Matches index"
             return
 
+    app.post '/matches/addusertomatch', (req, res)->
+
+        list_id    = req.body.list_id
+        
+        User.find {}, (err, result)->
+            _.each result, (item)->
+                List.update { '_id' : list_id }, { $addToSet : { 'names' : {
+                    player_id  : item._id
+                    datetime   : ""
+                    last_name  : item.facebook.last_name
+                    first_name : item.facebook.first_name
+                    full_name  : item.facebook.full_name
+                    phone      : item.phone
+                    status     : 'playing'
+                    } } },(err, numAffected) ->
+                      return
+                return
+
+            res.send "ok"
+
     app.post '/matches/participate', isLoggedIn, (req, res)->
-        player_id  = req.user.id
+
+        player_id  = new ObjectId(req.user.id)
         datetime   = 'date'
         last_name  = req.user.facebook.last_name
         first_name = req.user.facebook.first_name
         full_name  = req.user.facebook.first_name + " " + req.user.facebook.last_name
         list_id    = req.body.list_id
+        phone      = req.user.phone
 
         if req.body.player_status == 'true'
 
@@ -80,6 +103,7 @@ module.exports = (app) ->
             first_name : first_name
             full_name  : full_name
             status     : 'playing'
+            phone      : phone
             } } },(err, numAffected) ->
               if err
                 res.send 'err: ' + String(err)
@@ -143,7 +167,6 @@ module.exports = (app) ->
 
     app.get '/matches/edit', isLoggedIn, (req, res)->
         List.find {}, (err, list) ->
-            console.log list
             if err
                 res.send err
                 return
@@ -171,48 +194,45 @@ module.exports = (app) ->
                 title: 'Matches List'
                 return
 
-    app.post '/matches/edit/status', isLoggedIn, (req, res, next) ->
-        
-        list_id     = req.body.list_id
-        list_status = req.body.list_status
-
-        List.update { _id : list_id }, { 'list_status' : String(list_status) },(err, numAffected) ->
-            if err
-                return { message: err }
-            else
-                if numAffected > 0
-                    res.send { message: 'ok' }
-                else
-                    res.send { message: '0 rows affected' }
-                return
-
     # TODO: Improve route trying using just one
-    app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
+    # app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
+    app.post '/matches/edit/match', (req, res, next) ->
         
         list_id       = req.body.list_id
         player_status = req.body.player_status
-        player_id     = req.body.player_id
+        full_name     = req.body.full_name
+        player_id     = new ObjectId(req.body.player_id)
 
-        List.update { '_id' : list_id, "names.player_id" : player_id }, { '$set' : { 'names.$.status' : player_status} },(err, numAffected) ->
-              if err
-                res.send 'err: ' + String(err)
-              else
-                if numAffected > 0
-                  res.json({ message: 'ok' });
-                else
-                  res.json({ message: '0 rows affected' });
-                  return
+        if player_status == "remove"
+
+            List.findByIdAndUpdate { '_id' : list_id }, { $pull: names : full_name : full_name, player_id : new ObjectId(player_id) }, (err, model) ->
+                if err
+                    return res.status(422).json(err)
+
+                console.log 'model',model
+
+                List.findOne {_id : list_id, 'names.full_name' : full_name}, (err2, model2)->
+
+                    if err
+                        return res.status(422).json(err2)
+
+                    console.log 'model2',model2
+                    res.status(200).json(model2);
+
+            return
+        return
 
      app.post '/matches/create', isLoggedIn, (req, res, next) ->
         isParticipating = req.body.names
 
         if isParticipating == 'true'
             names = [{
-                player_id  : req.user.id
+                player_id  : new ObjectId(req.user.id)
                 datetime   : 'date'
                 last_name  : req.user.facebook.last_name
                 first_name : req.user.facebook.first_name
                 full_name  : req.user.facebook.first_name + " " + req.user.facebook.last_name
+                phone      : req.user.phone
                 status     : 'playing'
             }]
         else
