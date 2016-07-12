@@ -162,21 +162,32 @@ module.exports = function(app) {
         }
       });
     } else {
-      addMatchToUserList(req.user, list_id, 'pull');
-      return List.findByIdAndUpdate({
+      return List.findOne({
         '_id': list_id
-      }, {
-        $pull: {
-          'names': {
-            full_name: full_name
+      }, function(err, list) {
+        var currentTime, diffMinutes, matchTime;
+        currentTime = moment();
+        matchTime = moment(list.list_date, "x");
+        diffMinutes = currentTime.diff(matchTime, 'minutes');
+        if (diffMinutes > -360) {
+          console.log(diffMinutes);
+        }
+        addMatchToUserList(req.user, list_id, 'pull');
+        List.findByIdAndUpdate({
+          '_id': list_id
+        }, {
+          $pull: {
+            'names': {
+              full_name: full_name
+            }
           }
-        }
-      }, function(err, model) {
-        if (err) {
-          return res.send('err: ' + String(err));
-        } else {
-          return res.send(model);
-        }
+        }, function(err, model) {
+          if (err) {
+            return res.send('err: ' + String(err));
+          } else {
+            return res.send(model);
+          }
+        });
       });
     }
   });

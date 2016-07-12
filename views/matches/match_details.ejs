@@ -21,23 +21,6 @@
 
 			$( document ).ready(function()
 			{
-				$('#toggle-event').change(function()
-				{
-					$.post("/matches/participate",
-					{
-						list_id       : listid,
-						player_status : $(this).prop('checked')
-					},
-					function(data, status)
-					{
-						$.get("/matches/match/details/" + listid + " #list_container", function(data) {
-							$("#list_container").html( data );
-						});
-
-					});
-
-				});
-
 				$("#creatorOnList").bootstrapSwitch({
 					labelText     : "Include name on match?",
 					onText        : "Yes",
@@ -47,18 +30,29 @@
 					state         : <%= player_on_list %>
 				}).on('switchChange.bootstrapSwitch', function(event, state)
 				{
-					$.post("/matches/participate",
-					{
-						list_id       : listid,
-						player_status : state
-					},
-					function(data, status)
-					{
-						$.get("/matches/match/details/" + listid + " #list_container", function(data) {
-							$("#list_container").html( data );
-						});
+					var currentTime = moment(Date.now());
+					var matchTime   = moment(<%= list.list_date %>);
 
-					});
+					var diffMinutes = currentTime.diff(matchTime, 'minutes');
+
+					if (
+						diffMinutes > -360
+					){
+						console.log("Menos de 6 horas");
+					
+						$.post("/matches/participate",
+						{
+							list_id       : listid,
+							player_status : state
+						},
+						function(data, status)
+						{
+							$.get("/matches/match/details/" + listid + " #list_container", function(data) {
+								$("#list_container").html( data );
+							});
+
+						});
+					}
 				});
 				
 			})

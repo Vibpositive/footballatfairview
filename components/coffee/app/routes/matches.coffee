@@ -114,12 +114,27 @@ module.exports = (app) ->
                   res.json({ message: '0 rows affected' });
                   return
         else
-          addMatchToUserList(req.user, list_id, 'pull')
-          List.findByIdAndUpdate { '_id' : list_id }, { $pull: 'names': full_name : full_name }, (err, model) ->
-            if err
-              res.send 'err: ' + String(err)
-            else
-              res.send model
+          List.findOne { '_id' : list_id }, (err, list)->
+
+            currentTime = moment()
+            matchTime   = moment(list.list_date, "x")
+
+            diffMinutes = currentTime.diff(matchTime, 'minutes')
+
+            if diffMinutes > -360
+                # TODO: Create penalty
+                # TODO: Insert penalty to user list
+                console.log diffMinutes
+            
+            addMatchToUserList(req.user, list_id, 'pull')
+
+            List.findByIdAndUpdate { '_id' : list_id }, { $pull: 'names': full_name : full_name }, (err, model) ->
+              if err
+                res.send 'err: ' + String(err)
+              else
+                res.send model
+            return
+
 
     app.get '/matches/match/:listid', isLoggedIn,(req, res) ->
 
