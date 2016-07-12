@@ -1,9 +1,11 @@
-List    = require '../models/list'
-User    = require '../models/user'
-moment  = require 'moment'
-uuid    = require 'node-uuid'
-_       = require "underscore"
-ObjectId = require('mongodb').ObjectID;
+List        = require '../models/list'
+User        = require '../models/user'
+moment      = require 'moment'
+uuid        = require 'node-uuid'
+_           = require "underscore"
+Penalty     = require '../models/penalty'
+UserPenalty = require '../models/user_penalty'
+ObjectId    = require('mongodb').ObjectID;
 
 isLoggedIn = (req, res, next) ->
     if req.isAuthenticated()
@@ -122,6 +124,11 @@ module.exports = (app) ->
             diffMinutes = currentTime.diff(matchTime, 'minutes')
 
             if diffMinutes > -360
+
+                Penalty.findOne {description : "Player removed name from list less than 6 hours before match starting"}, (penalty_err, penalty_list)->
+                    if penalty_err
+                        return console.log penalty_err
+                    console.log penalty_list
                 # TODO: Create penalty
                 # TODO: Insert penalty to user list
                 console.log diffMinutes

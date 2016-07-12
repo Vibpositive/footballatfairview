@@ -1,4 +1,4 @@
-var List, ObjectId, User, _, addMatchToUserList, isLoggedIn, moment, uuid;
+var List, ObjectId, Penalty, User, UserPenalty, _, addMatchToUserList, isLoggedIn, moment, uuid;
 
 List = require('../models/list');
 
@@ -9,6 +9,10 @@ moment = require('moment');
 uuid = require('node-uuid');
 
 _ = require("underscore");
+
+Penalty = require('../models/penalty');
+
+UserPenalty = require('../models/user_penalty');
 
 ObjectId = require('mongodb').ObjectID;
 
@@ -170,6 +174,14 @@ module.exports = function(app) {
         matchTime = moment(list.list_date, "x");
         diffMinutes = currentTime.diff(matchTime, 'minutes');
         if (diffMinutes > -360) {
+          Penalty.findOne({
+            description: "Player removed name from list less than 6 hours before match starting"
+          }, function(penalty_err, penalty_list) {
+            if (penalty_err) {
+              return console.log(penalty_err);
+            }
+            return console.log(penalty_list);
+          });
           console.log(diffMinutes);
         }
         addMatchToUserList(req.user, list_id, 'pull');
