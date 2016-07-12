@@ -12,9 +12,9 @@ var list_size        = 21;
 var list_status      = 'pending';
 
 var user_id          = "576c64860246493a57afb09c"
-var user_name        = "AAAAAAAAAA";
-var user_phone       = "1111111111";
-var user_email       = "1111111@111.111";
+var user_name        = "Gabriel Oliveira";
+var user_phone       = "083 462 1777";
+var user_email       = "ras.vibpositive@gmail.com";
 
 
 describe('Control Panel', function()
@@ -118,10 +118,84 @@ describe('Control Panel', function()
 			});
 		});
 
-		it('should return a 200 status code for a post on matches/create', function(done)
+		it('should return a 200 status code for a get on penalties', function(done)
 		{
 			request
-			.post(baseUrl + '/panelties')
+			.get(baseUrl + '/penalties')
+			.send(
+			{
+				list_date : list_date,
+				list_size : list_size,
+				list_status : list_status
+			})
+			.end(function(err, res){
+				expect(res).to.exist;
+				expect(res.status).to.equal(200);
+				// expect(res.text).to.contain('exist');
+				done();
+			});
+		});
+
+
+		it('should return a 200 status code for a get on penalties/create', function(done)
+		{
+			request
+			.get(baseUrl + '/penalties/create')
+			.send(
+			{
+				list_date : list_date,
+				list_size : list_size,
+				list_status : list_status
+			})
+			.end(function(err, res){
+				expect(res).to.exist;
+				expect(res.status).to.equal(200);
+				// expect(res.text).to.contain('exist');
+				done();
+			});
+		});
+
+		it('should return a 200 status code for a post on penalties/create', function(done)
+		{
+			request
+			.post(baseUrl + '/penalties/create')
+			.send(
+			{
+				player_id  : "575f2401c3fe8d106f774237",
+        		penalty_id : "57706293bed8b91739ef5e5c",
+        		match_id   : "575f2401c3fe8d106f774237"
+			})
+			.end(function(err, res)
+			{
+				expect(res).to.exist;
+				expect(res.status).to.equal(200);
+				expect(res.text).to.match(/\b\w{24}\b/);
+				done();
+			});
+		});
+
+		it('should return a 200 status code for a get on penalties/edit', function(done)
+		{
+			request
+			.get(baseUrl + '/penalties/edit')
+			.send(
+			{
+				list_date : list_date,
+				list_size : list_size,
+				list_status : list_status
+			})
+			.end(function(err, res){
+				expect(res).to.exist;
+				expect(res.status).to.equal(200);
+				// expect(res.text).to.contain('exist');
+				done();
+			});
+		});
+
+		it('should return a 200 status code for a get on penalties/view', function(done)
+		{
+			request
+			.get(baseUrl + '/penalties/view')
 			.send(
 			{
 				list_date : list_date,

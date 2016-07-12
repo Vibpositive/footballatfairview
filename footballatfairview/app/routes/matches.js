@@ -291,7 +291,6 @@ module.exports = function(app) {
         if (err) {
           return res.status(422).json(err);
         }
-        console.log('model', model);
         return List.findOne({
           _id: list_id,
           'names.full_name': full_name
@@ -299,7 +298,6 @@ module.exports = function(app) {
           if (err) {
             return res.status(422).json(err2);
           }
-          console.log('model2', model2);
           return res.status(200).json(model2);
         });
       });

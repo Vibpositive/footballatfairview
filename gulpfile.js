@@ -80,6 +80,7 @@ gulp.task('public', function(){
 gulp.task('coffee', function(){
 	gulp.src(options.COFFEE_SOURCE)
 	.pipe(coffee({bare : true}))
+	.pipe(minify({ ext:{ src:'.js', min:'.min.js' } }))
 	.on('error', gutil.log)
 	.pipe(gulp.dest(options.COFFEE_DEST));
 });

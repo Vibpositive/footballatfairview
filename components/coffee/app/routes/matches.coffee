@@ -208,15 +208,10 @@ module.exports = (app) ->
             List.findByIdAndUpdate { '_id' : list_id }, { $pull: names : full_name : full_name, player_id : new ObjectId(player_id) }, (err, model) ->
                 if err
                     return res.status(422).json(err)
-
-                console.log 'model',model
-
                 List.findOne {_id : list_id, 'names.full_name' : full_name}, (err2, model2)->
 
                     if err
                         return res.status(422).json(err2)
-
-                    console.log 'model2',model2
                     res.status(200).json(model2);
 
             return
