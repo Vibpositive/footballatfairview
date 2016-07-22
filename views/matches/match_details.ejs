@@ -34,25 +34,27 @@
 					var matchTime   = moment(<%= list.list_date %>);
 
 					var diffMinutes = currentTime.diff(matchTime, 'minutes');
+					var lessThan360 = false;
 
 					if (
 						diffMinutes > -360
 					){
 						console.log("Menos de 6 horas");
-					
-						$.post("/matches/participate",
-						{
-							list_id       : listid,
-							player_status : state
-						},
-						function(data, status)
-						{
-							$.get("/matches/match/details/" + listid + " #list_container", function(data) {
-								$("#list_container").html( data );
-							});
-
-						});
+						lessThan360 = true;
 					}
+
+					$.post("/matches/participate",
+					{
+						list_id       : listid,
+						player_status : state
+					},
+					function(data, status)
+					{
+						$.get("/matches/match/details/" + listid, function(data) {
+							$("#list_container").html( data );
+						});
+
+					});
 				});
 				
 			})

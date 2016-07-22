@@ -173,40 +173,79 @@ module.exports = function(app) {
         currentTime = moment();
         matchTime = moment(list.list_date, "x");
         diffMinutes = currentTime.diff(matchTime, 'minutes');
+        console.log("diffMinutes", diffMinutes);
         if (diffMinutes > -360) {
-          Penalty.findOne({
+          List.update({
+            '_id': list_id,
+            'names': {
+              $elemMatch: {
+                'full_name': req.user.facebook.full_name
+              }
+            }
+          }, {
+            '$set': {
+              'names.$.status': 'blocked'
+            }
+          }, function(err, numAffected) {
+            if (err) {
+              res.json({
+                message: err
+              });
+              return;
+            }
+          });
+          return Penalty.findOne({
             description: "Player removed name from list less than 6 hours before match starting"
           }, function(penalty_err, penalty_list) {
+            var newUserPenalty;
             if (penalty_err) {
-              return console.log(penalty_err);
+              return res.status(422).json(penalty_err);
             }
-            return console.log(penalty_list);
+            newUserPenalty = new UserPenalty({
+              player_id: req.user.id,
+              penalty_id: penalty_list.id,
+              match_id: list_id
+            });
+            return newUserPenalty.save(function(err, result, numAffected) {
+              if (err) {
+                return res.status(422).json(err);
+              }
+              console.log(newUserPenalty._id);
+              User.findOne({
+                _id: req.user.id
+              }, function(userError, userResult) {
+                return console.log(userResult);
+              });
+              return res.status(200).json({
+                message: numAffected
+              });
+            });
           });
-          console.log(diffMinutes);
-        }
-        addMatchToUserList(req.user, list_id, 'pull');
-        List.findByIdAndUpdate({
-          '_id': list_id
-        }, {
-          $pull: {
-            'names': {
-              full_name: full_name
+        } else {
+          addMatchToUserList(req.user, list_id, 'pull');
+          List.findByIdAndUpdate({
+            '_id': list_id
+          }, {
+            $pull: {
+              'names': {
+                full_name: full_name
+              }
             }
-          }
-        }, function(err, model) {
-          if (err) {
-            return res.send('err: ' + String(err));
-          } else {
-            return res.send(model);
-          }
-        });
+          }, function(err, model) {
+            if (err) {
+              return res.send('err: ' + String(err));
+            } else {
+              return res.send(model);
+            }
+          });
+        }
       });
     }
   });
   app.get('/matches/match/:listid', isLoggedIn, function(req, res) {
     var listid;
     listid = req.params.listid;
-    List.find({
+    return List.find({
       '_id': listid,
       'names': {
         $elemMatch: {
@@ -236,7 +275,7 @@ module.exports = function(app) {
       });
     });
   });
-  app.get('/matches/match/details/:listid', isLoggedIn, function(req, res) {
+  app.get('/matches/match/details/:listid', function(req, res) {
     List.findOne({
       _id: req.params.listid
     }, function(err, list) {
@@ -251,6 +290,32 @@ module.exports = function(app) {
         user: req.user,
         title: "Match: details"
       });
+    });
+    return List.aggregate([
+      {
+        $match: {
+          _id: ObjectId(req.params.listid)
+        }
+      }, {
+        $project: {
+          resultado: {
+            $filter: {
+              input: '$names',
+              as: 'names',
+              cond: {
+                $eq: ['$$names.status', 'playing']
+              }
+            }
+          },
+          _id: 0
+        }
+      }
+    ], function(err, result) {
+      if (err) {
+        console.log('err', err);
+      }
+      console.log('result');
+      return console.log(result[0]);
     });
   });
   app.get('/matches/create', isLoggedIn, function(req, res) {

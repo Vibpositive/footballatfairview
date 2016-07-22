@@ -35,4 +35,17 @@ userSchema.methods.generateHash = (password) ->
 userSchema.methods.validPassword = (password) ->
   bcrypt.compareSync password, @local.password
 
+userModel = mongoose.model('User', userSchema)
+
+# TODO: check if penalty already exists for user
+# TODO: check also on penalty collection
+userSchema.pre 'save', (next)->
+    self = this;
+    userModel.find name : self.name , (err, docs)->
+      if !docs.length
+        next()
+      else
+        console.log 'user exists: ',self.name
+        next new Error "User exists!"
+
 module.exports = mongoose.model('User', userSchema)

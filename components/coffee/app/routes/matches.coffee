@@ -94,7 +94,7 @@ module.exports = (app) ->
         if req.body.player_status == 'true'
 
           # TODO: Use UUID instead of DB id
-          # list_id    = '57587de6d1c385f511fbbb17'
+          # TODO: Verifiy is user is blocked on list before adding him
 
           addMatchToUserList(req.user, list_id, 'push')
 
@@ -123,52 +123,80 @@ module.exports = (app) ->
 
             diffMinutes = currentTime.diff(matchTime, 'minutes')
 
+            console.log "diffMinutes",diffMinutes
+
             if diffMinutes > -360
+
+                # TOOD: User player_id instead of full name... not working at the moment
+                List.update '_id' : list_id , 'names': $elemMatch: 'full_name': req.user.facebook.full_name,
+                {
+                    '$set' : {
+                        'names.$.status': 'blocked'
+                    }
+                },(err, numAffected) ->
+                    if err
+                        res.json({message: err})
+                        return
+                    return
 
                 Penalty.findOne {description : "Player removed name from list less than 6 hours before match starting"}, (penalty_err, penalty_list)->
                     if penalty_err
-                        return console.log penalty_err
-                    console.log penalty_list
-                # TODO: Create penalty
-                # TODO: Insert penalty to user list
-                console.log diffMinutes
-            
-            addMatchToUserList(req.user, list_id, 'pull')
+                        return res.status(422).json(penalty_err)
 
-            List.findByIdAndUpdate { '_id' : list_id }, { $pull: 'names': full_name : full_name }, (err, model) ->
-              if err
-                res.send 'err: ' + String(err)
-              else
-                res.send model
-            return
+                    newUserPenalty = new UserPenalty(
+                        player_id  : req.user.id
+                        penalty_id : penalty_list.id
+                        match_id   : list_id
+                    )
+
+                    newUserPenalty.save (err, result, numAffected)->
+                        if err
+                            return res.status(422).json(err)
+                        console.log newUserPenalty._id
+                        User.findOne _id : req.user.id, (userError, userResult) ->
+                            console.log userResult
+                        return res.status(200).json message : numAffected
+
+                # TODO: Before saving penalty, verify if user status on list is blocked
+                # TODO: Insert penalty to user list
+            else
+                addMatchToUserList(req.user, list_id, 'pull')
+
+                List.findByIdAndUpdate { '_id' : list_id }, { $pull: 'names': full_name : full_name }, (err, model) ->
+                  if err
+                    res.send 'err: ' + String(err)
+                  else
+                    res.send model
+                return
 
 
     app.get '/matches/match/:listid', isLoggedIn,(req, res) ->
 
-            listid = req.params.listid
+        listid = req.params.listid
 
-            List.find { '_id': listid, 'names': $elemMatch: 'full_name': req.user.facebook.full_name }, (err, sec_res) ->
+        List.find { '_id': listid, 'names': $elemMatch: 'full_name': req.user.facebook.full_name }, (err, sec_res) ->
 
-                player_on_list = if sec_res.length <= 0 then false else true
+            player_on_list = if sec_res.length <= 0 then false else true
 
-                List.findOne { _id: listid }, (err, list) ->
-                    if err
-                        console.log err
-                        return
-                    # return
-                    res.render     'matches/match_details.ejs',
-                    message        : req.flash('loginMessage')
-                    list           : list
-                    match_date     : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
-                    user           : req.user
-                    player_on_list : player_on_list
-                    moment         : moment
-                    disabled       : if list.list_status == 'deactivate' then 'disabled' else ''
-                    title          : "Match"
+            List.findOne { _id: listid }, (err, list) ->
+                if err
+                    console.log err
                     return
-            return
+                # return
+                res.render     'matches/match_details.ejs',
+                message        : req.flash('loginMessage')
+                list           : list
+                match_date     : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
+                user           : req.user
+                player_on_list : player_on_list
+                moment         : moment
+                disabled       : if list.list_status == 'deactivate' then 'disabled' else ''
+                title          : "Match"
+                return
 
-    app.get '/matches/match/details/:listid', isLoggedIn, (req, res) ->
+    # app.get '/matches/match/details/:listid', isLoggedIn, (req, res) ->
+    app.get '/matches/match/details/:listid', (req, res) ->
+
         List.findOne { _id: req.params.listid }, (err, list) ->
             if err
                 console.log err
@@ -181,7 +209,24 @@ module.exports = (app) ->
             user       : req.user
             title      : "Match: details"
             return
-        return
+
+        List.aggregate([
+            {$match: { _id : ObjectId(req.params.listid) }},
+            {$project: {
+                resultado: {$filter: {
+                    input: '$names',
+                    as: 'names',
+                    cond: {$eq: ['$$names.status', 'playing']}
+                }},
+                _id: 0
+            }}
+        ], (err, result)->
+            if err
+                console.log 'err',err
+            console.log 'result'
+            # TODO: Use result
+            console.log result[0]
+        )
 
     app.get '/matches/create', isLoggedIn, (req, res)->
       res.render 'matches/create.ejs', title: 'Create a match'
