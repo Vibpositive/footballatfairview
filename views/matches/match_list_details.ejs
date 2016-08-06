@@ -8,21 +8,22 @@
 				<th>Phone</th>
 			</tr>
 		</thead>
+		<%= list %>
 		<tbody>
-			<% for(var i=0; i<list.names.length; i++) { %>
+			<% for(var i=0; i < list.names.length; i++) { %>
 				<tr>
-					<th scope="row"><%= i+1 %></th>
-					<td>
-						<p><%= list.names[i].first_name %></p>
-					</td>
-					<td>
-						<p><%= list.names[i].last_name %></p>
-					</td>
-					<td>
-						<p><%= list.names[i].phone %></p>
-					</td>
-				</tr>
-			<% } %>
+						<th scope="row"><%= i+1 %></th>
+						<td>
+							<p><%= list.names[i].first_name %></p>
+						</td>
+						<td>
+							<p><%= list.names[i].last_name %></p>
+						</td>
+						<td>
+							<p><%= list.names[i].phone %></p>
+						</td>
+					</tr>
+			<% }%>
 		</tbody>
 	</table>
 </div>
