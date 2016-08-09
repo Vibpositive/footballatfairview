@@ -89,7 +89,6 @@ module.exports = (app) ->
     updateList    = false
 
     if req.body.player_status == 'true'
-      console.log "if req.body.player_status =="
 
       # TODO: Use UUID instead of DB id
       # TODO: Verifiy is user is blocked on list before adding him
@@ -115,6 +114,16 @@ module.exports = (app) ->
           console.log "updating user"
 
           update = 
+            $set : 
+              names : 
+                [player_id  : player_id
+                datetime   : datetime
+                last_name  : last_name
+                first_name : first_name
+                full_name  : full_name
+                status     : 'playing'
+                phone      : phone]
+          ###update = 
             $addToSet : 
               names : 
                 player_id  : player_id
@@ -123,33 +132,116 @@ module.exports = (app) ->
                 first_name : first_name
                 full_name  : full_name
                 status     : 'playing'
-                phone      : phone
+                phone      : phone###
 
-          List.findOneAndUpdate _id: list_id, update, (err, updateDoc)->
+          # List.findOneAndUpdate _id: list_id, update, (err, updateDoc)->
+          #  TODO: Verify first if is there blocked user, and then insert, if not, insert straight aeay
+          List.update '_id' : list_id , 'names': $elemMatch: 'status' : "blocked",
+          {
+            '$set' : {
+                "names.$.datetime"       : "xxx"
+                "names.$.last_name"      : "xxx"
+                "names.$.first_name"     : "xxx"
+                "names.$.full_name"      : "xxx"
+                "names.$.phone"          : "xxx"
+                "names.$.status"         : "playing"
+            }
+          },(err, numAffected) ->
             if err
               console.log err
               next err
               return
             # TODO: Fix the message based on validating result
-            console.log (updateDoc)
-            res.json({ message: 'ok' });
+            console.log "ae"
           addMatchToUserList(req.user, list_id, 'push')
     
     else
       List.findOne { '_id' : list_id }, (err, list)->
-        currentTime = moment()
-        matchTime   = moment(list.list_date, "x")
-        diffMinutes = currentTime.diff(matchTime, 'minutes')
+        currentTime             = moment()
+        matchTime               = moment(list.list_date, "x")
+        diffMinutes             = currentTime.diff(matchTime, 'minutes')
+        user_index              = 9999
+        is_user_on_waiting_list = false
+        # is_there_waiting_list   = if list.size > 21 then true else false
+        is_there_waiting_list   = true
 
         if diffMinutes > -360
-          # TOOD: User player_id instead of full name... not working at the moment
-          # List.update '_id' : list_id , 'names': $elemMatch: 'full_name': req.user.facebook.full_name,
-          List.update '_id' : list_id , 'names': $elemMatch: 'player_id' : player_id,
+
+          List.findOne '_id' : list_id , 'names': $elemMatch: 'player_id' : player_id,(err, userFound) ->          
+            _.each userFound.names, (val, i)->
+
+              if String(val.player_id) == String(req.user.id)
+                user_index = i
+              # END if
+
+                if user_index > list.list_size
+                  is_user_on_waiting_list = true
+                # END IF
+            # END _.each
+
+            if is_there_waiting_list == false
+              # TODO: Update if there is not waiting list
+
+              # List.update '_id' : list_id , 'names': $elemMatch: 'player_id' : player_id,
+              List.findByIdAndUpdate { '_id' : list_id }, { $pull: 'names' : 'player_id' : player_id }, (err, model) ->
+                return
+              # END IF
+
+            else
+              Penalty.findOne {description : "Player removed name from list less than 6 hours before match starting"}, (penalty_err, penalty_list)->
+                if penalty_err
+                  return res.status(422).json(penalty_err)
+
+                newUserPenalty = new UserPenalty
+                  player_id  : req.user.id
+                  penalty_id : penalty_list.id
+                  match_id   : list_id
+                newUserPenalty.save (err, result, numAffected)->
+                  if err
+                    return res.status(422).json(err)
+                    # TODO: FInish
+                  # console.log newUserPenalty._id
+                  User.findOne _id : req.user.id, (userError, userResult) ->
+                    # console.log userResult
+                    return
+                  # return res.status(200).json message : numAffected
+                  # TODO: Before saving penalty, verify if user status on list is blocked
+                  # TODO: Insert penalty to user list
+
+                  List.update '_id' : list_id , 'names': $elemMatch: 'player_id' : player_id,
+                  {
+                    '$set' : {
+                      "names.$.datetime"       : ""
+                      "names.$.last_name"      : ""
+                      "names.$.first_name"     : ""
+                      "names.$.full_name"      : ""
+                      "names.$.phone"          : ""
+                      "names.$.status"         : "blocked"
+                      "names.$.penalty_id"     : newUserPenalty._id
+                      # 'names.$.status' : 'blocked'
+                    }
+                  },(err, numAffected) ->
+
+                    console.log "user_index", user_index, "list.list_size",list.list_size
+                    console.log "is_user_on_waiting_list",String(is_user_on_waiting_list)
+
+                    if err
+                      res.json({message: err})
+                      return
+
+            # TODO: Update if there is waiting list
+
+
+          ###List.update '_id' : list_id , 'names': $elemMatch: 'player_id' : player_id,
           {
             '$set' : {
               'names.$.status': 'blocked'
             }
           },(err, numAffected) ->
+
+            console.log "user_index", user_index, "list.list_size",list.list_size
+            console.log "is_user_on_waiting_list",String(is_user_on_waiting_list)
+
             if err
               res.json({message: err})
               return
@@ -172,7 +264,7 @@ module.exports = (app) ->
                   return
               return res.status(200).json message : numAffected
               # TODO: Before saving penalty, verify if user status on list is blocked
-              # TODO: Insert penalty to user list
+              # TODO: Insert penalty to user list###
         else
           addMatchToUserList(req.user, list_id, 'pull')
           List.findByIdAndUpdate { '_id' : list_id }, { $pull: 'names': full_name : full_name }, (err, model) ->
@@ -224,7 +316,7 @@ module.exports = (app) ->
 
         player_is_on_list = if sec_res.length <= 0 then false else true
 
-        List.aggregate(
+        ###List.aggregate(
             { $match   : $and: [ 
                   {
                     _id : ObjectId(listid)
@@ -239,13 +331,24 @@ module.exports = (app) ->
                 }},
                 _id: 1, list_date   : 1, list_status :1,list_size :1
             }}
-        , (err, list)->
+        ,###
+        List.findOne _id : ObjectId(listid),
+        (err, list)->
             if err
                 console.log err
                 res.send err
 
             res.render     'matches/match_details.ejs',
             message           : req.flash('loginMessage')
+            list              : list
+            match_date        : moment(list.list_date).format("dddd, MMMM Do YYYY, h             : mm : ss a");
+            user              : req.user
+            player_is_blocked : player_is_blocked
+            player_is_on_list : player_is_on_list
+            moment            : moment
+            disabled          : if list.list_status == 'deactivate' then 'disabled' else ''
+            title             : "Match"
+            ###message           : req.flash('loginMessage')
             list              : list[0]
             match_date        : moment(list[0].date).format("dddd, MMMM Do YYYY, h             : mm : ss a");
             user              : req.user
@@ -253,8 +356,7 @@ module.exports = (app) ->
             player_is_on_list : player_is_on_list
             moment            : moment
             disabled          : if list[0].list_status == 'deactivate' then 'disabled' else ''
-            title             : "Match"
-        )
+            title             : "Match"###
 
 
     return
@@ -303,10 +405,10 @@ module.exports = (app) ->
             player_is_blocked = true
     )
 
-    List.aggregate(
+    ###List.aggregate(
         { $match   : $and: [ 
               {
-                _id :ObjectId("57645e6601daabea219c0e37")
+                _id : ObjectId(listid)
               }
             ]
         },
@@ -317,51 +419,17 @@ module.exports = (app) ->
                 cond: {$eq: ['$$name.status', 'playing']}
             }},
             _id: 1, list_date   : 1, list_status :1,list_size :1,
-        }}
+        }}###
+    List.findOne _id : ObjectId(listid)
     , (err, result)->
         if err
             console.log err
             res.send err
         console.log result
         res.send result
-    )
-    ###{
-       $project: {
-         names: 1,
-         discount:
-           {
-             $cond: { if: { $eq: ['status', 'playing'] }, then: 30, else: 20 }
-           }
-       }
-    }###
-  app.post '/matches/post', (req, res)->
-    List.aggregate(
-        { $match   : $and: [ 
-              {
-                _id :ObjectId("57645e6601daabea219c0e37")
-              }
-            ]
-        },
-        {$unwind: '$names'},
-        {
-        $project: {
-            _id: 1,
-            'player' : {$eq: ['$names.status', 'blocked']}
-        }},
-        {$group: {
-            _id: '$_id',
-            'player': {$max: '$player'}
-        }},
-    , (err, result)->
-        if err
-            console.log err
-            res.send err
-        console.log result
-        res.send result
-    )
 
   app.get '/matches/match/details/:listid', isLoggedIn, (req, res) ->    
-    List.aggregate [
+    ###List.aggregate [
       { $match: _id: ObjectId(req.params.listid) }
       { $project:
         names: $filter:
@@ -372,16 +440,25 @@ module.exports = (app) ->
             'playing'
           ]
         _id: 0, list_date:1, list_status:1, list_size : 1 }
-    ], (err, result) ->
+    ]###
+    List.findOne _id : ObjectId(req.params.listid)
+    , (err, result) ->
       if err
         return console.log('err', err)
-      console.log result[0]
+      console.log result
+      res.render 'matches/match_list_details.ejs',
+      message    : req.flash('loginMessage')
+      list       : result
+      match_date : moment(result.list_date).format("dddd, MMMM Do YYYY, h : mm : ss a");
+      user       : req.user
+      title      : "Match: details"
+      ###console.log result[0]
       res.render 'matches/match_list_details.ejs',
       message    : req.flash('loginMessage')
       list       : result[0]
       match_date : moment(result[0].list_date).format("dddd, MMMM Do YYYY, h : mm : ss a");
       user       : req.user
-      title      : "Match: details"
+      title      : "Match: details"###
       return
     return
 
