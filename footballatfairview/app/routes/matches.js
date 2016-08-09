@@ -269,8 +269,46 @@ module.exports = function(app) {
     }
   });
   app.get('/matches/match/:listid', isLoggedIn, function(req, res) {
-    var listid;
+    var listid, player_id, player_is_blocked, player_is_on_list;
     listid = req.params.listid;
+    player_id = req.user._id;
+    player_is_blocked = false;
+    player_is_on_list = false;
+    List.aggregate({
+      $match: {
+        $and: [
+          {
+            _id: ObjectId(listid)
+          }
+        ]
+      }
+    }, {
+      $project: {
+        names: {
+          $filter: {
+            input: '$names',
+            as: 'name',
+            cond: {
+              $and: [
+                {
+                  $eq: ['$$name.status', 'blocked']
+                }, {
+                  $eq: ['$$name.player_id', ObjectId(player_id)]
+                }
+              ]
+            }
+          }
+        },
+        _id: 0
+      }
+    }, function(err, result) {
+      if (err) {
+        console.log(err);
+      }
+      if (result[0].names[0] !== void 0) {
+        return player_is_blocked = true;
+      }
+    });
     List.find({
       '_id': listid,
       'names': {
@@ -279,23 +317,45 @@ module.exports = function(app) {
         }
       }
     }, function(err, sec_res) {
-      var player_on_list;
-      player_on_list = sec_res.length <= 0 ? false : true;
-      List.findOne({
-        _id: listid
+      player_is_on_list = sec_res.length <= 0 ? false : true;
+      return List.aggregate({
+        $match: {
+          $and: [
+            {
+              _id: ObjectId(listid)
+            }
+          ]
+        }
+      }, {
+        $project: {
+          names: {
+            $filter: {
+              input: '$names',
+              as: 'name',
+              cond: {
+                $eq: ['$$name.status', 'playing']
+              }
+            }
+          },
+          _id: 1,
+          list_date: 1,
+          list_status: 1,
+          list_size: 1
+        }
       }, function(err, list) {
         if (err) {
           console.log(err);
-          return;
+          res.send(err);
         }
-        res.render('matches/match_details.ejs', {
+        return res.render('matches/match_details.ejs', {
           message: req.flash('loginMessage'),
-          list: list,
-          match_date: moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a"),
+          list: list[0],
+          match_date: moment(list[0].date).format("dddd, MMMM Do YYYY, h             : mm : ss a"),
           user: req.user,
-          player_on_list: player_on_list,
+          player_is_blocked: player_is_blocked,
+          player_is_on_list: player_is_on_list,
           moment: moment,
-          disabled: list.list_status === 'deactivate' ? 'disabled' : '',
+          disabled: list[0].list_status === 'deactivate' ? 'disabled' : '',
           title: "Match"
         });
       });
@@ -303,76 +363,57 @@ module.exports = function(app) {
   });
   app.post('/matches/match/details/:listid', function(req, res) {
 
-    /*List.aggregate([
-        $match: {
-            $and: [ 
-                { "names.status" : "playing" } 
-            ]
-        }
-      {
-        $project :{
-             _id : 1
-             names: {
-                $filter: {
-                   input: "$names",
-                   as: "names",
-                   cond: { $eq: [ "$$names.status", "playing" ] }
-                }
-             }
-          }
-       }
-    ],(err, result)->
-        if err
-            console.log err
-            return res.send err
-        console.log result
-        res.send result)
-     */
-
-    /*List.find(
-      {
-        "names.status" : "playing"
-      },
-      {
-        _id : 1,
-        names : {
-            $elemMatch : {
-                'status': "playing"
-            }
-        }
-      },(err, result) ->
-        res.send result
-      )
-     */
-
-    /*   
-    List.aggregate([
-         * Filter possible documents
-         * { "$match": { "names.status" : "playing" } },
-        $match: {
-              $and: [ 
-                  { "names.status" : "playing" }
-                  { "list.status" : "active" }
-              ]
-        }
-         * {$group: {"_id": "$_id"}},
-         * {$project: {"_id": 1}}
+    /*current_list_length = 0
     
-         * Redact the entries that do not match
-        { "$redact": {
-            "$cond": [
-                { "$eq": [ { "$ifNull":  [ "$status", "playing" ] }, "playing" ] },
-                "$$DESCEND",
-                "$$PRUNE"
+    List.aggregate(
+        { $match   : $and: [ 
+              {
+                _id : ObjectId(listid)
+              }
             ]
-        }}
-    ], (err, result)->
-        if err
-            console.log err
-            res.send err
-        res.send result
+        },
+        { $project: { count: { $size:"$names" }}}, (err, result)->
+            current_list_length = result[0].count
+            console.log "current_list_length",current_list_length
     )
      */
+    var player_is_blocked;
+    player_is_blocked = false;
+    List.aggregate({
+      $match: {
+        $and: [
+          {
+            _id: ObjectId(listid)
+          }
+        ]
+      }
+    }, {
+      $project: {
+        names: {
+          $filter: {
+            input: '$names',
+            as: 'name',
+            cond: {
+              $and: [
+                {
+                  $eq: ['$$name.status', 'blocked']
+                }, {
+                  $eq: ['$$name.player_id', ObjectId(player_id)]
+                }
+              ]
+            }
+          }
+        },
+        _id: 0
+      }
+    }, function(err, result) {
+      if (err) {
+        console.log(err);
+      }
+      if (result[0].names[0] !== void 0) {
+        return player_is_blocked = true;
+      }
+    });
     return List.aggregate({
       $match: {
         $and: [
@@ -405,22 +446,53 @@ module.exports = function(app) {
       console.log(result);
       return res.send(result);
     });
-  });
-  app.get('/matches/match/details/:listid', function(req, res) {
 
-    /*
-    List.findOne { _id: req.params.listid }, (err, list) ->
-      if err
-        console.log err
-        return
-      res.render 'matches/match_list_details.ejs',
-      message    : req.flash('loginMessage')
-      list       : list
-      match_date : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
-      user       : req.user
-      title      : "Match: details"
-      return
+    /*{
+       $project: {
+         names: 1,
+         discount:
+           {
+             $cond: { if: { $eq: ['status', 'playing'] }, then: 30, else: 20 }
+           }
+       }
+    }
      */
+  });
+  app.post('/matches/post', function(req, res) {
+    return List.aggregate({
+      $match: {
+        $and: [
+          {
+            _id: ObjectId("57645e6601daabea219c0e37")
+          }
+        ]
+      }
+    }, {
+      $unwind: '$names'
+    }, {
+      $project: {
+        _id: 1,
+        'player': {
+          $eq: ['$names.status', 'blocked']
+        }
+      }
+    }, {
+      $group: {
+        _id: '$_id',
+        'player': {
+          $max: '$player'
+        }
+      }
+    }, function(err, result) {
+      if (err) {
+        console.log(err);
+        res.send(err);
+      }
+      console.log(result);
+      return res.send(result);
+    });
+  });
+  app.get('/matches/match/details/:listid', isLoggedIn, function(req, res) {
     List.aggregate([
       {
         $match: {
@@ -428,7 +500,7 @@ module.exports = function(app) {
         }
       }, {
         $project: {
-          resultado: {
+          names: {
             $filter: {
               input: '$names',
               as: 'names',
@@ -437,18 +509,21 @@ module.exports = function(app) {
               }
             }
           },
-          _id: 0
+          _id: 0,
+          list_date: 1,
+          list_status: 1,
+          list_size: 1
         }
       }
     ], function(err, result) {
       if (err) {
         return console.log('err', err);
       }
-      console.log(result[0].resultado);
+      console.log(result[0]);
       res.render('matches/match_list_details.ejs', {
         message: req.flash('loginMessage'),
-        list: result[0].resultado,
-        match_date: moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a"),
+        list: result[0],
+        match_date: moment(result[0].list_date).format("dddd, MMMM Do YYYY, h : mm : ss a"),
         user: req.user,
         title: "Match: details"
       });

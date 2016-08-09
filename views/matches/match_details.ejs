@@ -27,7 +27,7 @@
 					offText       : "No",
 					labelWidth    : "175",
 					offColor      : "danger",
-					state         : <%= player_on_list %>
+					state         : <%= player_is_on_list %>
 				}).on('switchChange.bootstrapSwitch', function(event, state)
 				{
 					var currentTime = moment(Date.now());
@@ -39,6 +39,9 @@
 					if (
 						diffMinutes > -360
 					){
+						$("#creatorOnList").remove();
+						$(".checkbox-inline").remove();
+						$("checkbox").remove();
 						console.log("Menos de 6 horas");
 						lessThan360 = true;
 					}
@@ -91,11 +94,13 @@
 				<div class="col-sm-4">
 				</div>
 				<div class="col-sm-4">
+				<% if (player_is_blocked == false){ %>
 					<p class="text-center">
 						<label class="checkbox-inline">
 							<input type="checkbox" id="creatorOnList" value="option">
 						</label>
 					</p>
+				<% } %>
 					<div id="list_container">
 						<div>
 							<% include match_list_details %>

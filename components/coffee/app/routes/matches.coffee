@@ -186,96 +186,123 @@ module.exports = (app) ->
 
 
   app.get '/matches/match/:listid', isLoggedIn,(req, res) ->
-    listid = req.params.listid
+
+    listid              = req.params.listid
+    player_id           = req.user._id
+    player_is_blocked   = false
+    player_is_on_list   = false
+
+    List.aggregate(
+        { $match   : $and: [ 
+              {
+                _id : ObjectId(listid)
+              }
+            ]
+        },
+        { $project : {
+            names: { $filter: {
+                input: '$names',
+                as: 'name',
+                cond: { $and: [
+                    {$eq: ['$$name.status', 'blocked']},
+                    {$eq: ['$$name.player_id', ObjectId(player_id) ]}
+                  ] }
+            }},
+            _id: 0
+        }}
+    , (err, result)->
+        if err
+            console.log err
+
+        if result[0].names[0] != undefined
+            player_is_blocked = true
+    )
+
     List.find
       '_id'   : listid,
-      'names' : $elemMatch : 'full_name' : req.user.facebook.full_name,
-      (err, sec_res) ->
-        player_on_list = if sec_res.length <= 0 then false else true
-        List.findOne { _id: listid }, (err, list) ->
-          if err
-            console.log err
-            return
+      'names' : $elemMatch : 'full_name' : req.user.facebook.full_name, (err, sec_res) ->
 
-          res.render     'matches/match_details.ejs',
-          message        : req.flash('loginMessage')
-          list           : list
-          match_date     : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
-          user           : req.user
-          player_on_list : player_on_list
-          moment         : moment
-          disabled       : if list.list_status == 'deactivate' then 'disabled' else ''
-          title          : "Match"
-          return
-        return
+        player_is_on_list = if sec_res.length <= 0 then false else true
+
+        List.aggregate(
+            { $match   : $and: [ 
+                  {
+                    _id : ObjectId(listid)
+                  }
+                ]
+            },
+            { $project : {
+                names: { $filter: {
+                    input: '$names',
+                    as: 'name',
+                    cond: {$eq: ['$$name.status', 'playing']}
+                }},
+                _id: 1, list_date   : 1, list_status :1,list_size :1
+            }}
+        , (err, list)->
+            if err
+                console.log err
+                res.send err
+
+            res.render     'matches/match_details.ejs',
+            message           : req.flash('loginMessage')
+            list              : list[0]
+            match_date        : moment(list[0].date).format("dddd, MMMM Do YYYY, h             : mm : ss a");
+            user              : req.user
+            player_is_blocked : player_is_blocked
+            player_is_on_list : player_is_on_list
+            moment            : moment
+            disabled          : if list[0].list_status == 'deactivate' then 'disabled' else ''
+            title             : "Match"
+        )
+
+
     return
 
   app.post '/matches/match/details/:listid', (req, res) ->
-    ###List.aggregate([
-        $match: {
-            $and: [ 
-                { "names.status" : "playing" } 
-            ]
-        }
-      {
-        $project :{
-             _id : 1
-             names: {
-                $filter: {
-                   input: "$names",
-                   as: "names",
-                   cond: { $eq: [ "$$names.status", "playing" ] }
-                }
-             }
-          }
-       }
-    ],(err, result)->
-        if err
-            console.log err
-            return res.send err
-        console.log result
-        res.send result)###
-    ###List.find(
-      {
-        "names.status" : "playing"
-      },
-      {
-        _id : 1,
-        names : {
-            $elemMatch : {
-                'status': "playing"
-            }
-        }
-      },(err, result) ->
-        res.send result
-      )###
-    ###   
-    List.aggregate([
-        # Filter possible documents
-        # { "$match": { "names.status" : "playing" } },
-        $match: {
-              $and: [ 
-                  { "names.status" : "playing" }
-                  { "list.status" : "active" }
-              ]
-        }
-        # {$group: {"_id": "$_id"}},
-        # {$project: {"_id": 1}}
 
-        # Redact the entries that do not match
-        { "$redact": {
-            "$cond": [
-                { "$eq": [ { "$ifNull":  [ "$status", "playing" ] }, "playing" ] },
-                "$$DESCEND",
-                "$$PRUNE"
+    ###current_list_length = 0
+
+    List.aggregate(
+        { $match   : $and: [ 
+              {
+                _id : ObjectId(listid)
+              }
             ]
+        },
+        { $project: { count: { $size:"$names" }}}, (err, result)->
+            current_list_length = result[0].count
+            console.log "current_list_length",current_list_length
+    )###
+
+    player_is_blocked   = false
+
+    List.aggregate(
+        { $match   : $and: [ 
+              {
+                _id : ObjectId(listid)
+              }
+            ]
+        },
+        { $project : {
+            names: { $filter: {
+                input: '$names',
+                as: 'name',
+                cond: { $and: [
+                    {$eq: ['$$name.status', 'blocked']},
+                    {$eq: ['$$name.player_id', ObjectId(player_id) ]}
+                  ] }
+            }},
+            _id: 0
         }}
-    ], (err, result)->
+    , (err, result)->
         if err
             console.log err
-            res.send err
-        res.send result
-    )###
+
+        if result[0].names[0] != undefined
+            player_is_blocked = true
+    )
+
     List.aggregate(
         { $match   : $and: [ 
               {
@@ -289,7 +316,7 @@ module.exports = (app) ->
                 as: 'name',
                 cond: {$eq: ['$$name.status', 'playing']}
             }},
-            _id: 1, list_date   : 1, list_status :1,list_size :1
+            _id: 1, list_date   : 1, list_status :1,list_size :1,
         }}
     , (err, result)->
         if err
@@ -298,42 +325,61 @@ module.exports = (app) ->
         console.log result
         res.send result
     )
+    ###{
+       $project: {
+         names: 1,
+         discount:
+           {
+             $cond: { if: { $eq: ['status', 'playing'] }, then: 30, else: 20 }
+           }
+       }
+    }###
+  app.post '/matches/post', (req, res)->
+    List.aggregate(
+        { $match   : $and: [ 
+              {
+                _id :ObjectId("57645e6601daabea219c0e37")
+              }
+            ]
+        },
+        {$unwind: '$names'},
+        {
+        $project: {
+            _id: 1,
+            'player' : {$eq: ['$names.status', 'blocked']}
+        }},
+        {$group: {
+            _id: '$_id',
+            'player': {$max: '$player'}
+        }},
+    , (err, result)->
+        if err
+            console.log err
+            res.send err
+        console.log result
+        res.send result
+    )
 
-  # app.get '/matches/match/details/:listid', isLoggedIn, (req, res) ->
-  app.get '/matches/match/details/:listid', (req, res) ->
-    ###
-    List.findOne { _id: req.params.listid }, (err, list) ->
-      if err
-        console.log err
-        return
-      res.render 'matches/match_list_details.ejs',
-      message    : req.flash('loginMessage')
-      list       : list
-      match_date : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
-      user       : req.user
-      title      : "Match: details"
-      return
-    ###
-
+  app.get '/matches/match/details/:listid', isLoggedIn, (req, res) ->    
     List.aggregate [
       { $match: _id: ObjectId(req.params.listid) }
       { $project:
-        resultado: $filter:
+        names: $filter:
           input: '$names'
           as: 'names'
           cond: $eq: [
             '$$names.status'
             'playing'
           ]
-        _id: 0 }
+        _id: 0, list_date:1, list_status:1, list_size : 1 }
     ], (err, result) ->
       if err
         return console.log('err', err)
-      console.log result[0].resultado
+      console.log result[0]
       res.render 'matches/match_list_details.ejs',
       message    : req.flash('loginMessage')
-      list       : result[0].resultado
-      match_date : moment(list.date).format("dddd, MMMM Do YYYY, h : mm : ss a");
+      list       : result[0]
+      match_date : moment(result[0].list_date).format("dddd, MMMM Do YYYY, h : mm : ss a");
       user       : req.user
       title      : "Match: details"
       return
