@@ -1,4 +1,4 @@
-var List, ObjectId, Penalty, User, UserPenalty, _, addMatchToUserList, isLoggedIn, moment, uuid;
+var List, ObjectId, Penalty, User, UserPenalty, _, addMatchToUserList, addPenaltyToUser, isLoggedIn, moment, uuid;
 
 List = require('../models/list');
 
@@ -24,7 +24,7 @@ isLoggedIn = function(req, res, next) {
 };
 
 addMatchToUserList = function(user, match, operation, next) {
-  if (operation === 'push') {
+  if (operation === true) {
     return User.update({
       _id: user.id
     }, {
@@ -68,6 +68,8 @@ addMatchToUserList = function(user, match, operation, next) {
     });
   }
 };
+
+addPenaltyToUser = function(user, match, operation, next) {};
 
 module.exports = function(app) {
   app.get('/matches', isLoggedIn, function(req, res) {
@@ -179,18 +181,6 @@ module.exports = function(app) {
               ]
             }
           };
-
-          /*update = 
-            $addToSet : 
-              names : 
-                player_id  : player_id
-                datetime   : datetime
-                last_name  : last_name
-                first_name : first_name
-                full_name  : full_name
-                status     : 'playing'
-                phone      : phone
-           */
           List.update({
             '_id': list_id,
             'names': {
@@ -200,35 +190,83 @@ module.exports = function(app) {
             }
           }, {
             '$set': {
-              "names.$.datetime": "xxx",
-              "names.$.last_name": "xxx",
-              "names.$.first_name": "xxx",
-              "names.$.full_name": "xxx",
-              "names.$.phone": "xxx",
+              "names.$.player_id": player_id,
+              "names.$.datetime": datetime,
+              "names.$.last_name": last_name,
+              "names.$.first_name": first_name,
+              "names.$.full_name": full_name,
+              "names.$.phone": phone,
               "names.$.status": "playing"
             }
           }, function(err, numAffected) {
             if (err) {
               console.log(err);
-              next(err);
-              return;
+              return res.send(err);
             }
-            return console.log("ae");
+            if (numAffected !== 1) {
+              return List.update({
+                '_id': list_id
+              }, {
+                $addToSet: {
+                  'names': {
+                    player_id: player_id,
+                    datetime: datetime,
+                    last_name: last_name,
+                    first_name: first_name,
+                    full_name: full_name,
+                    status: "playing",
+                    phone: phone
+                  }
+                }
+              }, function(err, numAffected) {
+                if (err) {
+                  res.send('err: ' + String(err));
+                }
+                res.send("ok");
+              });
+            } else {
+
+              /*User.update {
+                #_id : req.user.id
+              },{
+                $pull : {
+                  #'penalties' : newUserPenalty._id
+                }
+              },(err, numAffected) ->
+                console.log "numAffected",numAffected
+               */
+              List.update({
+                _id: list_id,
+                'names': {
+                  $elemMatch: {
+                    'player_id': player_id
+                  }
+                }
+              }, {
+                $unset: {
+                  'names.$.penalty_id': true
+                }
+              }, function(err, result) {
+                if (err) {
+                  return console.log(err);
+                }
+              });
+              return res.send("ok");
+            }
           });
-          return addMatchToUserList(req.user, list_id, 'push');
+          return addMatchToUserList(req.user, list_id, true);
         }
       });
     } else {
       return List.findOne({
         '_id': list_id
       }, function(err, list) {
-        var currentTime, diffMinutes, is_there_waiting_list, is_user_on_waiting_list, matchTime, user_index;
+        var currentTime, diffMinutes, is_user_on_waiting_list, matchTime, user_index;
         currentTime = moment();
         matchTime = moment(list.list_date, "x");
         diffMinutes = currentTime.diff(matchTime, 'minutes');
         user_index = 9999;
         is_user_on_waiting_list = false;
-        is_there_waiting_list = true;
         if (diffMinutes > -360) {
           return List.findOne({
             '_id': list_id,
@@ -238,6 +276,16 @@ module.exports = function(app) {
               }
             }
           }, function(err, userFound) {
+            var is_there_waiting_list, users_playing;
+            if (err) {
+              console.log(err);
+              return res.send(err);
+            }
+            users_playing = userFound.names.length;
+            is_there_waiting_list = users_playing >= list.list_size ? true : false;
+            console.log("is_there_waiting_list", is_there_waiting_list);
+            console.log("users_playing", users_playing);
+            console.log("list.list_size", list.list_size);
             _.each(userFound.names, function(val, i) {
               if (String(val.player_id) === String(req.user.id)) {
                 user_index = i;
@@ -246,8 +294,8 @@ module.exports = function(app) {
                 }
               }
             });
-            if (is_there_waiting_list === false) {
-              return List.findByIdAndUpdate({
+            if (is_there_waiting_list === false || is_user_on_waiting_list === true) {
+              List.findByIdAndUpdate({
                 '_id': list_id
               }, {
                 $pull: {
@@ -255,9 +303,12 @@ module.exports = function(app) {
                     'player_id': player_id
                   }
                 }
-              }, function(err, model) {});
+              }, function(err, model) {
+                return res.send("ok");
+              });
+              return addMatchToUserList(req.user, list_id, false);
             } else {
-              return Penalty.findOne({
+              Penalty.findOne({
                 description: "Player removed name from list less than 6 hours before match starting"
               }, function(penalty_err, penalty_list) {
                 var newUserPenalty;
@@ -273,9 +324,16 @@ module.exports = function(app) {
                   if (err) {
                     return res.status(422).json(err);
                   }
-                  User.findOne({
+                  console.log(newUserPenalty._id);
+                  User.update({
                     _id: req.user.id
-                  }, function(userError, userResult) {});
+                  }, {
+                    $addToSet: {
+                      'penalties': newUserPenalty._id
+                    }
+                  }, function(err, numAffected) {
+                    return console.log("numAffected", numAffected);
+                  });
                   return List.update({
                     '_id': list_id,
                     'names': {
@@ -286,8 +344,8 @@ module.exports = function(app) {
                   }, {
                     '$set': {
                       "names.$.datetime": "",
-                      "names.$.last_name": "",
-                      "names.$.first_name": "",
+                      "names.$.last_name": "available",
+                      "names.$.first_name": "Position",
                       "names.$.full_name": "",
                       "names.$.phone": "",
                       "names.$.status": "blocked",
@@ -300,49 +358,17 @@ module.exports = function(app) {
                       res.json({
                         message: err
                       });
+                      return;
                     }
+                    return res.send("ok");
                   });
                 });
               });
+              return addMatchToUserList(req.user, list_id, false);
             }
           });
-
-          /*List.update '_id' : list_id , 'names': $elemMatch: 'player_id' : player_id,
-          {
-            '$set' : {
-              'names.$.status': 'blocked'
-            }
-          },(err, numAffected) ->
-          
-            console.log "user_index", user_index, "list.list_size",list.list_size
-            console.log "is_user_on_waiting_list",String(is_user_on_waiting_list)
-          
-            if err
-              res.json({message: err})
-              return
-            return
-          Penalty.findOne {description : "Player removed name from list less than 6 hours before match starting"}, (penalty_err, penalty_list)->
-            if penalty_err
-              return res.status(422).json(penalty_err)
-          
-            newUserPenalty = new UserPenalty
-              player_id  : req.user.id
-              penalty_id : penalty_list.id
-              match_id   : list_id
-            newUserPenalty.save (err, result, numAffected)->
-              if err
-                return res.status(422).json(err)
-                 * TODO: FInish
-                 * console.log newUserPenalty._id
-                User.findOne _id : req.user.id, (userError, userResult) ->
-                   * console.log userResult
-                  return
-              return res.status(200).json message : numAffected
-               * TODO: Before saving penalty, verify if user status on list is blocked
-               * TODO: Insert penalty to user list
-           */
         } else {
-          addMatchToUserList(req.user, list_id, 'pull');
+          addMatchToUserList(req.user, list_id, false);
           return List.findByIdAndUpdate({
             '_id': list_id
           }, {
@@ -364,9 +390,9 @@ module.exports = function(app) {
       });
     }
   });
-  app.get('/matches/match/:listid', isLoggedIn, function(req, res) {
-    var listid, player_id, player_is_blocked, player_is_on_list;
-    listid = req.params.listid;
+  app.get('/matches/match/:list_id', isLoggedIn, function(req, res) {
+    var list_id, player_id, player_is_blocked, player_is_on_list;
+    list_id = req.params.list_id;
     player_id = req.user._id;
     player_is_blocked = false;
     player_is_on_list = false;
@@ -374,7 +400,7 @@ module.exports = function(app) {
       $match: {
         $and: [
           {
-            _id: ObjectId(listid)
+            _id: ObjectId(list_id)
           }
         ]
       }
@@ -401,24 +427,31 @@ module.exports = function(app) {
       if (err) {
         console.log(err);
       }
+      console.log(result);
       if (result[0].names[0] !== void 0) {
         return player_is_blocked = true;
       }
     });
+
+    /*List.find
+      '_id'   : list_id,
+      'names' : $elemMatch : 'player_id' : player_id, (err, sec_res) ->
+     */
     List.find({
-      '_id': listid,
+      '_id': list_id,
       'names': {
         $elemMatch: {
-          'full_name': req.user.facebook.full_name
+          'player_id': ObjectId(req.user.id)
         }
       }
-    }, function(err, sec_res) {
-      player_is_on_list = sec_res.length <= 0 ? false : true;
+    }, function(err, userFound) {
+      console.log(userFound);
+      player_is_on_list = userFound.length <= 0 ? false : true;
 
       /*List.aggregate(
           { $match   : $and: [ 
                 {
-                  _id : ObjectId(listid)
+                  _id : ObjectId(list_id)
                 }
               ]
           },
@@ -433,7 +466,7 @@ module.exports = function(app) {
       ,
        */
       return List.findOne({
-        _id: ObjectId(listid)
+        _id: ObjectId(list_id)
       }, function(err, list) {
         if (err) {
           console.log(err);
@@ -464,14 +497,14 @@ module.exports = function(app) {
       });
     });
   });
-  app.post('/matches/match/details/:listid', function(req, res) {
+  app.post('/matches/match/details/:list_id', function(req, res) {
 
     /*current_list_length = 0
     
     List.aggregate(
         { $match   : $and: [ 
               {
-                _id : ObjectId(listid)
+                _id : ObjectId(list_id)
               }
             ]
         },
@@ -486,7 +519,7 @@ module.exports = function(app) {
       $match: {
         $and: [
           {
-            _id: ObjectId(listid)
+            _id: ObjectId(list_id)
           }
         ]
       }
@@ -521,7 +554,7 @@ module.exports = function(app) {
     /*List.aggregate(
         { $match   : $and: [ 
               {
-                _id : ObjectId(listid)
+                _id : ObjectId(list_id)
               }
             ]
         },
@@ -535,7 +568,7 @@ module.exports = function(app) {
         }}
      */
     return List.findOne({
-      _id: ObjectId(listid)
+      _id: ObjectId(list_id)
     }, function(err, result) {
       if (err) {
         console.log(err);
@@ -545,10 +578,10 @@ module.exports = function(app) {
       return res.send(result);
     });
   });
-  app.get('/matches/match/details/:listid', isLoggedIn, function(req, res) {
+  app.get('/matches/match/details/:list_id', isLoggedIn, function(req, res) {
 
     /*List.aggregate [
-      { $match: _id: ObjectId(req.params.listid) }
+      { $match: _id: ObjectId(req.params.list_id) }
       { $project:
         names: $filter:
           input: '$names'
@@ -561,7 +594,7 @@ module.exports = function(app) {
     ]
      */
     List.findOne({
-      _id: ObjectId(req.params.listid)
+      _id: ObjectId(req.params.list_id)
     }, function(err, result) {
       if (err) {
         return console.log('err', err);
@@ -605,11 +638,11 @@ module.exports = function(app) {
       });
     });
   });
-  app.get('/matches/edit/:listid', isLoggedIn, function(req, res, next) {
-    var listid;
-    listid = req.params.listid;
+  app.get('/matches/edit/:list_id', isLoggedIn, function(req, res, next) {
+    var list_id;
+    list_id = req.params.list_id;
     return List.findOne({
-      _id: listid
+      _id: list_id
     }, {}, function(err, listFound) {
       if (err) {
         return {

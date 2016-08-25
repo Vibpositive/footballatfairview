@@ -131,5 +131,6 @@ gulp.task('serve', function (cb) {
   })
 })*/
 
-gulp.task('default', ['watch', 'coffee', 'public', 'serve']);
+// gulp.task('default', ['watch', 'coffee', 'public', 'serve']);
+gulp.task('default', ['watch', 'serve']);
 // gulp.task('default', ['watch']);
