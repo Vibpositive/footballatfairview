@@ -50,5 +50,9 @@
     "sillyname": "^0.1.0",
     "superagent": "^2.0.0",
     "tiny-lr": "^0.2.1"
+  },
+  "scripts": {
+    "start": "node /footballatfairview/app.js",
+    "test": "mocha ./test/*.js"
   }
 }
