@@ -29,6 +29,7 @@
     "passport-twitter": "~1.0.2",
     "permission": "^1.0.4",
     "phone": "^1.0.7",
+    "q": "^1.4.1",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
