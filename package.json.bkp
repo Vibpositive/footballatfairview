@@ -1,14 +1,7 @@
 {
-  "name": "footballatfairview",
-  "version": "0.0.1",
-  "description": "",
+  "name": "AuthWithNode",
   "main": "server.js",
-  "directories": {
-    "test": "test"
-  },
   "dependencies": {
-    "bootstrap-timepicker": "^0.5.2",
-    "require": "^2.4.20",
     "acl": "^0.4.9",
     "bcrypt-nodejs": "latest",
     "body-parser": "~1.0.0",
@@ -59,14 +52,7 @@
     "tiny-lr": "^0.2.1"
   },
   "scripts": {
-    "test": "mocha",
-    "start": "node ./footballatfairview/app.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@bitbucket.org/Vibpositive/footballatfairview.git"
-  },
-  "author": "Gabriel Oliveira",
-  "license": "ISC",
-  "homepage": "https://bitbucket.org/Vibpositive/footballatfairview#readme"
+    "start": "node /footballatfairview/app.js",
+    "test": "mocha ./test/*.js"
+  }
 }
