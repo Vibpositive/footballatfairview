@@ -1,1 +1,1 @@
-web: node server.js
+web: node ./footballatfairview/app.js
