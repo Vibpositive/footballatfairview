@@ -1,136 +1,63 @@
-// Include gulp
-var gulp        = require('gulp'),
-gutil       = require('gulp-util'),
-sass        = require('gulp-sass'),
-prefix      = require('gulp-autoprefixer'),
-coffee      = require('gulp-coffee'),
-coffeelint  = require('gulp-coffeelint'),
-concat      = require('gulp-concat'),
-plumber     = require('gulp-plumber'),
-changed     = require('gulp-changed'),
-uglify      = require('gulp-uglify'),
-notify      = require("gulp-notify"),
-minify      = require('gulp-minify'),
-nodemon     = require('gulp-nodemon'),
-sourcemaps  = require('gulp-sourcemaps');
+/* File: gulpfile.js */
 
-var options = {
-	// HTML
-	HTML_SOURCE     : "views/**/*.ejs",
+// grab our gulp packages
+var gulp  = require('gulp')
+  , gutil = require('gulp-util')
+  , coffee = require('gulp-coffee')
+  , minify = require('gulp-minify')
+  , nodemon = require('gulp-nodemon')
+  , path = require('path')
+  , concat = require('gulp-concat')
+  , rename = require('gulp-rename')
+  , cache = require('gulp-cached')
+  , remember = require('gulp-remember')
+  , plumber = require('gulp-plumber')
+  , livereload = require('gulp-livereload')
+  , nodemon = require("gulp-nodemon")
+  , net = require("net");
 
-	// SASS / CSS
-	SASS_SOURCE     : "components/sass/**/*.scss",
-	SASS_DEST       : "public/css",
 
-	// JavaScript
-	COFFEE_SOURCE   : 'components/coffee/**/*.coffee',
-	COFFEE_DEST     : "footballatfairview/",
-	//Public
-	PUBLIC_SOURCE   : 'components/public/**/*.coffee',
-	PUBLIC_DEST     : "public/js",
-	// Images
-	IMAGE_SOURCE    : "components/images/**/*",
-	IMAGE_DEST      : "footballatfairview/assets/images",
-
-	// Icons
-	ICONS_SOURCE    : "src/sass/app/components/icons/svg/*.svg",
-	ICONS_DEST      : "build/css/fonts/"
-	//TODO: Test option
-};
-
-// Compile Our Sass
-gulp.task('sass', function() {
-	gulp.src( options.SASS_SOURCE )
-	.pipe(plumber())
-	.pipe(sass())
-	.on("error", notify.onError())
-	.on("error", function (err) {
-		console.log("Error:", err);
-	})
-	.pipe(prefix(
-		"last 2 versions", "> 10%"
-		))
-	.pipe(gulp.dest( options.SASS_DEST ))
+// create a default task and just log a message
+gulp.task('default', ['coffee', 'watch'], function(done) {
+  gutil.log('Gulp is running!'),
+	done();
 });
 
-/*
-// Compile Our Coffee
-gulp.task('coffee', function () {
-	gulp.src( options.COFFEE_SOURCE )
-	.pipe(changed ( options.COFFEE_SOURCE ))
-	.pipe(coffee({
-		sourceMap: true
-	})
-	.on('error', gutil.log))
-	.pipe(gulp.dest( options.COFFEE_DEST ))
-});
-*/
-
-gulp.task('public', function(){
-	console.log('PUBLIC')
-	gulp.src(options.PUBLIC_SOURCE)
-	.pipe(sourcemaps.init())
-	.pipe(coffee({bare : true}))
-	.on('error', gutil.log)
-	.pipe(minify({ ext:{ src:'.js', min:'.min.js' } }))
-	.pipe(sourcemaps.write('.'))
-	.pipe(gulp.dest(options.PUBLIC_DEST));
+gulp.task('coffee', function(done){
+	gulp.src('src/coffee/**/*.coffee', { sourcemaps: true })
+  .pipe(coffee({ bare: true }))
+  .pipe(gulp.dest("build/"));
+	done();
 });
 
-gulp.task('coffee', function(){
-	gulp.src(options.COFFEE_SOURCE)
-	.pipe(coffee({bare : true}))
-	.pipe(minify({ ext:{ src:'.js', min:'.min.js' } }))
-	.on('error', gutil.log)
-	.pipe(gulp.dest(options.COFFEE_DEST));
+
+
+// gulp.task('watch', function() {
+//   gulp.watch('src/coffee/**/*.coffee', ['coffee']);
+// });
+
+function checkServerUp(){
+	setTimeout(function(){
+		var sock = new net.Socket();
+		sock.setTimeout(50);
+		sock.on("connect", function(){
+			console.log("Trigger page reload...");
+			livereload.changed();
+			sock.destroy();
+		})
+		.on("timeout", checkServerUp)
+		.on("error", checkServerUp)
+		.connect(3000);
+	}, 70);
+}
+
+gulp.task('watch', function (done) {
+	// livereload.listen();
+  // Changes the browser if modifications were made to htl, css or json... FIXME
+	gulp.watch(['./**/*.css', 'views/**/*.jade', 'package.json']).on('change', livereload.changed);
+	// gulp.watch(['public/**/*.coffee', 'routes/**/*.coffee', 'models/**/*.coffee', "app.coffee", "util.coffee"], ['coffee']);
+  gulp.watch('src/coffee/**/*.coffee', ['coffee']);
+	// nodemon({script: "./bin/www", ext: "js", nodeArgs: ['/usr/bin/node-theseus']}).on("start", checkServerUp);
+	// nodemon({script: "./build/app.js", ext: "js"}).on("start", checkServerUp);
+  done();
 });
-
-gulp.task('lint', function () {
-	gulp.src( options.COFFEE_SOURCE )
-	.pipe(coffeelint())
-	.pipe(coffeelint.reporter())
-});
-
-gulp.task('default', function () {
-	gulp.watch( options.SASS_SOURCE , ['sass']);
-	gulp.watch( options.COFFEE_SOURCE , ['coffee','lint'] );
-	gulp.watch( options.PUBLIC_SOURCE , ['public','lint'] );
-});
-
-gulp.task('watch', function () {
-	// Watch .SCSS files
-	gulp.watch( options.COFFEE_SOURCE , [ 'coffee','lint'] );
-	gulp.watch( options.PUBLIC_SOURCE , [ 'public','lint'] );
-	gulp.watch( options.SASS_SOURCE , ['sass']);
-	// gulp.watch( options.HTML_SOURCE , ['html'] );
-	// gulp.watch( options.IMAGE_SOURCE , ['images'] );
-
-});
-
-gulp.task('serve', function (cb) {
-	nodemon({
-		script  : "./footballatfairview/app.js",
-		watch   : "./"
-		//...add nodeArgs: ['--debug=5858'] to debug 
-		//..or nodeArgs: ['--debug-brk=5858'] to debug at server start
-	}).on('start', function () {
-		setTimeout(function () {
-			// livereload.changed();
-			console.log('started!')
-		}, 2000); // wait for the server to finish loading before restarting the browsers
-	}).on('restart', function () {
-		console.log('restarted!')
-	});
-});
-
-/*gulp.task('start', function () {
-  nodemon({
-    script: 'server.js'
-  , ext: 'js html'
-  , env: { 'NODE_ENV': 'development' }
-  })
-})*/
-
-// gulp.task('default', ['watch', 'coffee', 'public', 'serve']);
-gulp.task('default', ['watch', 'serve']);
-// gulp.task('default', ['watch']);

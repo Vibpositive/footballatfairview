@@ -1,0 +1,93 @@
+<!-- views/profile.ejs -->
+<!doctype html>
+<html>
+<head>
+    <title><%= title %></title>
+
+    <% include ../html/scripts_css %>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js"></script>
+
+    <script>
+
+        $( document ).ready(function()
+        {
+
+            $("#PhoneNumber").mask("999 999 9999");
+
+            var telefone = new RegExp(/\d{3}\-?\ ?\d{3}\-?\ ?\d{4}/);
+
+            $('#submit').click(function()
+            {
+                if (telefone.test($('#PhoneNumber').val()))
+                {
+                    $.post("/profile/edit/phoneNumber",
+                    {
+                        phoneNumber : $('#PhoneNumber').val()
+                    },
+                    function(data, status)
+                    {
+                        setTimeout(function()
+                        {
+                            // $(location).attr('href', '/index')
+                            location.reload();
+                        }, 500);
+                        // TODO: Finish the user message
+                    });
+                }
+            });
+        })
+
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+</head>
+<body>
+    <% include ../html/top %>
+    <div class="jumbotron">
+        <div class="page-header">
+            <h3>
+                <p class="text-center">
+                    <title>Title</title>
+                </p>
+            </h3>
+        </div>
+        <div id="loadedContainer">
+
+            <div class="page-header text-center">
+                <h1>
+                  <!-- <span class="fa fa-info-circle fa-2x"></span> -->
+                  <!-- TODO Round borders improve image frame -->
+                  <img src="<%= user.facebook.photos[0].value %>" alt="">
+                </h1>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                </div>
+                <div class="col-md-4">
+                    <div class="col-sm-12">
+                        <div class="well">
+                            <p>
+                                Name:
+                                <strong><%= user.facebook.full_name %></strong>
+                            </p>
+                            <p>
+                                Phone Number
+                                <strong><%= user.phone %></strong>
+                            </p>
+                        </div>
+                    </div>
+                    <form>
+                        <div class="form-group">
+                            <label for="PhoneNumber">Phone Number</label>
+                            <input type="text" class="form-control" id="PhoneNumber" placeholder="000 000 0000">
+                        </div>
+                        <button type="button" class="btn btn-default" id="submit">Submit</button>
+                    </form>
+                </div>
+                <div class="col-md-4">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

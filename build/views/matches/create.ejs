@@ -1,0 +1,181 @@
+<!-- views/index.ejs -->
+<!doctype html>
+<html>
+	<head>
+		<title><%= title %></title>
+
+		<% include ../html/scripts_css %>
+
+		<script type="text/javascript">
+			$( document ).ready(function()
+			{
+				var list_date = moment(Math.floor(Date.now() / 1000)).format('x');
+				var list_status = 'pending';
+				var list_size = 21;
+				var isParticipating = "false";
+
+				$("input[name='demo3']").TouchSpin({
+					min: 0,
+					initval: 21
+				}).on('change', function(e)
+				{
+					$("#createMatch").removeClass('disabled');
+					list_size = $(this).val();
+				})
+
+				$('input[type="radio"]').click(function(e)
+				{
+					list_status = $(this).attr('matchestatus');
+					$("#createMatch").removeClass('disabled');
+				});
+
+				$("#creatorOnList").bootstrapSwitch({
+					labelText     : "Include name on Match?",
+					onText        : "Yes",
+					offText       : "No",
+					labelWidth    : "175",
+					offColor      : "danger",
+					indeterminate : "true"
+				}).on('switchChange.bootstrapSwitch', function(event, state)
+				{
+					isParticipating = state;
+					$("#createMatch").removeClass('disabled');
+				});
+
+				$('#datetimepicker').datetimepicker({
+					// console.log("here");
+					inline: true,
+					sideBySide: false
+				})
+				.on("dp.change", function (e)
+				{
+					list_date = moment(e.date).format('x');
+
+					$("#createMatch").removeClass('disabled');
+				});
+
+				$('#createMatch').click(function()
+				{
+					if ($(this).hasClass('disabled')){
+						return false;
+					}
+
+					$.ajax({
+						type: 'POST',
+						url: '/matches/create',
+						data: {
+							names       : isParticipating,
+							list_date   : list_date,
+							list_size   : list_size,
+							list_status : list_status
+						},
+						success: callback,
+						async:true
+					});
+
+					function callback(e)
+					{
+						console.log(e);
+						if(!e.errMessage)
+						{
+							showalert('Match created successfuly','alert-success')
+						}else{
+							showalert('Not updated: ' + String(e.err),'alert-info')
+						}
+					}
+				});
+
+			});
+		</script>
+
+	</head>
+	<body>
+		<% include ../html/top %>
+		<div class="jumbotron">
+			<div class="page-header">
+					<h3>
+						<p class="text-center">
+							<title><%= title %></title>
+						</p>
+					</h3>
+
+			</div>
+			<% include ../controlpanel/matches_admin_edit_buttons %>
+			<div id="loadedContainer">
+				<p class="text-center">
+					<div style="overflow:hidden;">
+						<div class="form-group">
+							<div class="row">
+								<div class="col-md-4">
+								</div>
+								<div class="col-md-4">
+									<div id="datetimepicker"></div>
+								</div>
+								<div class="col-md-4">
+								</div>
+							</div>
+						</div>
+					</div>
+				</p>
+
+				<div class="row">
+					<div class="col-md-4">
+					</div>
+					<div class="col-md-4">
+						<p class="text-center">
+							<label class="checkbox-inline">
+								<input type="checkbox" id="creatorOnList" value="option">
+							</label>
+						</p>
+
+						<fieldset>
+							<p class="text-center">
+
+								<legend>Match Status</legend>
+							</p>
+
+							<div class="switch-toggle well">
+								<!-- TODO: Change from radio to buttons  -->
+								<input matchestatus="active" id="all" name="view1" type="radio">
+								<label for="all" onclick="">All</label>
+
+								<input matchestatus="preferential" id="preferential" name="view1" type="radio">
+								<label for="preferential" onclick="">Preferential</label>
+
+								<input matchestatus="deactivate" id="cancelled" name="view1" type="radio">
+								<label for="cancelled" onclick="">Cancelled</label>
+
+								<input matchestatus="pending" id="pending" name="view1" type="radio" checked>
+								<label for="pending" onclick="">Pending</label>
+
+								<a class="btn btn-xs btn-block btn-primary"></a>
+							</div>
+						</fieldset>
+					</div>
+					<div class="col-md-4">
+
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-4">
+					</div>
+					<div class="col-md-4">
+					<p class="text-center">
+						<label class="checkbox-inline">
+							Players: <input id="demo3" type="text" value="" name="demo3">
+						</label>
+						</p>
+						<p class="text-center">
+							<button type="button" class="btn btn-primary disabled" id="createMatch">Create</button>
+						</p>
+					</div>
+					<div class="col-md-4">
+					</div>
+				</div>
+				<div id="alert-info">
+
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
