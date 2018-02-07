@@ -53,7 +53,7 @@
 					$.post("/matches/participate",
 					{
 						list_id       : listid,
-						player_status : state
+						player_status : state ? "playing" : "not playing"
 					},
 					function(data, status)
 					{

@@ -22,12 +22,12 @@ mongoose.connect 'mongodb://localhost/myapp'
 # })
 
 
-app.use (error, req, res, next) ->
-  res.status 400
-  res.render 'errors/404.ejs',
-      title: '404'
-      error: error
-  return
+# app.use (error, req, res, next) ->
+#   res.status 400
+#   res.render 'errors/404.ejs',
+#       title: '404'
+#       error: error
+#   return
 
 app.use (error, req, res, next) ->
   res.status 500
@@ -78,6 +78,7 @@ app.use passport.initialize()
 app.use passport.session()
 app.use flash()
 
+
 require('./app/routes.js')              app , passport
 require('./app/routes/matches.js')      app
 require('./app/routes/profile.js')      app
@@ -89,3 +90,9 @@ console.log 'The magic happens on port ' + port
 
 process.on 'exit', (code) ->
   console.log 'About to exit with code: ${code}'
+
+app.use (req, res, next) ->
+  # res.render 'errors/404.ejs', title: '404'
+  # res.status(404).render 'errors/404.ejs', title: '404'
+  res.status(404).send("Sorry can't find that!")
+  

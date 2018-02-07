@@ -43,7 +43,6 @@
 				});
 
 				$('#datetimepicker').datetimepicker({
-					// console.log("here");
 					inline: true,
 					sideBySide: false
 				})
@@ -64,10 +63,10 @@
 						type: 'POST',
 						url: '/matches/create',
 						data: {
-							names       : isParticipating,
-							list_date   : list_date,
-							list_size   : list_size,
-							list_status : list_status
+							"names"       : isParticipating,
+							"list_date"   : list_date,
+							"list_size"   : list_size,
+							"list_status" : list_status
 						},
 						success: callback,
 						async:true
@@ -75,7 +74,6 @@
 
 					function callback(e)
 					{
-						console.log(e);
 						if(!e.errMessage)
 						{
 							showalert('Match created successfuly','alert-success')

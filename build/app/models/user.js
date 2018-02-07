@@ -23,8 +23,8 @@ userSchema = mongoose.Schema({
     default: []
   },
   penalties: {
-    type: Array,
-    default: []
+    type: Number,
+    default: 0
   },
   status: {
     type: String,

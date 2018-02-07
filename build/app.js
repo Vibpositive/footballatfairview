@@ -30,14 +30,13 @@ mongoose.connect('mongodb://localhost/myapp');
 //       process.exit(1);
 //   }
 // })
-app.use(function(error, req, res, next) {
-  res.status(400);
-  res.render('errors/404.ejs', {
-    title: '404',
-    error: error
-  });
-});
 
+// app.use (error, req, res, next) ->
+//   res.status 400
+//   res.render 'errors/404.ejs',
+//       title: '404'
+//       error: error
+//   return
 app.use(function(error, req, res, next) {
   res.status(500);
   res.render('errors/500.ejs', {
@@ -126,4 +125,10 @@ console.log('The magic happens on port ' + port);
 
 process.on('exit', function(code) {
   return console.log('About to exit with code: ${code}');
+});
+
+app.use(function(req, res, next) {
+  // res.render 'errors/404.ejs', title: '404'
+  // res.status(404).render 'errors/404.ejs', title: '404'
+  return res.status(404).send("Sorry can't find that!");
 });
