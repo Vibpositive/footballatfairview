@@ -74,11 +74,12 @@
 
 					function callback(e)
 					{
-						if(!e.errMessage)
+						console.log(e);
+						if(!e.err)
 						{
-							showalert('Match created successfuly','alert-success')
+							showalert(e.message,'alert-success')
 						}else{
-							showalert('Not updated: ' + String(e.err),'alert-info')
+							showalert(e.message + "<br />" + String(e.err),'alert-danger')
 						}
 					}
 				});

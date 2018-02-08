@@ -9,6 +9,7 @@ ObjectId    = require('mongodb').ObjectID
 Q           = require('q')
 
 isLoggedIn = (req, res, next) ->
+  # TODO: remove return next()
   return next()
   if req.isAuthenticated()
     return next()
@@ -17,7 +18,7 @@ isLoggedIn = (req, res, next) ->
 
 # TODO: disable edit access if match has already happened
 
-addMatchToUserList = (user, match, next) ->
+addMatchToUser = (user, match, next) ->
   deferred = Q.defer()
   User.update { _id: ObjectId(user.player_id) },
   { $addToSet: { 'matches': match } },
@@ -27,7 +28,7 @@ addMatchToUserList = (user, match, next) ->
     deferred.resolve numAffected
   return deferred.promise
 
-removeMatchFomUserList = (user, match, next) ->
+removeMatchFomUser = (user, match, next) ->
   deferred = Q.defer()
   User.findByIdAndUpdate { _id: ObjectId(user.player_id) },
   {
@@ -47,11 +48,8 @@ getTimeToMatch = (list) ->
   diffMinutes = matchTime.diff(currentTime, 'minutes')
   return diffMinutes
 
-# TODO: Finish function implementation
-# TODO: Continue from here 07/02/2018 - 01:06
 addPenaltyToUser = (user, match, next) ->
-  # console.log "user", user
-  # console.log "match", match
+  # TODO: implement Q
   User.findByIdAndUpdate {
     _id: user.player_id,
     matches: {
@@ -62,33 +60,16 @@ addPenaltyToUser = (user, match, next) ->
     $inc: { penalties: 1 }
   },
   (err, doc) ->
-    # TODO:
-    # console.log "doc", doc
+    undefined
 
 addUserToMatch = (list_id, user, req) ->
+  # TODO: check size of players list
   deferred = Q.defer()
-
-  # TODO: Uncomment
-  # player_id             = new ObjectId(req.user.id)
-  # datetime              = 'date'
-  # last_name             = req.user.facebook.last_name
-  # first_name            = req.user.facebook.first_name
-  # full_name             = req.user.facebook.first_name +"  "+
-  # req.user.facebook.last_name
-  # list_id               = req.body.list_id
-  # phone                 = req.user.phone
-
-  List.update { '_id': list_id },
-  {
+  List.update {
+    '_id': list_id
+  },{
     $addToSet: {
       'names': {
-        # player_id: player_id
-        # datetime: datetime
-        # last_name: last_name
-        # first_name: first_name
-        # full_name: full_name
-        # status: "playing"
-        # phone: phone
         player_id: user.player_id
         datetime: 'date'
         last_name: user.last_name
@@ -164,6 +145,7 @@ module.exports = (app) ->
     errMessage = ""
     user = {}
     updated = 0
+    inputFault = false
 
     user.player_id = if req.user
     then new ObjectId(req.user.id)
@@ -189,6 +171,14 @@ module.exports = (app) ->
     then req.user.phone
     else req.body.phone
 
+    for prop of user
+      if not user[prop]?
+        res.json {
+          "message": "Please inform all params",
+          "errMessage": "Params have not been informed correctly"
+        }
+        return
+
     if req.body.player_status == 'playing'
       List.findOne _id: list_id, 'names.player_id': user.player_id,
       (err, doc) ->
@@ -204,7 +194,7 @@ module.exports = (app) ->
             }
             undefined
 
-          addMatchToUserList(user, list_id).then (data) ->
+          addMatchToUser(user, list_id).then (data) ->
             # res.json {
             #   "message": "Success",
             #   "updated": data.nModified,
@@ -221,18 +211,15 @@ module.exports = (app) ->
           undefined
 
     else if req.body.player_status == 'not playing'
-      List.findOne {
+      List.findOneAndUpdate {
         '_id': list_id,
-        "names.player_id": { $eq: user.player_id }
+        # "names.player_id": { $eq: user.player_id }
       },{
         $pull: 'names': 'player_id': user.player_id
       },
       {
-        'new': false
+        'new': true
       }, (err, list) ->
-
-        console.log "list", list
-
         if err
           errMessage = err.message
 
@@ -242,75 +229,36 @@ module.exports = (app) ->
             penalty = true
             addPenaltyToUser(user, list_id)
 
-          removeMatchFomUserList(user, list_id)
-          res.json { "message": "", "list": list, "errMessage": errMessage }
-          # List.findByIdAndUpdate {
-          #   '_id': list_id ,
-          # },{
-          #   $pull: 'names': 'player_id': user.player_id
-          # },
-          # {
-          #   'new': true
-          # }, (err, docs) ->
-          #   if err
-          #     errMessage = err.message
-          #   res.json {
-          #     "message": "Success",
-          #     "updated": 1,
-          #     "errMessage": errMessage
-          #   }
+          removeMatchFomUser(user, list_id)
+
+          res.json {
+            "message": ""
+            "list": list
+            "errMessage": errMessage
+          }
         else
           res.json {
             "message": "User is not in list",
             "updated": 0,
             "errMessage": ""
           }
-      # TODO: add penalty to user
-      # GET return from remove, if more 1 or more, change message
-      # accordingly
     else
       res.json {
-        "message": "",
-        "doc": "",
-        "updated": 0,
-        "errMessage": "Inform a valid status"
+        "message": "Inform a valid status",
+        "errMessage": "A valid status has not been informed"
       }
       undefined
 
   app.get '/matches/match/:list_id', isLoggedIn,(req, res) ->
     list_id             = req.params.list_id
-    player_id           = req.user._id
-    player_is_blocked   = false
-    player_is_on_list   = false
+    player_id           = req.user.id
 
-    List.aggregate [
-      { $match: _id: ObjectId(list_id) }
-      { $project:
-        names: $filter:
-          input: '$names'
-          as: 'name'
-          cond: $and: [
-            { $eq: [
-              '$$name.status'
-              'blocked'
-            ] }
-            { $eq: [
-              '$$name.player_id'
-              ObjectId(player_id)
-            ] }
-          ]
-        _id: 0 }
-      ], (err, result) ->
-        if err
-          console.log err
-        if result[0].names[0] != undefined
-          return player_is_blocked = true
-        return
+    List.findOne '_id': list_id,
+    (err, doc) ->
 
-    List.find '_id': list_id,
-    'names': $elemMatch: 'player_id': ObjectId(req.user.id),(err, userFound) ->
-
-      player_is_on_list = if userFound.length <= 0 then false else true
+      player_is_on_list = _.find doc.names,
+      (player) ->
+        return String(player.player_id) == String(player_id)
 
       List.findOne _id: ObjectId(list_id),(err, list) ->
         if err
@@ -319,11 +267,11 @@ module.exports = (app) ->
         res.render     'matches/match_details.ejs',
         message: req.flash('loginMessage')
         list: list
-        match_date: moment(list.list_date)
-        .format("dddd, MMMM Do YYYY, h:mm:ss a")
+        match_date: moment(list.list_date, "x")
         user: req.user
-        player_is_blocked: player_is_blocked
-        player_is_on_list: player_is_on_list
+        # TODO: remove option
+        player_is_blocked: false
+        player_is_on_list: if player_is_on_list then true else false
         moment: moment
         disabled: if list.list_status == 'deactivate' then 'disabled' else ''
         title: "Match"
@@ -378,8 +326,7 @@ module.exports = (app) ->
       res.render 'matches/match_list_details.ejs',
       message: req.flash('loginMessage')
       list: result
-      match_date: moment(result.list_date)
-      .format("dddd, MMMM Do YYYY, h : mm : ss a")
+      match_date: moment(result.list_date, 'x')
       user: req.user
       title: "Match: details"
 
@@ -404,9 +351,7 @@ module.exports = (app) ->
       return
 
   app.get '/matches/edit/:list_id', isLoggedIn, (req, res, next) ->
-
     list_id     = req.params.list_id
-
     List.findOne { _id: list_id }, {},(err, listFound) ->
       if err
         return { message: err }
@@ -418,10 +363,10 @@ module.exports = (app) ->
         moment: moment
         title: 'Matches List'
         return
+    return
 
   # TODO: Improve route trying using just one
-  # app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
-  app.post '/matches/edit/match', (req, res, next) ->
+  app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
 
     list_id       = req.body.list_id
     player_status = req.body.player_status
@@ -449,7 +394,7 @@ module.exports = (app) ->
     names = []
     isParticipating = req.body.names
     rowsAffected = 0
-    message = "insertion unsuccessful"
+    message = ""
     errMessage = ""
 
     list_date   = req.body.list_date
@@ -477,30 +422,26 @@ module.exports = (app) ->
       url: uuid.v1()
     )
 
-    match.save (err, match) ->
-      try
-        if match._id
-          message = 1
-          errMessage = ""
-          # console.log "success"
-          undefined
-        if err
-          errMessage = err
-          message = -1
-          # console.log "err", err
-          undefined
-      catch error
-        # console.log "error", error.message
-        errMessage = error.message
-        message = -1
-        undefined
+    match.save (err, match, numAffected) ->
+      if err
+        if err.code == 11000
+          errMessage =  "Inform a free timeslot"
+        else
+          message = "error"
+          errMessage =  err.message
+
+      if match and typeof err isnt 'undefined'
+        message = "Match created successfully"
+        errMessage =  ""
+      else
+        message = "Match not created"
 
       res.json {
         "message": message,
         "err": errMessage
       }
-      # console.log match
-      next()
+      return
+    return
 
   app.post '/matches/update', isLoggedIn, (req, res, next) ->
 
@@ -535,5 +476,8 @@ module.exports = (app) ->
           #   "message": message,
           #   "err": errMessage
           # }
-          return
-        return
+          # return
+        # return
+      return
+    return
+  return
