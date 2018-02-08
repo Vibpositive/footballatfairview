@@ -9,7 +9,7 @@ ObjectId    = require('mongodb').ObjectID
 Q           = require('q')
 
 isLoggedIn = (req, res, next) ->
-  # TODO: remove return next()
+  # TODO: implement isLoggedIn in the request
   return next()
   if req.isAuthenticated()
     return next()
@@ -249,6 +249,7 @@ module.exports = (app) ->
       }
       undefined
 
+  # TODO user is being removed from session if multiple users connected
   app.get '/matches/match/:list_id', isLoggedIn,(req, res) ->
     list_id             = req.params.list_id
     player_id           = req.user.id
@@ -269,8 +270,6 @@ module.exports = (app) ->
         list: list
         match_date: moment(list.list_date, "x")
         user: req.user
-        # TODO: remove option
-        player_is_blocked: false
         player_is_on_list: if player_is_on_list then true else false
         moment: moment
         disabled: if list.list_status == 'deactivate' then 'disabled' else ''
@@ -365,7 +364,6 @@ module.exports = (app) ->
         return
     return
 
-  # TODO: Improve route trying using just one
   app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
 
     list_id       = req.body.list_id
@@ -451,7 +449,10 @@ module.exports = (app) ->
     list_size   = req.body.list_size
 
     if list_id == '' || list_status == '' || list_date == '' || list_size < 0
-      res.json {'message': 'wrong params'}
+      res.json {
+        "message": "Please inform all params",
+        "errMessage": "Params have not been informed correctly"
+      }
       return
 
     List.update
@@ -460,24 +461,28 @@ module.exports = (app) ->
           'list_size': list_size
           'list_status': list_status
           'list_date': list_date
-    ,(err, numAffected) ->
+    ,(err, data) ->
+
       if err
-        res.json({message: err})
+        res.json {
+          "message": "Error",
+          "errMessage": err.message
+        }
+        return
       else
-        if numAffected > 0
-          res.json({ message: 'ok' })
-          # res.json {
-          #   "message": message,
-          #   "err": errMessage
-          # }
+        if data.nModified > 0
+          # TODO 08/02/2018 - Continue
+          res.json {
+            "message": "Updated successfully",
+            "errMessage": ""
+          }
+          return
         else
-          res.json({ message: String(numAffected) + ' rows affected' })
-          # res.json {
-          #   "message": message,
-          #   "err": errMessage
-          # }
-          # return
-        # return
+          res.json {
+            "message": "Updated unsuccessfully",
+            "errMessage": ""
+          }
+          return
       return
     return
   return

@@ -19,7 +19,7 @@ ObjectId = require('mongodb').ObjectID;
 Q = require('q');
 
 isLoggedIn = function(req, res, next) {
-  // TODO: remove return next()
+  // TODO: implement isLoggedIn in the request
   return next();
   if (req.isAuthenticated()) {
     return next();
@@ -278,6 +278,7 @@ module.exports = function(app) {
       return void 0;
     }
   });
+  // TODO user is being removed from session if multiple users connected
   app.get('/matches/match/:list_id', isLoggedIn, function(req, res) {
     var list_id, player_id;
     list_id = req.params.list_id;
@@ -301,8 +302,6 @@ module.exports = function(app) {
           list: list,
           match_date: moment(list.list_date, "x"),
           user: req.user,
-          // TODO: remove option
-          player_is_blocked: false,
           player_is_on_list: player_is_on_list ? true : false,
           moment: moment,
           disabled: list.list_status === 'deactivate' ? 'disabled' : '',
@@ -419,7 +418,6 @@ module.exports = function(app) {
       }
     });
   });
-  // TODO: Improve route trying using just one
   app.post('/matches/edit/match', isLoggedIn, function(req, res, next) {
     var full_name, list_id, player_id, player_status;
     list_id = req.body.list_id;
@@ -513,7 +511,8 @@ module.exports = function(app) {
     list_size = req.body.list_size;
     if (list_id === '' || list_status === '' || list_date === '' || list_size < 0) {
       res.json({
-        'message': 'wrong params'
+        "message": "Please inform all params",
+        "errMessage": "Params have not been informed correctly"
       });
       return;
     }
@@ -525,33 +524,29 @@ module.exports = function(app) {
         'list_status': list_status,
         'list_date': list_date
       }
-    }, function(err, numAffected) {
+    }, function(err, data) {
       if (err) {
         res.json({
-          message: err
+          "message": "Error",
+          "errMessage": err.message
         });
+        return;
       } else {
-        if (numAffected > 0) {
+        if (data.nModified > 0) {
+          // TODO 08/02/2018 - Continue
           res.json({
-            message: 'ok'
+            "message": "Updated successfully",
+            "errMessage": ""
           });
+          return;
         } else {
-          // res.json {
-          //   "message": message,
-          //   "err": errMessage
-          // }
           res.json({
-            message: String(numAffected) + ' rows affected'
+            "message": "Updated unsuccessfully",
+            "errMessage": ""
           });
+          return;
         }
       }
     });
   });
 };
-
-// res.json {
-//   "message": message,
-//   "err": errMessage
-// }
-// return
-// return

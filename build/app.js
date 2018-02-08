@@ -37,14 +37,6 @@ mongoose.connect('mongodb://localhost/myapp');
 //       title: '404'
 //       error: error
 //   return
-app.use(function(error, req, res, next) {
-  res.status(500);
-  res.render('errors/500.ejs', {
-    title: '500  : Internal Server Error',
-    error: error
-  });
-});
-
 if (process.env.NODE_ENV === 'development') {
   app.use(errorhandler({
     log: errorNotification
@@ -94,9 +86,6 @@ app.set('views', './build/views');
 
 app.use(session({
   secret: 'shalalalalalalalalon',
-  cookie: {
-    maxAge: 60000
-  },
   resave: true,
   saveUninitialized: true
 }));
@@ -131,4 +120,12 @@ app.use(function(req, res, next) {
   // res.render 'errors/404.ejs', title: '404'
   // res.status(404).render 'errors/404.ejs', title: '404'
   return res.status(404).send("Sorry can't find that!");
+});
+
+app.use(function(error, req, res, next) {
+  res.status(500);
+  res.render('errors/500.ejs', {
+    title: '500  : Internal Server Error',
+    error: error
+  });
 });

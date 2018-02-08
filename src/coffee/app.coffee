@@ -29,13 +29,6 @@ mongoose.connect 'mongodb://localhost/myapp'
 #       error: error
 #   return
 
-app.use (error, req, res, next) ->
-  res.status 500
-  res.render 'errors/500.ejs',
-    title: '500  : Internal Server Error'
-    error: error
-  return
-
 if process.env.NODE_ENV == 'development'
   app.use errorhandler {log: errorNotification}
 
@@ -71,13 +64,15 @@ app.use '/public', express.static __dirname + '/public'
 app.set 'view engine', 'ejs'
 app.set 'views', './build/views'
 
-app.use session { secret: 'shalalalalalalalalon',
-cookie: { maxAge: 60000 }, resave: true, saveUninitialized: true }
+app.use session {
+  secret: 'shalalalalalalalalon',
+  resave: true,
+  saveUninitialized: true
+}
 
 app.use passport.initialize()
 app.use passport.session()
 app.use flash()
-
 
 require('./app/routes.js')              app , passport
 require('./app/routes/matches.js')      app
@@ -85,6 +80,7 @@ require('./app/routes/profile.js')      app
 require('./app/routes/controlpanel.js') app
 require('./app/routes/users.js')        app
 require('./app/routes/penalties.js')    app
+
 app.listen port
 console.log 'The magic happens on port ' + port
 
@@ -95,4 +91,10 @@ app.use (req, res, next) ->
   # res.render 'errors/404.ejs', title: '404'
   # res.status(404).render 'errors/404.ejs', title: '404'
   res.status(404).send("Sorry can't find that!")
-  
+
+app.use (error, req, res, next) ->
+  res.status 500
+  res.render 'errors/500.ejs',
+    title: '500  : Internal Server Error'
+    error: error
+  return
