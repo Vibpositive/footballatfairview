@@ -8,9 +8,7 @@
 					<th>#</th>
 					<th>Name</th>
 					<th>Status</th>
-					<th>UnBlock</th>
-					<th>Block</th>
-					<th>Remove</th>
+					<th></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -24,19 +22,6 @@
 							<td>
 								<%= list.names[i].status %>
 							</td>
-
-							<td>
-								<button id="participate" value="<%= list.names[i].player_id %>" fn="<%= list.names[i].full_name %>" type="button" class="btn btn-xs btn-block btn-success" action="playing">
-									UnBlock
-								</button>
-							</td>
-
-							<td>
-								<button id="participate" value="<%= list.names[i].player_id %>" fn="<%= list.names[i].full_name %>" type="button" class="btn btn-xs btn-block btn-warning" action="block">
-									Block
-								</button>
-							</td>
-
 							<td>
 								<button id="participate" value="<%= list.names[i].player_id %>" fn="<%= list.names[i].full_name %>" type="button" class="btn btn-xs btn-block btn-danger" action="remove">
 									REMOVE
@@ -44,7 +29,7 @@
 							</td>
 						</tr>
 					<% } %>
-				<% } %>   
+				<% } %>
 			</tbody>
 		</table>
 	</div>
@@ -61,7 +46,7 @@
 			var full_name     = $(this).attr("fn");
 			var list_id       = "<%= list._id %>";
 
-			$.post("/matches/edit/match/",
+			$.post("/match/remove/player/",
 			{
 				list_id       : list_id,
 				player_id     : player_id,
@@ -70,7 +55,7 @@
 			},
 			function(data, status)
 			{
-				console.log(data);
+				// console.log(data);
 				$.post("/matches/views/playerslist", {list_id : list_id}, function(data)
 				{
 					$("#loadedContainer_internal").html( data );

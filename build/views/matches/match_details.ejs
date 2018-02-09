@@ -30,26 +30,6 @@
 					state         : <%= player_is_on_list %>
 				}).on('switchChange.bootstrapSwitch', function(event, state)
 				{
-					var currentTime = moment(Date.now());
-					var matchTime   = moment(<%= list.list_date %>);
-
-					var diffMinutes = currentTime.diff(matchTime, 'minutes');
-					var lessThan360 = false;
-
-					if (
-						diffMinutes > -360
-					){
-						if(state == false)
-						{
-							$("#creatorOnList").remove();
-							$(".checkbox-inline").remove();
-							$("checkbox").remove();
-						}
-						lessThan360 = true;
-					}
-
-					// alert("trigerred")
-
 					$.post("/matches/participate",
 					{
 						list_id       : listid,
@@ -59,6 +39,7 @@
 					{
 						setTimeout(function(){
 							$.get("/matches/match/details/" + listid, function(data) {
+								console.log(data);
 								$("#list_container").html( data );
 							})}
 							, 100)

@@ -65,6 +65,15 @@ addPenaltyToUser = (user, match, next) ->
 addUserToMatch = (list_id, user, req) ->
   # TODO: check size of players list
   deferred = Q.defer()
+
+#   b.collection.update(
+#     { "unique_array": { "$ne": 18 } },
+#     {
+#         "$push": { "unique_array": 18 },
+#         "$inc": { "size_of_array": 1 }
+#     }
+# )
+
   List.update {
     '_id': list_id
   },{
@@ -84,33 +93,6 @@ addUserToMatch = (list_id, user, req) ->
       deferred.resolve err
     deferred.resolve numAffected
   return deferred.promise
-
-# f_removePenaltyFromUser = (list_id) ->
-#   console.log "f_removePenaltyFromUser",f_removePenaltyFromUser
-#   deferred = Q.defer()
-#
-#   List.aggregate {
-#     $match: $and: [ { _id: ObjectId(list_id) } ] },
-#       { $project: {
-#         names: { $filter: {
-#           input: '$names',
-#           as: 'name',
-#           cond: { $and: [
-#             {$eq: ['$$name.player_id', ObjectId(player_id) ]}
-#           ] }
-#         }},
-#         _id: 0
-#       }} , (err, resultado) ->
-#         if err
-#           console.log err
-#           deferred.resolve err
-#         penalty_id = resultado[0].names[0].penalty_id
-#         deferred.resolve penalty_id
-#
-#         UserPenalty.findByIdAndRemove _id: ObjectId(penalty_id),
-#         (err, result) ->
-#           # TODO: Validate result
-#   return deferred.promise
 
 module.exports = (app) ->
   app.get '/matches', isLoggedIn, (req, res) ->
@@ -140,6 +122,9 @@ module.exports = (app) ->
       return
     return
 
+  # TODO Whenever a player removes their name from a match, a routine has to
+  # run in order to check list size and automatically push players
+  # from the waiting list to the actual list
   app.post '/matches/participate', isLoggedIn, (req, res) ->
     list_id = req.body.list_id
     errMessage = ""
@@ -180,34 +165,44 @@ module.exports = (app) ->
         return
 
     if req.body.player_status == 'playing'
-      List.findOne _id: list_id, 'names.player_id': user.player_id,
-      (err, doc) ->
+
+      List.findOneAndUpdate {
+        _id: list_id,
+        'names.player_id': { $ne: ObjectId(user.player_id) }
+      },{
+        $push: {
+          'names': {
+            player_id: user.player_id
+            datetime: 'date'
+            last_name: user.last_name
+            first_name: user.first_name
+            full_name: user.full_name
+            status: "playing"
+            phone: user.phone
+          }
+        }
+      },
+      {
+        'new': true
+        'rawResult': false
+      }, (err, doc) ->
         if err
           errMessage = err.message
 
-        if not doc
-          addUserToMatch(list_id, user).then (data) ->
-            res.json {
-              "message": "Added to the match",
-              "updated": data.nModified,
-              "errMessage": errMessage
-            }
-            undefined
+        # console.log "doc", doc
+        message = if doc then "Added to the match" else "User already on match"
 
-          addMatchToUser(user, list_id).then (data) ->
-            # res.json {
-            #   "message": "Success",
-            #   "updated": data.nModified,
-            #   "errMessage": errMessage
-            # }
-            undefined
-          undefined
-        else
-          res.json {
-            "message": "Already on the match",
-            "updated": 0,
-            "errMessage": errMessage
-          }
+        res.json {
+          "message": message
+          # "updated": doc
+          "errMessage": errMessage
+        }
+        addMatchToUser(user, list_id).then (data) ->
+          # res.json {
+          #   "message": "Success",
+          #   "updated": data.nModified,
+          #   "errMessage": errMessage
+          # }
           undefined
 
     else if req.body.player_status == 'not playing'
@@ -274,46 +269,7 @@ module.exports = (app) ->
         moment: moment
         disabled: if list.list_status == 'deactivate' then 'disabled' else ''
         title: "Match"
-
-
     return
-
-  app.post '/matches/match/details/:list_id', (req, res) ->
-
-    player_is_blocked   = false
-
-    List.aggregate(
-      { $match: $and: [
-            {
-              _id: ObjectId(list_id)
-            }
-          ]
-      },
-      { $project: {
-        names: { $filter: {
-          input: '$names',
-          as: 'name',
-          cond: { $and: [
-              {$eq: ['$$name.status', 'blocked']},
-              {$eq: ['$$name.player_id', ObjectId(player_id) ]}
-          ] }
-        }},
-        _id: 0
-      }}
-    , (err, result) ->
-      if err
-        console.log err
-
-      if result[0].names[0] != undefined
-        player_is_blocked = true
-    )
-
-    List.findOne _id: ObjectId(list_id), (err, result) ->
-      if err
-        console.log err
-        res.send err
-
-      res.send result
 
   app.get '/matches/match/details/:list_id', isLoggedIn, (req, res) ->
 
@@ -364,7 +320,9 @@ module.exports = (app) ->
         return
     return
 
-  app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
+  # app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
+  app.post '/match/remove/player',
+  isLoggedIn, (req, res, next) ->
 
     list_id       = req.body.list_id
     player_status = req.body.player_status
