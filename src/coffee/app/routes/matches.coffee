@@ -42,10 +42,72 @@ removeMatchFomUser = (player_id, match, next) ->
     deferred.resolve doc.matches.indexOf(match)
   return deferred.promise
 
-# TODO implement method, design return to calling method
-removeUserFromMatch = (player_id, match, next) ->
+# TODO implement
+addUserToMatch = (player_id, list_id) ->
+  deferred = Q.defer()
+  return deferred.promise
+
+
+removeUserFromMatch = (player_id, list_id) ->
   deferred = Q.defer()
 
+  List.findOne {
+    '_id': list_id
+  }, (err, doc) ->
+    response = {}
+
+    if err
+      response = {
+        "message": "",
+        "doc": doc
+        "errMessage": err.message
+      }
+
+    if not doc
+      response = {
+        "message": "Match not found",
+        "errMessage": "Please inform a valid match"
+      }
+    if doc.names.length > doc.list_size
+      options = {
+        $pull: {
+          names: {
+            player_id: ObjectId(player_id)
+          }
+        }
+      }
+    else
+      options = {
+        $set: {
+          "names.$": "undefined"
+        }
+      }
+
+    List.findOneAndUpdate {
+      '_id': list_id
+      'names.player_id': ObjectId(player_id)
+      }, options, {
+        'new': true
+        'rawResult': false
+      }, (err, doc) ->
+        if err
+          response = {
+            "message": "",
+            "doc": doc
+            "errMessage": err.message
+          }
+        if not doc
+          response = {
+            "message": "Player not in this match96",
+            "errMessage": "Please inform a valid match and user"
+          }
+        else
+          response = {
+            "message": "Removed successfully"
+            "errMessage": ""
+            "doc": doc
+          }
+        deferred.resolve response
   return deferred.promise
 
 getTimeToMatch = (list) ->
@@ -95,9 +157,6 @@ module.exports = (app) ->
       return
     return
 
-  # TODO Whenever a player removes their name from a match, a routine has to
-  # run in order to check list size and automatically push players
-  # from the waiting list to the actual list
   app.post '/match/participate', isLoggedIn, (req, res) ->
     list_id = req.body.list_id
     errMessage = ""
@@ -138,7 +197,6 @@ module.exports = (app) ->
         return
 
     if req.body.player_status == 'playing' || req.body.player_status == 1
-
       List.findOneAndUpdate {
         _id: list_id,
         'names.player_id': { $ne: ObjectId(user.player_id) }
@@ -172,42 +230,8 @@ module.exports = (app) ->
 
     else if req.body.player_status == 'not playing' ||
     req.body.player_status == 0
-      List.findOneAndUpdate {
-        '_id': list_id,
-      },{
-        $pull: 'names': 'player_id': user.player_id
-      },
-      {
-        'new': true
-      }, (err, list) ->
-        if err
-          errMessage = err.message
-
-        if list
-          timeToMatch            = getTimeToMatch(list)
-          if timeToMatch < 360
-            penalty = true
-            addPenaltyToUser(user, list_id)
-
-          removeMatchFomUser(user.player_id, list_id).then(data) ->
-            console.log data
-
-          return res.json {
-            "message": ""
-            "list": list
-            "errMessage": errMessage
-          }
-        else
-          return res.json {
-            "message": "User is not in list",
-            "updated": 0,
-            "errMessage": ""
-          }
-    else
-      return res.json {
-        "message": "Inform a valid status",
-        "errMessage": "A valid status has not been informed"
-      }
+      removeUserFromMatch(user.player_id, list_id).then (data) ->
+        return res.json data
 
   app.get '/matches/match/:list_id', isLoggedIn,(req, res) ->
     list_id             = req.params.list_id
@@ -289,7 +313,6 @@ module.exports = (app) ->
 
   app.post '/match/remove/player',
   isLoggedIn, (req, res, next) ->
-    # TODO create method to remove player and call it within calls
     paramError = false
     errors = {}
     list_id       = req.body.list_id
@@ -316,126 +339,8 @@ module.exports = (app) ->
         "errMessage": "Params have not been informed correctly"
       }
 
-    List.findOne {
-      '_id': list_id
-      # 'names.player_id': ObjectId(player_id)
-    }, (err, doc) ->
-      if err
-        return res.json {
-          "message": "",
-          "doc": doc
-          "errMessage": err.message
-        }
-
-      if not doc
-        return res.json {
-          "message": "Match not found",
-          "errMessage": "Please inform a valid match"
-        }
-
-      if doc.names.length > doc.list_size
-        # TODO remove player
-        options = {
-          $pull: {
-            names: {
-              player_id: ObjectId(player_id)
-            }
-          }
-        }
-      else
-        # TODO update field to undefined
-        options = {
-          $set: {
-            "names.$": "undefined"
-          }
-        }
-
-      List.findOneAndUpdate {
-        '_id': list_id
-        'names.player_id': ObjectId(player_id)
-      }, options, {
-        'new': true
-        'rawResult': false
-      }, (err, doc) ->
-        if err
-          return res.json {
-            "message": "",
-            "doc": doc
-            "errMessage": err.message
-          }
-        if not doc
-          return res.json {
-            "message": "Player not in this match",
-            "errMessage": "Please inform a valid match and user"
-          }
-        else
-          return res.json {
-            "message": "Removed successfully"
-            "errMessage": ""
-            "doc": doc
-          }
-
-    # return res.json {
-    #   "message": "nothing",
-    # }
-
-    # FIXME instead of pulling, updating to undefined
-    # List.findOneAndUpdate {
-    #   '_id': list_id
-    #   'names.player_id': ObjectId(player_id)
-    # },{
-    #   $pull: {
-    #     names: {
-    #       player_id: ObjectId(player_id)
-    #     }
-    #   }
-    # }, {
-    #   'new': true
-    #   'rawResult': false
-    # }, (err, doc) ->
-    #   if err
-    #     return res.json {
-    #       "message": "",
-    #       "doc": doc
-    #       "errMessage": err.message
-    #     }
-    #   if not doc
-    #     return res.json {
-    #       "message": "Player not in this match",
-    #       "errMessage": "Please inform a valid match and user"
-    #     }
-    #
-    #   User.findOne {
-    #     '_id': ObjectId(player_id)
-    #   }, (err, user) ->
-    #     _user = {
-    #       "player_id": ObjectId(player_id)
-    #       "datetime": 'date'
-    #       "last_name": user.facebook.last_name
-    #       "first_name": user.facebook.first_name
-    #       "full_name": user.facebook.full_name
-    #       "status": "playing"
-    #       "phone": user.phone
-    #     }
-    #
-    #     removeMatchFomUser(user._id, list_id)
-    #
-    #     result = _.find doc.names, (val) ->
-    #       return _.isEqual(_user, val)
-    #
-    #     if not result
-    #       return res.json {
-    #         "message": "Removed successfully"
-    #         "errMessage": ""
-    #         "doc": doc
-    #       }
-    #     else
-    #       return res.json {
-    #         "message": "No update has happened"
-    #         "errMessage": "An Unknow error occurred"
-    #       }
-    #
-    # return
+    removeUserFromMatch(player_id, list_id).then (data) ->
+      return res.json data
 
   app.post '/matches/create', isLoggedIn, (req, res, next) ->
 

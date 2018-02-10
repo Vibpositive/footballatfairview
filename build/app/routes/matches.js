@@ -1,4 +1,4 @@
-var List, ObjectId, Penalty, Q, User, UserPenalty, _, addMatchToUser, addPenaltyToUser, getTimeToMatch, isLoggedIn, moment, removeMatchFomUser, removeUserFromMatch, uuid;
+var List, ObjectId, Penalty, Q, User, UserPenalty, _, addMatchToUser, addPenaltyToUser, addUserToMatch, getTimeToMatch, isLoggedIn, moment, removeMatchFomUser, removeUserFromMatch, uuid;
 
 List = require('../models/list');
 
@@ -67,10 +67,78 @@ removeMatchFomUser = function(player_id, match, next) {
   return deferred.promise;
 };
 
-// TODO implement method, design return to calling method
-removeUserFromMatch = function(player_id, match, next) {
+// TODO implement
+addUserToMatch = function(player_id, list_id) {
   var deferred;
   deferred = Q.defer();
+  return deferred.promise;
+};
+
+removeUserFromMatch = function(player_id, list_id) {
+  var deferred;
+  deferred = Q.defer();
+  List.findOne({
+    '_id': list_id
+  }, function(err, doc) {
+    var options, response;
+    response = {};
+    if (err) {
+      response = {
+        "message": "",
+        "doc": doc,
+        "errMessage": err.message
+      };
+    }
+    if (!doc) {
+      response = {
+        "message": "Match not found",
+        "errMessage": "Please inform a valid match"
+      };
+    }
+    if (doc.names.length > doc.list_size) {
+      options = {
+        $pull: {
+          names: {
+            player_id: ObjectId(player_id)
+          }
+        }
+      };
+    } else {
+      options = {
+        $set: {
+          "names.$": "undefined"
+        }
+      };
+    }
+    return List.findOneAndUpdate({
+      '_id': list_id,
+      'names.player_id': ObjectId(player_id)
+    }, options, {
+      'new': true,
+      'rawResult': false
+    }, function(err, doc) {
+      if (err) {
+        response = {
+          "message": "",
+          "doc": doc,
+          "errMessage": err.message
+        };
+      }
+      if (!doc) {
+        response = {
+          "message": "Player not in this match96",
+          "errMessage": "Please inform a valid match and user"
+        };
+      } else {
+        response = {
+          "message": "Removed successfully",
+          "errMessage": "",
+          "doc": doc
+        };
+      }
+      return deferred.resolve(response);
+    });
+  });
   return deferred.promise;
 };
 
@@ -129,9 +197,6 @@ module.exports = function(app) {
       });
     });
   });
-  // TODO Whenever a player removes their name from a match, a routine has to
-  // run in order to check list size and automatically push players
-  // from the waiting list to the actual list
   app.post('/match/participate', isLoggedIn, function(req, res) {
     var errMessage, inputFault, list_id, prop, updated, user;
     list_id = req.body.list_id;
@@ -188,47 +253,8 @@ module.exports = function(app) {
         });
       });
     } else if (req.body.player_status === 'not playing' || req.body.player_status === 0) {
-      return List.findOneAndUpdate({
-        '_id': list_id
-      }, {
-        $pull: {
-          'names': {
-            'player_id': user.player_id
-          }
-        }
-      }, {
-        'new': true
-      }, function(err, list) {
-        var penalty, timeToMatch;
-        if (err) {
-          errMessage = err.message;
-        }
-        if (list) {
-          timeToMatch = getTimeToMatch(list);
-          if (timeToMatch < 360) {
-            penalty = true;
-            addPenaltyToUser(user, list_id);
-          }
-          removeMatchFomUser(user.player_id, list_id).then(data)(function() {
-            return console.log(data);
-          });
-          return res.json({
-            "message": "",
-            "list": list,
-            "errMessage": errMessage
-          });
-        } else {
-          return res.json({
-            "message": "User is not in list",
-            "updated": 0,
-            "errMessage": ""
-          });
-        }
-      });
-    } else {
-      return res.json({
-        "message": "Inform a valid status",
-        "errMessage": "A valid status has not been informed"
+      return removeUserFromMatch(user.player_id, list_id).then(function(data) {
+        return res.json(data);
       });
     }
   });
@@ -325,7 +351,6 @@ module.exports = function(app) {
   });
   app.post('/match/remove/player', isLoggedIn, function(req, res, next) {
     var errors, list_id, paramError, player_id, player_status;
-    // TODO create method to remove player and call it within calls
     paramError = false;
     errors = {};
     list_id = req.body.list_id;
@@ -350,131 +375,10 @@ module.exports = function(app) {
         "errMessage": "Params have not been informed correctly"
       });
     }
-    return List.findOne({
-      '_id': list_id
-    // 'names.player_id': ObjectId(player_id)
-    }, function(err, doc) {
-      var options;
-      if (err) {
-        return res.json({
-          "message": "",
-          "doc": doc,
-          "errMessage": err.message
-        });
-      }
-      if (!doc) {
-        return res.json({
-          "message": "Match not found",
-          "errMessage": "Please inform a valid match"
-        });
-      }
-      if (doc.names.length > doc.list_size) {
-        // TODO remove player
-        options = {
-          $pull: {
-            names: {
-              player_id: ObjectId(player_id)
-            }
-          }
-        };
-      } else {
-        // TODO update field to undefined
-        options = {
-          $set: {
-            "names.$": "undefined"
-          }
-        };
-      }
-      return List.findOneAndUpdate({
-        '_id': list_id,
-        'names.player_id': ObjectId(player_id)
-      }, options, {
-        'new': true,
-        'rawResult': false
-      }, function(err, doc) {
-        if (err) {
-          return res.json({
-            "message": "",
-            "doc": doc,
-            "errMessage": err.message
-          });
-        }
-        if (!doc) {
-          return res.json({
-            "message": "Player not in this match",
-            "errMessage": "Please inform a valid match and user"
-          });
-        } else {
-          return res.json({
-            "message": "Removed successfully",
-            "errMessage": "",
-            "doc": doc
-          });
-        }
-      });
+    return removeUserFromMatch(player_id, list_id).then(function(data) {
+      return res.json(data);
     });
   });
-  // return res.json {
-  //   "message": "nothing",
-  // }
-
-  // FIXME instead of pulling, updating to undefined
-  // List.findOneAndUpdate {
-  //   '_id': list_id
-  //   'names.player_id': ObjectId(player_id)
-  // },{
-  //   $pull: {
-  //     names: {
-  //       player_id: ObjectId(player_id)
-  //     }
-  //   }
-  // }, {
-  //   'new': true
-  //   'rawResult': false
-  // }, (err, doc) ->
-  //   if err
-  //     return res.json {
-  //       "message": "",
-  //       "doc": doc
-  //       "errMessage": err.message
-  //     }
-  //   if not doc
-  //     return res.json {
-  //       "message": "Player not in this match",
-  //       "errMessage": "Please inform a valid match and user"
-  //     }
-
-  //   User.findOne {
-  //     '_id': ObjectId(player_id)
-  //   }, (err, user) ->
-  //     _user = {
-  //       "player_id": ObjectId(player_id)
-  //       "datetime": 'date'
-  //       "last_name": user.facebook.last_name
-  //       "first_name": user.facebook.first_name
-  //       "full_name": user.facebook.full_name
-  //       "status": "playing"
-  //       "phone": user.phone
-  //     }
-
-  //     removeMatchFomUser(user._id, list_id)
-
-  //     result = _.find doc.names, (val) ->
-  //       return _.isEqual(_user, val)
-
-  //     if not result
-  //       return res.json {
-  //         "message": "Removed successfully"
-  //         "errMessage": ""
-  //         "doc": doc
-  //       }
-  //     else
-  //       return res.json {
-  //         "message": "No update has happened"
-  //         "errMessage": "An Unknow error occurred"
-  //       }
-
-  // return
   app.post('/matches/create', isLoggedIn, function(req, res, next) {
     var errMessage, errors, i, index, isParticipating, list_date, list_size, list_status, match, message, names, paramError, ref, ref1, rowsAffected, start;
     paramError = false;
