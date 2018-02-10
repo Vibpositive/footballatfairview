@@ -49,6 +49,7 @@ addUserToMatch = (player_id, list_id) ->
 
 
 removeUserFromMatch = (player_id, list_id) ->
+  # TODO: removeMatchFomUser
   deferred = Q.defer()
 
   List.findOne {

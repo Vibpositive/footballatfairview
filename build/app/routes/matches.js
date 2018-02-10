@@ -76,6 +76,7 @@ addUserToMatch = function(player_id, list_id) {
 
 removeUserFromMatch = function(player_id, list_id) {
   var deferred;
+  // TODO: removeMatchFomUser
   deferred = Q.defer();
   List.findOne({
     '_id': list_id
