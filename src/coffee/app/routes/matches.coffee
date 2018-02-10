@@ -28,9 +28,9 @@ addMatchToUser = (user, match, next) ->
     deferred.resolve numAffected
   return deferred.promise
 
-removeMatchFomUser = (user, match, next) ->
+removeMatchFomUser = (player_id, match, next) ->
   deferred = Q.defer()
-  User.findByIdAndUpdate { _id: ObjectId(user.player_id) },
+  User.findByIdAndUpdate { _id: ObjectId(player_id) },
   {
     $pull: 'matches': match
   },
@@ -49,7 +49,6 @@ getTimeToMatch = (list) ->
   return diffMinutes
 
 addPenaltyToUser = (user, match, next) ->
-  # TODO: implement Q
   User.findByIdAndUpdate {
     _id: user.player_id,
     matches: {
@@ -61,38 +60,6 @@ addPenaltyToUser = (user, match, next) ->
   },
   (err, doc) ->
     undefined
-
-addUserToMatch = (list_id, user, req) ->
-  # TODO: check size of players list
-  deferred = Q.defer()
-
-#   b.collection.update(
-#     { "unique_array": { "$ne": 18 } },
-#     {
-#         "$push": { "unique_array": 18 },
-#         "$inc": { "size_of_array": 1 }
-#     }
-# )
-
-  List.update {
-    '_id': list_id
-  },{
-    $addToSet: {
-      'names': {
-        player_id: user.player_id
-        datetime: 'date'
-        last_name: user.last_name
-        first_name: user.first_name
-        full_name: user.full_name
-        status: "playing"
-        phone: user.phone
-      }
-    }
-  },(err, numAffected) ->
-    if err
-      deferred.resolve err
-    deferred.resolve numAffected
-  return deferred.promise
 
 module.exports = (app) ->
   app.get '/matches', isLoggedIn, (req, res) ->
@@ -125,7 +92,7 @@ module.exports = (app) ->
   # TODO Whenever a player removes their name from a match, a routine has to
   # run in order to check list size and automatically push players
   # from the waiting list to the actual list
-  app.post '/matches/participate', isLoggedIn, (req, res) ->
+  app.post '/match/participate', isLoggedIn, (req, res) ->
     list_id = req.body.list_id
     errMessage = ""
     user = {}
@@ -164,7 +131,7 @@ module.exports = (app) ->
         }
         return
 
-    if req.body.player_status == 'playing'
+    if req.body.player_status == 'playing' || req.body.player_status == 1
 
       List.findOneAndUpdate {
         _id: list_id,
@@ -189,26 +156,18 @@ module.exports = (app) ->
         if err
           errMessage = err.message
 
-        # console.log "doc", doc
         message = if doc then "Added to the match" else "User already on match"
 
-        res.json {
+        addMatchToUser(user, list_id)
+        return res.json {
           "message": message
-          # "updated": doc
           "errMessage": errMessage
         }
-        addMatchToUser(user, list_id).then (data) ->
-          # res.json {
-          #   "message": "Success",
-          #   "updated": data.nModified,
-          #   "errMessage": errMessage
-          # }
-          undefined
 
-    else if req.body.player_status == 'not playing'
+    else if req.body.player_status == 'not playing' ||
+    req.body.player_status == 0
       List.findOneAndUpdate {
         '_id': list_id,
-        # "names.player_id": { $eq: user.player_id }
       },{
         $pull: 'names': 'player_id': user.player_id
       },
@@ -224,27 +183,26 @@ module.exports = (app) ->
             penalty = true
             addPenaltyToUser(user, list_id)
 
-          removeMatchFomUser(user, list_id)
+          removeMatchFomUser(user.player_id, list_id).then(data) ->
+            console.log data
 
-          res.json {
+          return res.json {
             "message": ""
             "list": list
             "errMessage": errMessage
           }
         else
-          res.json {
+          return res.json {
             "message": "User is not in list",
             "updated": 0,
             "errMessage": ""
           }
     else
-      res.json {
+      return res.json {
         "message": "Inform a valid status",
         "errMessage": "A valid status has not been informed"
       }
-      undefined
 
-  # TODO user is being removed from session if multiple users connected
   app.get '/matches/match/:list_id', isLoggedIn,(req, res) ->
     list_id             = req.params.list_id
     player_id           = req.user.id
@@ -288,10 +246,12 @@ module.exports = (app) ->
       return
     return
 
+  # Show a view to create matches
   app.get '/matches/create', isLoggedIn, (req, res) ->
     res.render 'matches/create.ejs', title: 'Create a match'
     return
 
+  # Show all matches in a edit view
   app.get '/matches/edit', isLoggedIn, (req, res) ->
     List.find {}, (err, list) ->
       if err
@@ -305,45 +265,107 @@ module.exports = (app) ->
       title: "Matches index"
       return
 
+  # Show a match in a edit view
   app.get '/matches/edit/:list_id', isLoggedIn, (req, res, next) ->
     list_id     = req.params.list_id
-    List.findOne { _id: list_id }, {},(err, listFound) ->
+    List.findOne { _id: list_id }, {},(err, doc) ->
       if err
         return { message: err }
       else
         res.render 'matches/edit.ejs',
         message: ''
-        list: listFound
+        list: doc
         user: req.user
         moment: moment
         title: 'Matches List'
         return
     return
 
-  # app.post '/matches/edit/match', isLoggedIn, (req, res, next) ->
   app.post '/match/remove/player',
   isLoggedIn, (req, res, next) ->
 
+    paramError = false
+    errors = {}
     list_id       = req.body.list_id
     player_status = req.body.player_status
-    full_name     = req.body.full_name
-    player_id     = new ObjectId(req.body.player_id)
+    player_id     = req.body.player_id
 
-    if player_status == "remove"
+    if typeof list_id is 'undefined' || list_id == ''
+      errors.list_id = "Match ID not informed correctly"
+      paramError = true
 
-      List.findByIdAndUpdate { '_id': list_id },
-      {
-        $pull: names: full_name: full_name,
-        player_id: new ObjectId(player_id) }, (err, model) ->
-          if err
-            return res.status(422).json(err)
-          List.findOne {_id: list_id, 'names.full_name': full_name},
-          (err2, model2) ->
-            if err
-              return res.status(422).json(err2)
-            res.status(200).json(model2)
-            return
-      return
+    if typeof player_status is 'undefined' ||
+    player_status == ''
+      errors.player_status = "Player status not informed correctly"
+      paramError = true
+
+    if typeof player_id is 'undefined' || player_id == ''
+      errors.player_id = "Player ID full name not informed correctly"
+      paramError = true
+
+    if paramError
+      return res.json {
+        "message": "Please inform all params",
+        "errors": errors
+        "errMessage": "Params have not been informed correctly"
+      }
+
+
+    List.findOneAndUpdate {
+      '_id': list_id
+      'names.player_id': ObjectId(player_id)
+    },{
+      $pull: {
+        names: {
+          player_id: ObjectId(player_id)
+        }
+      }
+    }, {
+      'new': true
+      'rawResult': false
+    }, (err, doc) ->
+      if err
+        return res.json {
+          "message": "",
+          "doc": doc
+          "errMessage": err.message
+        }
+      if not doc
+        return res.json {
+          "message": "Player not in this match",
+          "errMessage": "Please inform a valid match and user"
+        }
+
+      User.findOne {
+        '_id': ObjectId(player_id)
+      }, (err, user) ->
+        _user = {
+          "player_id": ObjectId(player_id)
+          "datetime": 'date'
+          "last_name": user.facebook.last_name
+          "first_name": user.facebook.first_name
+          "full_name": user.facebook.full_name
+          "status": "playing"
+          "phone": user.phone
+        }
+
+        removeMatchFomUser(user._id, list_id)
+
+        result = _.find doc.names, (val) ->
+          return _.isEqual(_user, val)
+
+        if not result
+          return res.json {
+            "message": "Removed successfully"
+            "errMessage": ""
+            "doc": doc
+          }
+        else
+          return res.json {
+            "message": "No update has happened"
+            "errMessage": "An Unknow error occurred"
+          }
+
     return
 
   app.post '/matches/create', isLoggedIn, (req, res, next) ->
@@ -407,11 +429,10 @@ module.exports = (app) ->
     list_size   = req.body.list_size
 
     if list_id == '' || list_status == '' || list_date == '' || list_size < 0
-      res.json {
+      return res.json {
         "message": "Please inform all params",
         "errMessage": "Params have not been informed correctly"
       }
-      return
 
     List.update
       '_id': list_id,
@@ -429,18 +450,17 @@ module.exports = (app) ->
         return
       else
         if data.nModified > 0
-          # TODO 08/02/2018 - Continue
-          res.json {
+          return res.json {
             "message": "Updated successfully",
             "errMessage": ""
           }
-          return
+
         else
-          res.json {
+          return res.json {
             "message": "Updated unsuccessfully",
             "errMessage": ""
           }
-          return
+
       return
     return
   return

@@ -16,8 +16,6 @@ isLoggedIn = function(req, res, next) {
 };
 
 callback = function(err, numAffected) {
-  // TOOD: improve err catch
-  // console.log err, numAffected
   if (err) {
     return err;
   } else {
@@ -111,6 +109,9 @@ module.exports = function(app) {
     user_name = req.body.name;
     user_phone = req.body.phone;
     user_email = req.body.email;
+    // TODO add option to change profile
+    // ENUM of profiles
+    // player, preferential, organizer, admin, master
     if (user_name !== "" && user_phone !== "" && user_email !== "") {
       return User.findOne({
         _id: user_id
@@ -140,11 +141,3 @@ module.exports = function(app) {
     }
   });
 };
-
-/*res.send [user_name, user_phone, user_email]
-return
-
-User.update { '_id' : user_id }, { '$set' : { 'facebook.$.full_name' : user_name, phone : user_phone, 'facebook.$.email' : user_email } },(err, numAffected) ->
-User.update { '_id' : user_id }, { 'phone' : user_phone } ,(err, numAffected) ->
-res.send numAffected
-return*/

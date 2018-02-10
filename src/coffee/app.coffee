@@ -92,9 +92,9 @@ app.use (req, res, next) ->
   # res.status(404).render 'errors/404.ejs', title: '404'
   res.status(404).send("Sorry can't find that!")
 
-app.use (error, req, res, next) ->
-  res.status 500
-  res.render 'errors/500.ejs',
-    title: '500  : Internal Server Error'
-    error: error
-  return
+# app.use (error, req, res, next) ->
+#   res.status 500
+#   res.render 'errors/500.ejs',
+#     title: '500  : Internal Server Error'
+#     error: error
+#   return

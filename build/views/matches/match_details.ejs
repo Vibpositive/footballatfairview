@@ -30,7 +30,7 @@
 					state         : <%= player_is_on_list %>
 				}).on('switchChange.bootstrapSwitch', function(event, state)
 				{
-					$.post("/matches/participate",
+					$.post("/match/participate",
 					{
 						list_id       : listid,
 						player_status : state ? "playing" : "not playing"

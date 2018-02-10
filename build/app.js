@@ -122,10 +122,9 @@ app.use(function(req, res, next) {
   return res.status(404).send("Sorry can't find that!");
 });
 
-app.use(function(error, req, res, next) {
-  res.status(500);
-  res.render('errors/500.ejs', {
-    title: '500  : Internal Server Error',
-    error: error
-  });
-});
+// app.use (error, req, res, next) ->
+//   res.status 500
+//   res.render 'errors/500.ejs',
+//     title: '500  : Internal Server Error'
+//     error: error
+//   return

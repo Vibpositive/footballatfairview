@@ -9,9 +9,7 @@ isLoggedIn = (req, res, next) ->
   res.redirect '/'
   return
 
-callback = (err, numAffected)->
-  # TOOD: improve err catch
-  # console.log err, numAffected
+callback = (err, numAffected) ->
   if err
     return err
   else
@@ -29,17 +27,17 @@ module.exports = (app) ->
       return
 
   app.post '/users', (req, res) ->
-      User.find {}, (err, list) ->
-        res.json (list)
-      return
+    User.find {}, (err, list) ->
+      res.json (list)
+    return
 
   app.get '/user/view/:user_id', (req, res) ->
 
     user_id = req.params.user_id
-    
-    User.findOne { _id : user_id }, (err, userResultes_query) ->
 
-      List.find { list_status : 'active' }, (l_err, listResultes_query) ->
+    User.findOne { _id: user_id }, (err, userResultes_query) ->
+
+      List.find { list_status: 'active' }, (l_err, listResultes_query) ->
 
         userActiveLists = []
         isUserInTheList = false
@@ -48,9 +46,10 @@ module.exports = (app) ->
 
           _.each listResultes_query, (list) ->
 
-            _.find list.names, (list_)->
+            _.find list.names, (list_) ->
 
-              isUserInTheList = String(list_.player_id) == String(userResultes_query._id)
+              isUserInTheList =
+                String(list_.player_id) == String(userResultes_query._id)
 
               return isUserInTheList
 
@@ -62,19 +61,19 @@ module.exports = (app) ->
           return
 
         res.render 'users/view.ejs',
-        user_found : userResultes_query
-        user_lists : userActiveLists
-        title      : 'users'
-        moment : moment
+        user_found: userResultes_query
+        user_lists: userActiveLists
+        title: 'users'
+        moment: moment
         return
 
   app.get '/user/edit/:user_id', (req, res) ->
 
     user_id = req.params.user_id
 
-    User.findOne { _id : user_id }, (err, userResultes_query) ->
+    User.findOne { _id: user_id }, (err, userResultes_query) ->
 
-      List.find { list_status : 'active' }, (l_err, listResultes_query) ->
+      List.find { list_status: 'active' }, (l_err, listResultes_query) ->
 
         userActiveLists = []
         isUserInTheList = false
@@ -83,9 +82,10 @@ module.exports = (app) ->
 
           _.each listResultes_query, (list) ->
 
-            _.find list.names, (list_)->
+            _.find list.names, (list_) ->
 
-              isUserInTheList = String(list_.player_id) == String(userResultes_query._id)
+              isUserInTheList =
+                String(list_.player_id) == String(userResultes_query._id)
 
               return isUserInTheList
 
@@ -97,10 +97,10 @@ module.exports = (app) ->
           return
 
         res.render 'users/edit.ejs',
-        user_found : userResultes_query
-        user_lists : userActiveLists
-        title      : 'users'
-        moment : moment
+        user_found: userResultes_query
+        user_lists: userActiveLists
+        title: 'users'
+        moment: moment
         return
       return
     return
@@ -111,33 +111,25 @@ module.exports = (app) ->
     user_name = req.body.name
     user_phone = req.body.phone
     user_email = req.body.email
+    # TODO add option to change profile
+    # ENUM of profiles
+    # player, preferential, organizer, admin, master
 
     if user_name != "" and user_phone != "" and user_email != ""
 
-      User.findOne _id : user_id, (err, user) ->
+      User.findOne _id: user_id, (err, user) ->
         console.log user
         user.phone = user_phone
         user.facebook.email = user_email
         user.facebook.full_name = user_name
         user.save(callback)
-        user.save (err)->
+        user.save (err) ->
           if err
             console.log err
-            res.json { message : err }
+            res.json { message: err }
             return
           res.json { message: "ok" }
         return
     else
       res.json { message: "fill in all fields" }
-
-      ###res.send [user_name, user_phone, user_email]
-      return
-
-      User.update { '_id' : user_id }, { '$set' : { 'facebook.$.full_name' : user_name, phone : user_phone, 'facebook.$.email' : user_email } },(err, numAffected) ->
-      User.update { '_id' : user_id }, { 'phone' : user_phone } ,(err, numAffected) ->
-      res.send numAffected
-      return###
-
-
-
   return
