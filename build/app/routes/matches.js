@@ -1,4 +1,4 @@
-var List, ObjectId, Penalty, Q, User, UserPenalty, _, addMatchToUser, addPenaltyToUser, getTimeToMatch, isLoggedIn, moment, removeMatchFomUser, uuid;
+var List, ObjectId, Penalty, Q, User, UserPenalty, _, addMatchToUser, addPenaltyToUser, getTimeToMatch, isLoggedIn, moment, removeMatchFomUser, removeUserFromMatch, uuid;
 
 List = require('../models/list');
 
@@ -64,6 +64,13 @@ removeMatchFomUser = function(player_id, match, next) {
     }
     return deferred.resolve(doc.matches.indexOf(match));
   });
+  return deferred.promise;
+};
+
+// TODO implement method, design return to calling method
+removeUserFromMatch = function(player_id, match, next) {
+  var deferred;
+  deferred = Q.defer();
   return deferred.promise;
 };
 
@@ -243,7 +250,7 @@ module.exports = function(app) {
           console.log(err);
           res.send(err);
         }
-        return res.render('matches/match_details.ejs', {
+        return res.render('matches/match.ejs', {
           message: req.flash('loginMessage'),
           list: list,
           match_date: moment(list.list_date, "x"),
@@ -263,7 +270,7 @@ module.exports = function(app) {
       if (err) {
         return console.log('err', err);
       }
-      res.render('matches/match_list_details.ejs', {
+      res.render('matches/players.ejs', {
         message: req.flash('loginMessage'),
         list: result,
         match_date: moment(result.list_date, 'x'),
@@ -318,6 +325,7 @@ module.exports = function(app) {
   });
   app.post('/match/remove/player', isLoggedIn, function(req, res, next) {
     var errors, list_id, paramError, player_id, player_status;
+    // TODO create method to remove player and call it within calls
     paramError = false;
     errors = {};
     list_id = req.body.list_id;
@@ -342,19 +350,11 @@ module.exports = function(app) {
         "errMessage": "Params have not been informed correctly"
       });
     }
-    List.findOneAndUpdate({
-      '_id': list_id,
-      'names.player_id': ObjectId(player_id)
-    }, {
-      $pull: {
-        names: {
-          player_id: ObjectId(player_id)
-        }
-      }
-    }, {
-      'new': true,
-      'rawResult': false
+    return List.findOne({
+      '_id': list_id
+    // 'names.player_id': ObjectId(player_id)
     }, function(err, doc) {
+      var options;
       if (err) {
         return res.json({
           "message": "",
@@ -364,52 +364,148 @@ module.exports = function(app) {
       }
       if (!doc) {
         return res.json({
-          "message": "Player not in this match",
-          "errMessage": "Please inform a valid match and user"
+          "message": "Match not found",
+          "errMessage": "Please inform a valid match"
         });
       }
-      return User.findOne({
-        '_id': ObjectId(player_id)
-      }, function(err, user) {
-        var _user, result;
-        _user = {
-          "player_id": ObjectId(player_id),
-          "datetime": 'date',
-          "last_name": user.facebook.last_name,
-          "first_name": user.facebook.first_name,
-          "full_name": user.facebook.full_name,
-          "status": "playing",
-          "phone": user.phone
+      if (doc.names.length > doc.list_size) {
+        // TODO remove player
+        options = {
+          $pull: {
+            names: {
+              player_id: ObjectId(player_id)
+            }
+          }
         };
-        removeMatchFomUser(user._id, list_id);
-        result = _.find(doc.names, function(val) {
-          return _.isEqual(_user, val);
-        });
-        if (!result) {
+      } else {
+        // TODO update field to undefined
+        options = {
+          $set: {
+            "names.$": "undefined"
+          }
+        };
+      }
+      return List.findOneAndUpdate({
+        '_id': list_id,
+        'names.player_id': ObjectId(player_id)
+      }, options, {
+        'new': true,
+        'rawResult': false
+      }, function(err, doc) {
+        if (err) {
+          return res.json({
+            "message": "",
+            "doc": doc,
+            "errMessage": err.message
+          });
+        }
+        if (!doc) {
+          return res.json({
+            "message": "Player not in this match",
+            "errMessage": "Please inform a valid match and user"
+          });
+        } else {
           return res.json({
             "message": "Removed successfully",
             "errMessage": "",
             "doc": doc
           });
-        } else {
-          return res.json({
-            "message": "No update has happened",
-            "errMessage": "An Unknow error occurred"
-          });
         }
       });
     });
   });
+  // return res.json {
+  //   "message": "nothing",
+  // }
+
+  // FIXME instead of pulling, updating to undefined
+  // List.findOneAndUpdate {
+  //   '_id': list_id
+  //   'names.player_id': ObjectId(player_id)
+  // },{
+  //   $pull: {
+  //     names: {
+  //       player_id: ObjectId(player_id)
+  //     }
+  //   }
+  // }, {
+  //   'new': true
+  //   'rawResult': false
+  // }, (err, doc) ->
+  //   if err
+  //     return res.json {
+  //       "message": "",
+  //       "doc": doc
+  //       "errMessage": err.message
+  //     }
+  //   if not doc
+  //     return res.json {
+  //       "message": "Player not in this match",
+  //       "errMessage": "Please inform a valid match and user"
+  //     }
+
+  //   User.findOne {
+  //     '_id': ObjectId(player_id)
+  //   }, (err, user) ->
+  //     _user = {
+  //       "player_id": ObjectId(player_id)
+  //       "datetime": 'date'
+  //       "last_name": user.facebook.last_name
+  //       "first_name": user.facebook.first_name
+  //       "full_name": user.facebook.full_name
+  //       "status": "playing"
+  //       "phone": user.phone
+  //     }
+
+  //     removeMatchFomUser(user._id, list_id)
+
+  //     result = _.find doc.names, (val) ->
+  //       return _.isEqual(_user, val)
+
+  //     if not result
+  //       return res.json {
+  //         "message": "Removed successfully"
+  //         "errMessage": ""
+  //         "doc": doc
+  //       }
+  //     else
+  //       return res.json {
+  //         "message": "No update has happened"
+  //         "errMessage": "An Unknow error occurred"
+  //       }
+
+  // return
   app.post('/matches/create', isLoggedIn, function(req, res, next) {
-    var errMessage, isParticipating, list_date, list_size, list_status, match, message, names, rowsAffected;
+    var errMessage, errors, i, index, isParticipating, list_date, list_size, list_status, match, message, names, paramError, ref, ref1, rowsAffected, start;
+    paramError = false;
+    errors = {};
+    list_date = req.body.list_date;
+    list_size = req.body.list_size;
+    list_status = req.body.list_status;
+    if (typeof list_date === 'undefined' || list_date === '') {
+      errors.list_date = "List date not informed correctly";
+      paramError = true;
+    }
+    if (typeof list_size === 'undefined' || list_size === '') {
+      errors.list_size = "List size not informed correctly";
+      paramError = true;
+    }
+    if (typeof list_status === 'undefined' || list_status === '') {
+      errors.list_status = "List status not informed correctly";
+      paramError = true;
+    }
+    if (paramError) {
+      return res.json({
+        "message": "Please inform all params",
+        "errors": errors,
+        "errMessage": "Params have not been informed correctly"
+      });
+    }
     names = [];
     isParticipating = req.body.names;
     rowsAffected = 0;
     message = "";
     errMessage = "";
-    list_date = req.body.list_date;
-    list_size = req.body.list_size;
-    list_status = req.body.list_status;
     if (isParticipating === 'true') {
       names = [
         {
@@ -422,6 +518,15 @@ module.exports = function(app) {
           status: 'playing'
         }
       ];
+    }
+    if (list_size > 0) {
+      start = 0;
+      if (isParticipating === 'true') {
+        start = 1;
+      }
+      for (index = i = ref = start, ref1 = list_size - 1; ref <= ref1 ? i <= ref1 : i >= ref1; index = ref <= ref1 ? ++i : --i) {
+        names[index] = "undefined";
+      }
     }
     match = new List({
       list_date: list_date,
@@ -454,6 +559,7 @@ module.exports = function(app) {
   });
   app.post('/matches/update', isLoggedIn, function(req, res, next) {
     var list_date, list_id, list_size, list_status;
+    // REVIEW send to view list size so we can show waiting list
     list_id = req.body.list_id;
     list_date = req.body.list_date;
     list_status = req.body.list_status;
