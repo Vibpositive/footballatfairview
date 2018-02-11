@@ -42,14 +42,63 @@ removeMatchFomUser = (player_id, match, next) ->
     deferred.resolve doc.matches.indexOf(match)
   return deferred.promise
 
-# TODO implement
-addUserToMatch = (player_id, list_id) ->
+addUserToMatch = (user, list_id) ->
   deferred = Q.defer()
+
+  List.findOne {
+    _id: list_id
+    names: 'undefined'
+  }, (err, doc) ->
+    update = {}
+
+    if doc
+      query = {
+        _id: list_id
+        names: 'undefined'
+        'names.player_id': { $ne: ObjectId(user.player_id) }
+      }
+      update = {
+        $set: {
+          "names.$": user
+        }
+      }
+    else
+      query = {
+        _id: list_id
+        'names.player_id': { $ne: ObjectId(user.player_id) }
+      }
+      update = {
+        $push: {
+          'names': {
+            player_id: user.player_id
+            datetime: 'date'
+            last_name: user.last_name
+            first_name: user.first_name
+            full_name: user.full_name
+            status: "playing"
+            phone: user.phone
+          }
+        }
+      }
+
+    List.findOneAndUpdate query,update,
+    {
+      'new': true
+      'rawResult': true
+    }, (err, doc2) ->
+      if err
+        errMessage = err.message
+        
+      message = if doc2.value then "Added" else "User already on match"
+      response =  {
+        "message": message
+        "errMessage": errMessage
+      }
+      deferred.resolve response
+
   return deferred.promise
 
-
 removeUserFromMatch = (player_id, list_id) ->
-  # TODO: removeMatchFomUser
   deferred = Q.defer()
 
   List.findOne {
@@ -131,10 +180,10 @@ addPenaltyToUser = (user, match, next) ->
     undefined
 
 module.exports = (app) ->
-  app.get '/matches', isLoggedIn, (req, res) ->
+  app.get '/matches', isLoggedIn, (req, res, next) ->
     List.find {}, (err, list) ->
       if err
-        return console.log err
+        next err
       res.render 'matches/index.ejs',
       message: req.flash('loginMessage')
       lists: list
@@ -144,11 +193,10 @@ module.exports = (app) ->
       return
     return
 
-  app.post '/matches/views/playerslist', isLoggedIn, (req, res) ->
+  app.post '/matches/views/playerslist', isLoggedIn, (req, res, next) ->
     List.findOne {_id: req.body.list_id }, (err, list) ->
       if err
-        res.send err
-        return
+        next err
       res.render 'matches/names/names_list.ejs',
       message: req.flash('loginMessage')
       list: list
@@ -158,7 +206,7 @@ module.exports = (app) ->
       return
     return
 
-  app.post '/match/participate', isLoggedIn, (req, res) ->
+  app.post '/match/add/player', isLoggedIn, (req, res, next) ->
     list_id = req.body.list_id
     errMessage = ""
     user = {}
@@ -198,43 +246,16 @@ module.exports = (app) ->
         return
 
     if req.body.player_status == 'playing' || req.body.player_status == 1
-      List.findOneAndUpdate {
-        _id: list_id,
-        'names.player_id': { $ne: ObjectId(user.player_id) }
-      },{
-        $push: {
-          'names': {
-            player_id: user.player_id
-            datetime: 'date'
-            last_name: user.last_name
-            first_name: user.first_name
-            full_name: user.full_name
-            status: "playing"
-            phone: user.phone
-          }
-        }
-      },
-      {
-        'new': true
-        'rawResult': false
-      }, (err, doc) ->
-        if err
-          errMessage = err.message
-
-        message = if doc then "Added to the match" else "User already on match"
-
+      addUserToMatch(user, list_id).then (data) ->
         addMatchToUser(user, list_id)
-        return res.json {
-          "message": message
-          "errMessage": errMessage
-        }
-
+        return res.json data
     else if req.body.player_status == 'not playing' ||
     req.body.player_status == 0
       removeUserFromMatch(user.player_id, list_id).then (data) ->
+        removeMatchFomUser(user.player_id, list_id)
         return res.json data
 
-  app.get '/matches/match/:list_id', isLoggedIn,(req, res) ->
+  app.get '/matches/match/:list_id', isLoggedIn,(req, res, next) ->
     list_id             = req.params.list_id
     player_id           = req.user.id
 
@@ -260,7 +281,7 @@ module.exports = (app) ->
         title: "Match"
     return
 
-  app.get '/matches/match/details/:list_id', isLoggedIn, (req, res) ->
+  app.get '/match/get/players/:list_id', isLoggedIn, (req, res, next) ->
 
     List.findOne _id: ObjectId(req.params.list_id)
     , (err, result) ->
@@ -278,12 +299,12 @@ module.exports = (app) ->
     return
 
   # Show a view to create matches
-  app.get '/matches/create', isLoggedIn, (req, res) ->
+  app.get '/matches/create', isLoggedIn, (req, res, next) ->
     res.render 'matches/create.ejs', title: 'Create a match'
     return
 
   # Show all matches in a edit view
-  app.get '/matches/edit', isLoggedIn, (req, res) ->
+  app.get '/matches/edit', isLoggedIn, (req, res, next) ->
     List.find {}, (err, list) ->
       if err
         res.send err

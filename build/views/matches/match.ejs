@@ -19,6 +19,7 @@
 
 			var listid ="<%-list._id%>";
 
+      // TODO two buttons, one to add to match one to remove from match
 			$( document ).ready(function()
 			{
 				$("#creatorOnList").bootstrapSwitch({
@@ -30,7 +31,7 @@
 					state         : <%= player_is_on_list %>
 				}).on('switchChange.bootstrapSwitch', function(event, state)
 				{
-					$.post("/match/participate",
+					$.post("/match/add/player",
 					{
 						list_id       : listid,
 						player_status : state ? "playing" : "not playing"
@@ -38,7 +39,7 @@
 					function(data, status)
 					{
 						setTimeout(function(){
-							$.get("/matches/match/details/" + listid, function(data) {
+							$.get("/match/get/players/" + listid, function(data) {
 								console.log(data);
 								$("#list_container").html( data );
 							})}

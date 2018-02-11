@@ -31,6 +31,9 @@ mongoose.connect('mongodb://localhost/myapp');
 //   }
 // })
 
+// TODO implement MVC from
+//   https://github.com/tutsplus/build-complete-website-expressjs
+
 // app.use (error, req, res, next) ->
 //   res.status 400
 //   res.render 'errors/404.ejs',
