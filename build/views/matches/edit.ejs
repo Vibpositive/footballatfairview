@@ -34,7 +34,7 @@
 				console.log('list_status: ' + list_status)
 				$("#update").removeClass('disabled');
 			});
-			
+
 			$('#datetimepicker').datetimepicker({
 				inline: true,
 				sideBySide: false,
@@ -51,10 +51,10 @@
 				if ($(this).hasClass('disabled')){
 					return false;
 				}
-				
+
 				$.ajax({
 					type: 'POST',
-					url: '/matches/update',
+					url: '/match/edit',
 					data: {
 						list_id     : "<%= list._id %>",
 						list_date   : list_date,
@@ -94,12 +94,12 @@
 					<title><%= title %></title>
 				</p>
 			</h3>
-			
+
 		</div>
 		<% include ../controlpanel/matches_admin_edit_buttons %>
 		<div id="loadedContainer">
 			<% include ../html/top %>
-			
+
 			<div class="jumbotron">
 				<div class="page-header">
 					<h3>
@@ -157,12 +157,12 @@
 									</fieldset>
 								</div>
 								<div class="col-md-4">
-								</div>			
+								</div>
 							</div>
 						</div>
 					</div>
 				</p>
-				
+
 
 				<div id="loadedContainer_internal">
 					<% include names/names_list %>
@@ -171,9 +171,9 @@
 				</div>
 				<div class="col-md-4">
 					<p class="text-center">
-						<label class="checkbox-inline">	
+						<label class="checkbox-inline">
 							Players: <input id="demo3" type="text" value="" name="demo3">
-							
+
 						</label>
 					</p>
 				</div>
@@ -184,7 +184,7 @@
 			<p class="text-center">
 				<button type="button" class="btn btn-xs btn-block btn-primary disabled" id="update">update</button>
 			</p>
-			
+
 			<div id="alert-info">
 
 			</div>

@@ -4,14 +4,14 @@
 		<title><%= title %></title>
 
 		<% include ../html/scripts_css %>
-		
+
 		<style type="text/css">
 			body { padding-top: 15px; }
 		</style>
 	</head>
 	<body>
 		<% include ../html/top %>
-		
+
 		<div class="jumbotron">
 			<div class="page-header">
 					<h3>
@@ -19,12 +19,15 @@
 							<title><%= title %></title>
 						</p>
 					</h3>
-				
+
 			</div>
 			<div id="loadedContainer">
 				<p class="text-center">
-					<a href="/penalties/create">
+					<a href="/penalties/add">
 						<button type="button" class="btn btn-primary" id="createPenalty">Add</button>
+					</a>
+					<a href="/penalties/create">
+						<button type="button" class="btn btn-primary" id="managePanelty">Create</button>
 					</a>
 					<a href="/penalties/edit">
 						<button type="button" class="btn btn-primary" id="managePanelty">Manage</button>

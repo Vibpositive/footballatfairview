@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "acl": "*",
-    "bcrypt-nodejs": "latest",
-    "body-parser": "*",
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.18.2",
     "bootstrap-timepicker": "*",
     "connect-flash": "*",
     "cookie-parser": "*",

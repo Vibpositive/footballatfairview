@@ -33,26 +33,26 @@ module.exports = function(app) {
       title: 'Penalties'
     });
   });
-  app.get('/penalties/create', isLoggedIn, function(req, res) {
-    Penalty.find({}, function(p_err, p_list) {
-      if (p_err) {
-        return console.log(p_err);
+  app.get('/penalties/add', isLoggedIn, function(req, res) {
+    Penalty.find({}, function(penalty_err, penalties) {
+      if (penalty_err) {
+        return console.log(penalty_err);
       }
-      User.find({}, function(err, list) {
-        if (err) {
-          return console.log(err);
+      User.find({}, function(user_err, users) {
+        if (user_err) {
+          return console.log(user_err);
         }
-        List.find({
-          list_status: "active"
-        }, function(l_err, l_list) {
-          if (l_err) {
-            return console.log(l_err);
+        List.find({}, function(list_err, matches) {
+          if (list_err) {
+            console.log(list_err);
+            return;
           }
-          res.render('penalties/create.ejs', {
+          console.log("matches", matches);
+          res.render('penalties/add.ejs', {
             message: req.flash('loginMessage'),
-            users: list,
-            penalties: p_list,
-            matches: l_list,
+            users: users,
+            penalties: penalties,
+            matches: matches,
             user: req.user,
             moment: moment,
             title: 'Penalties'
@@ -61,9 +61,10 @@ module.exports = function(app) {
       });
     });
   });
-  // app.post '/penalties/create', isLoggedIn, (req, res) ->
-  app.post('/penalties/create', function(req, res) {
+  // app.post '/penalties/add', isLoggedIn, (req, res) ->
+  app.post('/penalties/add', function(req, res) {
     var match_id, newUserPenalty, penalty_id, player_id;
+    // TODO validate params
     player_id = req.body.player_id;
     penalty_id = req.body.penalty_id;
     match_id = req.body.match_id;
@@ -85,6 +86,20 @@ module.exports = function(app) {
       });
     });
   });
+  app.get('/penalties/create', isLoggedIn, function(req, res) {
+    List.find({}, function(err, list) {
+      if (err) {
+        return console.log(err);
+      }
+      res.render('penalties/list.ejs', {
+        message: req.flash('loginMessage'),
+        lists: list,
+        user: req.user,
+        moment: moment,
+        title: 'Penalties'
+      });
+    });
+  });
   app.get('/penalties/edit', isLoggedIn, function(req, res) {
     List.find({}, function(err, list) {
       if (err) {
@@ -99,7 +114,7 @@ module.exports = function(app) {
       });
     });
   });
-  return app.get('/penalties/view', isLoggedIn, function(req, res) {
+  app.get('/penalties/view', isLoggedIn, function(req, res) {
     List.find({}, function(err, list) {
       if (err) {
         return console.log(err);

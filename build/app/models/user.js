@@ -5,6 +5,11 @@ mongoose = require('mongoose');
 bcrypt = require('bcrypt-nodejs');
 
 userSchema = mongoose.Schema({
+  profile: {
+    type: String,
+    enum: ['player', 'admin', 'preferential'],
+    default: 'player'
+  },
   facebook: {
     id: String,
     token: String,

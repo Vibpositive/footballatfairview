@@ -39,7 +39,7 @@ describe('Control Panel', function()
 				done();
 			});
 		});
-		
+
 	});
 
 	describe('Testing main routes', function ()
@@ -47,7 +47,7 @@ describe('Control Panel', function()
 		it('should return a 200 status code for a get on matches/create', function(done)
 		{
 			request
-			.get(baseUrl + '/matches/create')
+			.get(baseUrl + '/match/create')
 			.send(
 			{})
 			.end(function(err, res){
@@ -137,10 +137,10 @@ describe('Control Panel', function()
 		});
 
 
-		it('should return a 200 status code for a get on penalties/create', function(done)
+		it('should return a 200 status code for a get on penalties/add', function(done)
 		{
 			request
-			.get(baseUrl + '/penalties/create')
+			.get(baseUrl + '/penalties/add')
 			.send(
 			{
 				list_date : list_date,
@@ -155,10 +155,10 @@ describe('Control Panel', function()
 			});
 		});
 
-		it('should return a 200 status code for a post on penalties/create', function(done)
+		it('should return a 200 status code for a post on penalties/add', function(done)
 		{
 			request
-			.post(baseUrl + '/penalties/create')
+			.post(baseUrl + '/penalties/add')
 			.send(
 			{
 				player_id  : "575f2401c3fe8d106f774237",
@@ -209,6 +209,6 @@ describe('Control Panel', function()
 				done();
 			});
 		});
-		
+
 	});
 })

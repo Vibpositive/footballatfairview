@@ -31,7 +31,15 @@
 					state         : <%= player_is_on_list %>
 				}).on('switchChange.bootstrapSwitch', function(event, state)
 				{
-					$.post("/match/add/player",
+					var action = "";
+					if(state){
+						action = "add";
+					}else if(!state){
+						action = "delete";
+					}
+          // TODO else
+
+					$.post("/match/" + action + "/player",
 					{
 						list_id       : listid,
 						player_status : state ? "playing" : "not playing"
@@ -40,7 +48,6 @@
 					{
 						setTimeout(function(){
 							$.get("/match/get/players/" + listid, function(data) {
-								console.log(data);
 								$("#list_container").html( data );
 							})}
 							, 100)

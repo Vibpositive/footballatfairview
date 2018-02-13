@@ -15,7 +15,7 @@
 
                     $.ajax({
                         type: 'POST',
-                        url: '/matches/edit/' + String(currentListId),
+                        url: '/match/edit/' + String(currentListId),
                         data: {},
                         success: success,
                         async:true
@@ -28,7 +28,7 @@
                 });
             })
         </script>
-        
+
     </head>
     <body>
         <% include ../html/top %>
@@ -39,7 +39,7 @@
                             <title><%= title %></title>
                         </p>
                     </h3>
-                
+
             </div>
 
             <div id="loadedContainer">
@@ -69,7 +69,7 @@
                                                 <%= users[i].status %>
                                             </td>
                                             <td>
-                                                
+
                                             </td>
                                             <!-- <td>
                                                 <img class="center-small-cropped img-responsive round-image" src="<%= users[i].facebook.photos[0].value %>">

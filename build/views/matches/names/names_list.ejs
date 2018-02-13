@@ -46,7 +46,7 @@
 			var full_name     = $(this).attr("fn");
 			var list_id       = "<%= list._id %>";
 
-			$.post("/match/remove/player/",
+			$.post("/match/delete/player/",
 			{
 				list_id       : list_id,
 				player_id     : player_id,
@@ -55,8 +55,7 @@
 			},
 			function(data, status)
 			{
-				// console.log(data);
-				$.post("/matches/views/playerslist", {list_id : list_id}, function(data)
+				$.post("/match/get/players", {list_id : list_id}, function(data)
 				{
 					$("#loadedContainer_internal").html( data );
 				});

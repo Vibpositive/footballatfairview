@@ -25,12 +25,12 @@
 						</td>
 						<td>
 							<%if (lists[i].list_status == 'inactive') { %>
-								<a href="matches/match/<%= lists[i]._id %>">
-									<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
+								<a href="match/get/<%= lists[i]._id %>">
+									<button id="view" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">View</button>
 								</a>
 							<% }else{ %>
-								<a href="matches/match/<%= lists[i]._id %>">
-									<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">Participate</button>
+								<a href="match/get/<%= lists[i]._id %>">
+									<button id="view" value="<%= lists[i]._id %>" type="button" class="btn btn-primary btn-sm participate">View</button>
 								</a>
 							<% } %>
 						</td>
@@ -51,7 +51,7 @@
 								<button id="participate" value="<%= lists[i]._id %>" type="button" class="btn btn-danger btn-sm participate disabled">Participate</button>
 							</a>
 						<% }else{ %>
-              
+
 						<% } %>
 					</td>
 				</tr>

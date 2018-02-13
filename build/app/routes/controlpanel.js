@@ -1,6 +1,6 @@
 var List, User, isLoggedIn;
 
-List = require('../models/list');
+List = require('../models/match');
 
 User = require('../models/user');
 

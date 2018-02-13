@@ -1,4 +1,4 @@
-var List, ObjectId, Penalty, Q, User, UserPenalty, _, addMatchToUser, addPenaltyToUser, addUserToMatch, getTimeToMatch, isLoggedIn, moment, removeMatchFomUser, removeUserFromMatch, uuid;
+var List, ObjectId, Penalty, Q, User, UserPenalty, _, addMatchToUser, addUserToMatch, isLoggedIn, moment, removeMatchFomUser, removeUserFromMatch, uuid;
 
 List = require('../models/list');
 
@@ -18,6 +18,7 @@ ObjectId = require('mongodb').ObjectID;
 
 Q = require('q');
 
+// FIXME: change list_date to match_date
 isLoggedIn = function(req, res, next) {
   // TODO: implement isLoggedIn in the request
   return next();
@@ -60,10 +61,11 @@ removeMatchFomUser = function(player_id, match, next) {
   }, function(err, doc) {
     var errMessage;
     if (err) {
-      errMessage = err.message;
+      return errMessage = err.message;
     }
-    return deferred.resolve(doc.matches.indexOf(match));
   });
+  // FIXME matches not being found
+  // deferred.resolve doc.matches.indexOf(match)
   return deferred.promise;
 };
 
@@ -197,31 +199,29 @@ removeUserFromMatch = function(player_id, list_id) {
   return deferred.promise;
 };
 
-getTimeToMatch = function(list) {
-  var currentTime, diffMinutes, matchTime;
-  currentTime = moment();
-  matchTime = moment(list.list_date, "x");
-  diffMinutes = matchTime.diff(currentTime, 'minutes');
-  return diffMinutes;
-};
+// TODO implement
+// getTimeToMatch = (list) ->
+//   currentTime = moment()
+//   matchTime = moment(list.list_date, "x")
+//   diffMinutes = matchTime.diff(currentTime, 'minutes')
+//   return diffMinutes
 
-addPenaltyToUser = function(user, match, next) {
-  return User.findByIdAndUpdate({
-    _id: user.player_id,
-    matches: {
-      $in: [match]
-    }
-  }, {
-    $inc: {
-      penalties: 1
-    }
-  }, function(err, doc) {
-    return void 0;
-  });
-};
-
+// TODO implement
+// addPenaltyToUser = (user, match, next) ->
+//   User.findByIdAndUpdate {
+//     _id: user.player_id,
+//     matches: {
+//       $in: [match]
+//     }
+//   },
+//   {
+//     $inc: { penalties: 1 }
+//   },
+//   (err, doc) ->
+//     undefined
 module.exports = function(app) {
   app.get('/matches', isLoggedIn, function(req, res, next) {
+    // console.log
     List.find({}, function(err, list) {
       if (err) {
         next(err);
@@ -235,7 +235,7 @@ module.exports = function(app) {
       });
     });
   });
-  app.post('/matches/views/playerslist', isLoggedIn, function(req, res, next) {
+  app.post('/match/get/players', isLoggedIn, function(req, res, next) {
     List.findOne({
       _id: req.body.list_id
     }, function(err, list) {
@@ -251,41 +251,97 @@ module.exports = function(app) {
       });
     });
   });
-  app.post('/match/add/player', isLoggedIn, function(req, res, next) {
-    var errMessage, inputFault, list_id, prop, updated, user;
+  app.post('/match/delete/player', isLoggedIn, function(req, res, next) {
+    var errMessage, errors, inputFault, list_id, paramError, updated, user;
     list_id = req.body.list_id;
     errMessage = "";
     user = {};
     updated = 0;
     inputFault = false;
     user.player_id = req.user ? new ObjectId(req.user.id) : new ObjectId(req.body.player_id);
-    user.datetime = req.user ? 'date' : 'date';
     user.last_name = req.user ? req.user.facebook.last_name : req.body.last_name;
     user.first_name = req.user ? req.user.facebook.first_name : req.body.first_name;
     user.full_name = req.user ? req.user.facebook.first_name + " " + req.user.facebook.last_name : req.body.first_name + " " + req.body.last_name;
     user.phone = req.user ? req.user.phone : req.body.phone;
-    for (prop in user) {
-      if (user[prop] == null) {
-        res.json({
-          "message": "Please inform all params",
-          "errMessage": "Params have not been informed correctly"
-        });
-        return;
-      }
+    errors = {};
+    if (typeof user.player_id === 'undefined' || user.player_id === '') {
+      errors.player_id = "Player ID not informed";
+      paramError = true;
     }
-    if (req.body.player_status === 'playing' || req.body.player_status === 1) {
-      return addUserToMatch(user, list_id).then(function(data) {
-        addMatchToUser(user, list_id);
-        return res.json(data);
-      });
-    } else if (req.body.player_status === 'not playing' || req.body.player_status === 0) {
-      return removeUserFromMatch(user.player_id, list_id).then(function(data) {
-        removeMatchFomUser(user.player_id, list_id);
-        return res.json(data);
+    if (typeof user.last_name === 'undefined' || user.last_name === '') {
+      errors.last_name = "Player last name not informed";
+      paramError = true;
+    }
+    if (typeof user.first_name === 'undefined' || user.first_name === '') {
+      errors.first_name = "Player first name not informed";
+      paramError = true;
+    }
+    if (typeof user.full_name === 'undefined' || user.full_name === '') {
+      errors.full_name = "Player full name not informed";
+      paramError = true;
+    }
+    if (typeof user.phone === 'undefined' || user.phone === '') {
+      errors.phone = "Player phone name not informed";
+      paramError = true;
+    }
+    if (paramError) {
+      return res.json({
+        "message": "Please inform all params",
+        "errors": errors,
+        "errMessage": "Params have not been informed correctly"
       });
     }
+    return removeUserFromMatch(user.player_id, list_id).then(function(data) {
+      removeMatchFomUser(user.player_id, list_id);
+      return res.json(data);
+    });
   });
-  app.get('/matches/match/:list_id', isLoggedIn, function(req, res, next) {
+  app.post('/match/add/player', isLoggedIn, function(req, res, next) {
+    var errMessage, errors, inputFault, list_id, paramError, updated, user;
+    list_id = req.body.list_id;
+    errMessage = "";
+    user = {};
+    updated = 0;
+    inputFault = false;
+    user.player_id = req.user ? new ObjectId(req.user.id) : new ObjectId(req.body.player_id);
+    user.last_name = req.user ? req.user.facebook.last_name : req.body.last_name;
+    user.first_name = req.user ? req.user.facebook.first_name : req.body.first_name;
+    user.full_name = req.user ? req.user.facebook.first_name + " " + req.user.facebook.last_name : req.body.first_name + " " + req.body.last_name;
+    user.phone = req.user ? req.user.phone : req.body.phone;
+    errors = {};
+    if (typeof user.player_id === 'undefined' || user.player_id === '') {
+      errors.player_id = "Player ID not informed";
+      paramError = true;
+    }
+    if (typeof user.last_name === 'undefined' || user.last_name === '') {
+      errors.last_name = "Player last name not informed";
+      paramError = true;
+    }
+    if (typeof user.first_name === 'undefined' || user.first_name === '') {
+      errors.first_name = "Player first name not informed";
+      paramError = true;
+    }
+    if (typeof user.full_name === 'undefined' || user.full_name === '') {
+      errors.full_name = "Player full name not informed";
+      paramError = true;
+    }
+    if (typeof user.phone === 'undefined' || user.phone === '') {
+      errors.phone = "Player phone name not informed";
+      paramError = true;
+    }
+    if (paramError) {
+      return res.json({
+        "message": "Please inform all params",
+        "errors": errors,
+        "errMessage": "Params have not been informed correctly"
+      });
+    }
+    return addUserToMatch(user, list_id).then(function(data) {
+      addMatchToUser(user, list_id);
+      return res.json(data);
+    });
+  });
+  app.get('/match/get/:list_id', isLoggedIn, function(req, res, next) {
     var list_id, player_id;
     list_id = req.params.list_id;
     player_id = req.user.id;
@@ -333,7 +389,7 @@ module.exports = function(app) {
     });
   });
   // Show a view to create matches
-  app.get('/matches/create', isLoggedIn, function(req, res, next) {
+  app.get('/match/create', isLoggedIn, function(req, res, next) {
     res.render('matches/create.ejs', {
       title: 'Create a match'
     });
@@ -355,7 +411,7 @@ module.exports = function(app) {
     });
   });
   // Show a match in a edit view
-  app.get('/matches/edit/:list_id', isLoggedIn, function(req, res, next) {
+  app.get('/match/edit/:list_id', isLoggedIn, function(req, res, next) {
     var list_id;
     list_id = req.params.list_id;
     List.findOne({
@@ -406,7 +462,7 @@ module.exports = function(app) {
       return res.json(data);
     });
   });
-  app.post('/matches/create', isLoggedIn, function(req, res, next) {
+  app.post('/match/create', isLoggedIn, function(req, res, next) {
     var errMessage, errors, i, index, isParticipating, list_date, list_size, list_status, match, message, names, paramError, ref, ref1, rowsAffected, start;
     paramError = false;
     errors = {};
@@ -425,9 +481,13 @@ module.exports = function(app) {
       errors.list_status = "List status not informed correctly";
       paramError = true;
     }
+    if (moment(list_date, "x").isBefore(moment())) {
+      errors.list_date = "Match has to happen in the future";
+      paramError = true;
+    }
     if (paramError) {
       return res.json({
-        "message": "Please inform all params",
+        "message": "Please check the following",
         "errors": errors,
         "errMessage": "Params have not been informed correctly"
       });
@@ -488,7 +548,7 @@ module.exports = function(app) {
       });
     });
   });
-  app.post('/matches/update', isLoggedIn, function(req, res, next) {
+  app.post('/match/edit', isLoggedIn, function(req, res, next) {
     var list_date, list_id, list_size, list_status;
     // REVIEW send to view list size so we can show waiting list
     list_id = req.body.list_id;

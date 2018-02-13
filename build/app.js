@@ -31,6 +31,9 @@ mongoose.connect('mongodb://localhost/myapp');
 //   }
 // })
 
+// TODO: keep information about adding and removing name from lists in a
+// different db
+
 // TODO implement MVC from
 //   https://github.com/tutsplus/build-complete-website-expressjs
 

@@ -8,6 +8,8 @@ UserPenalty = require '../models/user_penalty'
 ObjectId    = require('mongodb').ObjectID
 Q           = require('q')
 
+# FIXME: change list_date to match_date
+
 isLoggedIn = (req, res, next) ->
   # TODO: implement isLoggedIn in the request
   return next()
@@ -39,7 +41,8 @@ removeMatchFomUser = (player_id, match, next) ->
   }, (err, doc) ->
     if err
       errMessage = err.message
-    deferred.resolve doc.matches.indexOf(match)
+    # FIXME matches not being found
+    # deferred.resolve doc.matches.indexOf(match)
   return deferred.promise
 
 addUserToMatch = (user, list_id) ->
@@ -88,7 +91,7 @@ addUserToMatch = (user, list_id) ->
     }, (err, doc2) ->
       if err
         errMessage = err.message
-        
+
       message = if doc2.value then "Added" else "User already on match"
       response =  {
         "message": message
@@ -160,27 +163,30 @@ removeUserFromMatch = (player_id, list_id) ->
         deferred.resolve response
   return deferred.promise
 
-getTimeToMatch = (list) ->
-  currentTime = moment()
-  matchTime = moment(list.list_date, "x")
-  diffMinutes = matchTime.diff(currentTime, 'minutes')
-  return diffMinutes
+# TODO implement
+# getTimeToMatch = (list) ->
+#   currentTime = moment()
+#   matchTime = moment(list.list_date, "x")
+#   diffMinutes = matchTime.diff(currentTime, 'minutes')
+#   return diffMinutes
 
-addPenaltyToUser = (user, match, next) ->
-  User.findByIdAndUpdate {
-    _id: user.player_id,
-    matches: {
-      $in: [match]
-    }
-  },
-  {
-    $inc: { penalties: 1 }
-  },
-  (err, doc) ->
-    undefined
+# TODO implement
+# addPenaltyToUser = (user, match, next) ->
+#   User.findByIdAndUpdate {
+#     _id: user.player_id,
+#     matches: {
+#       $in: [match]
+#     }
+#   },
+#   {
+#     $inc: { penalties: 1 }
+#   },
+#   (err, doc) ->
+#     undefined
 
 module.exports = (app) ->
   app.get '/matches', isLoggedIn, (req, res, next) ->
+    # console.log
     List.find {}, (err, list) ->
       if err
         next err
@@ -193,7 +199,7 @@ module.exports = (app) ->
       return
     return
 
-  app.post '/matches/views/playerslist', isLoggedIn, (req, res, next) ->
+  app.post '/match/get/players', isLoggedIn, (req, res, next) ->
     List.findOne {_id: req.body.list_id }, (err, list) ->
       if err
         next err
@@ -206,7 +212,7 @@ module.exports = (app) ->
       return
     return
 
-  app.post '/match/add/player', isLoggedIn, (req, res, next) ->
+  app.post '/match/delete/player', isLoggedIn, (req, res, next) ->
     list_id = req.body.list_id
     errMessage = ""
     user = {}
@@ -216,10 +222,6 @@ module.exports = (app) ->
     user.player_id = if req.user
     then new ObjectId(req.user.id)
     else new ObjectId(req.body.player_id)
-
-    user.datetime   = if req.user
-    then 'date'
-    else 'date'
 
     user.last_name  = if req.user
     then req.user.facebook.last_name
@@ -237,25 +239,102 @@ module.exports = (app) ->
     then req.user.phone
     else req.body.phone
 
-    for prop of user
-      if not user[prop]?
-        res.json {
-          "message": "Please inform all params",
-          "errMessage": "Params have not been informed correctly"
-        }
-        return
+    errors = {}
 
-    if req.body.player_status == 'playing' || req.body.player_status == 1
-      addUserToMatch(user, list_id).then (data) ->
-        addMatchToUser(user, list_id)
-        return res.json data
-    else if req.body.player_status == 'not playing' ||
-    req.body.player_status == 0
-      removeUserFromMatch(user.player_id, list_id).then (data) ->
-        removeMatchFomUser(user.player_id, list_id)
-        return res.json data
+    if typeof user.player_id is 'undefined' || user.player_id == ''
+      errors.player_id = "Player ID not informed"
+      paramError = true
 
-  app.get '/matches/match/:list_id', isLoggedIn,(req, res, next) ->
+    if typeof user.last_name is 'undefined' || user.last_name == ''
+      errors.last_name = "Player last name not informed"
+      paramError = true
+
+    if typeof user.first_name is 'undefined' || user.first_name == ''
+      errors.first_name = "Player first name not informed"
+      paramError = true
+
+    if typeof user.full_name is 'undefined' || user.full_name == ''
+      errors.full_name = "Player full name not informed"
+      paramError = true
+
+    if typeof user.phone is 'undefined' || user.phone == ''
+      errors.phone = "Player phone name not informed"
+      paramError = true
+
+    if paramError
+      return res.json {
+        "message": "Please inform all params",
+        "errors": errors
+        "errMessage": "Params have not been informed correctly"
+      }
+
+    removeUserFromMatch(user.player_id, list_id).then (data) ->
+      removeMatchFomUser(user.player_id, list_id)
+      return res.json data
+
+
+  app.post '/match/add/player', isLoggedIn, (req, res, next) ->
+    list_id = req.body.list_id
+    errMessage = ""
+    user = {}
+    updated = 0
+    inputFault = false
+
+    user.player_id = if req.user
+    then new ObjectId(req.user.id)
+    else new ObjectId(req.body.player_id)
+
+    user.last_name  = if req.user
+    then req.user.facebook.last_name
+    else req.body.last_name
+
+    user.first_name = if req.user
+    then req.user.facebook.first_name
+    else req.body.first_name
+
+    user.full_name  = if req.user
+    then req.user.facebook.first_name + " " + req.user.facebook.last_name
+    else req.body.first_name + " " + req.body.last_name
+
+    user.phone      = if req.user
+    then req.user.phone
+    else req.body.phone
+
+    errors = {}
+
+    if typeof user.player_id is 'undefined' || user.player_id == ''
+      errors.player_id = "Player ID not informed"
+      paramError = true
+
+    if typeof user.last_name is 'undefined' || user.last_name == ''
+      errors.last_name = "Player last name not informed"
+      paramError = true
+
+    if typeof user.first_name is 'undefined' || user.first_name == ''
+      errors.first_name = "Player first name not informed"
+      paramError = true
+
+    if typeof user.full_name is 'undefined' || user.full_name == ''
+      errors.full_name = "Player full name not informed"
+      paramError = true
+
+    if typeof user.phone is 'undefined' || user.phone == ''
+      errors.phone = "Player phone name not informed"
+      paramError = true
+
+    if paramError
+      return res.json {
+        "message": "Please inform all params",
+        "errors": errors
+        "errMessage": "Params have not been informed correctly"
+      }
+
+    addUserToMatch(user, list_id).then (data) ->
+      addMatchToUser(user, list_id)
+      return res.json data
+
+
+  app.get '/match/get/:list_id', isLoggedIn,(req, res, next) ->
     list_id             = req.params.list_id
     player_id           = req.user.id
 
@@ -299,7 +378,7 @@ module.exports = (app) ->
     return
 
   # Show a view to create matches
-  app.get '/matches/create', isLoggedIn, (req, res, next) ->
+  app.get '/match/create', isLoggedIn, (req, res, next) ->
     res.render 'matches/create.ejs', title: 'Create a match'
     return
 
@@ -318,7 +397,7 @@ module.exports = (app) ->
       return
 
   # Show a match in a edit view
-  app.get '/matches/edit/:list_id', isLoggedIn, (req, res, next) ->
+  app.get '/match/edit/:list_id', isLoggedIn, (req, res, next) ->
     list_id     = req.params.list_id
     List.findOne { _id: list_id }, {},(err, doc) ->
       if err
@@ -364,8 +443,7 @@ module.exports = (app) ->
     removeUserFromMatch(player_id, list_id).then (data) ->
       return res.json data
 
-  app.post '/matches/create', isLoggedIn, (req, res, next) ->
-
+  app.post '/match/create', isLoggedIn, (req, res, next) ->
     paramError = false
     errors = {}
     list_date   = req.body.list_date
@@ -384,9 +462,13 @@ module.exports = (app) ->
       errors.list_status = "List status not informed correctly"
       paramError = true
 
+    if moment(list_date, "x").isBefore(moment())
+      errors.list_date = "Match has to happen in the future"
+      paramError = true
+
     if paramError
       return res.json {
-        "message": "Please inform all params",
+        "message": "Please check the following",
         "errors": errors
         "errMessage": "Params have not been informed correctly"
       }
@@ -448,7 +530,7 @@ module.exports = (app) ->
       return
     return
 
-  app.post '/matches/update', isLoggedIn, (req, res, next) ->
+  app.post '/match/edit', isLoggedIn, (req, res, next) ->
     # REVIEW send to view list size so we can show waiting list
     list_id     = req.body.list_id
     list_date   = req.body.list_date

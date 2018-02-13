@@ -1,4 +1,4 @@
-List    = require '../models/list'
+List    = require '../models/match'
 User    = require '../models/user'
 
 isLoggedIn = (req, res, next) ->

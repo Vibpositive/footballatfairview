@@ -5,79 +5,9 @@
 
 	<% include ../html/scripts_css %>
 
-	
-	<link rel="stylesheet"         href="/public/css/bootstrap-select.min.css" />
-	<script type="text/javascript" src="/public/js/bootstrap-select.min.js"></script>
-
 	<style type="text/css">
 		body { padding-top: 15px; }
 	</style>
-	<script type="text/javascript">
-		$( document ).ready(function()
-		{
-
-			var player_id, match_id, penalty_id
-
-			function enableSubmit ()
-			{
-				if (player_id != undefined && player_id != "" && match_id != undefined && match_id != "" && penalty_id != undefined && penalty_id != "")
-				{
-					$("#submit").removeClass('disabled');
-				}else{
-					$("#submit").addClass('disabled');
-				}
-			}
-
-			function success(e)
-			{
-				if(/\S{24}/.test(e.message) == true)
-				{
-					showalert('Successfuly updated','alert-success')
-				}else{
-					showalert('Not updated: ' + String(e.message),'alert-info')
-				}
-			}
-
-			$("#submit").on('click', function(e)
-			{
-				console.log($(this));
-				$.ajax({
-					type: 'POST',
-					url: '/penalties/create/',
-					data: {
-						player_id  : player_id,
-						match_id   : match_id,
-						penalty_id : penalty_id
-					},
-					success: success,
-					async:true
-				});
-			})
-
-			$('select').selectpicker({
-				width : "100%",
-				mobile: false
-			});
-
-			$('#Player').on('hidden.bs.select', function (e)
-			{
-				player_id = $(this).val();
-				enableSubmit();
-			});
-
-			$('#Penalty').on('hidden.bs.select', function (e)
-			{
-				penalty_id = $(this).val();
-				enableSubmit();
-			});
-
-			$('#Match').on('hidden.bs.select', function (e)
-			{
-				match_id = $(this).val();
-				enableSubmit();
-			})
-		});
-	</script>
 </head>
 <body>
 	<% include ../html/top %>
@@ -92,53 +22,71 @@
 
 		</div>
 		<div id="loadedContainer">
-			<div class="page-header text-center">
-				<h1><span class="fa fa-info-circle fa-2x"></span> <%= title %></h1>
+			<div class="col-md-4">
 			</div>
+			<div class="col-md-4">
+				<%= list %>
+				<div id="OrderPackages">
+					<table id="tableSearchResults" class="table table-hover  table-striped table-condensed">
+						<thead>
+							<tr>
+								<th>Package ID</th>
+								<th>Quantity</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr id="package1" class="accordion-toggle" data-toggle="collapse" data-parent="#OrderPackages" data-target=".packageDetails1">
+								<td>123456</td>
+								<td>3</td>
+								<td><i class="indicator glyphicon glyphicon-chevron-up pull-right"></i>
 
-			<div class="row">
-				<div class="col-md-4">
-				</div>
-				<div class="col-md-4">
-					<form>
-						<div class="form-group">
-							<label for="Player">Player</label>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="3" class="hiddenRow">
+									<div class="accordion-body collapse packageDetails1" id="accordion1">
+										<table>
+											<tr>
+												<td>Revealed item 1</td>
+											</tr>
+											<tr>
+												<td>Revealed item 2</td>
+											</tr>
+										</table>
+									</div>
+								</td>
+							</tr>
+							<tr id="package2" class="accordion-toggle" data-toggle="collapse" data-parent="#OrderPackages" data-target=".packageDetails2">
+								<td>654321</td>
+								<td>2</td>
+								<td><i class="indicator glyphicon glyphicon-chevron-up pull-right"></i>
 
-							<select id="Player" class="selectpicker show-tick show-menu-arrow" title="Choose a player" data-live-search="true">
-								<% for(var i=0; i < users.length; i++) { %>
-								<option value="<%= users[i].id %>"><%= users[i].facebook.full_name %></option>
-								<% } %>
-							</select>
-
-							<br>
-
-							<label for="Penalty">Penalty</label>
-
-							<select id="Penalty" class="selectpicker show-tick show-menu-arrow" title="Choose a penalty" data-live-search="true">
-								<% for(var i=0; i < penalties.length; i++) { %>
-								<option value="<%= penalties[i]._id %>"><%= penalties[i].description %></option>
-								<% } %>
-							</select>
-
-							<br>
-
-							<label for="Match">Match</label>
-
-							<select id="Match" class="selectpicker show-tick show-menu-arrow" title="Choose a match" data-live-search="true">
-								<% for(var i=0; i < matches.length; i++) { %>
-								<option value="<%= matches[i]._id %>"><%= moment(matches[i].list_date, "x").format("DD/MM/YYYY HH:mm") %></option>
-								<% } %>
-							</select>
-						</div>
-					</form>
-					<button type="button" class="btn btn-default disabled" id="submit">Submit</button>
-				</div>
-				<div class="col-md-4">
+								</td>
+							</tr>
+							<tr>
+								<td colspan="3" class="hiddenRow">
+									<div class="accordion-body collapse packageDetails2" id="accordion2">
+										<table>
+											<tr>
+												<td>Revealed item 1</td>
+											</tr>
+											<tr>
+												<td>Revealed item 2</td>
+											</tr>
+											<tr>
+												<td>Revealed item 3</td>
+											</tr>
+										</table>
+									</div>
+								</td>
+							</tr>
+							<tr></tr>
+						</tbody>
+					</table>
 				</div>
 			</div>
-			<br>
-			<div id="alert-info">
-
+			<div class="col-md-4">
 			</div>
 		</div>
 	</div>
