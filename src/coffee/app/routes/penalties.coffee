@@ -78,6 +78,7 @@ module.exports = (app) ->
       return
     return
 
+
   app.get '/penalties/create', isLoggedIn, (req, res) ->
     List.find {}, (err, list) ->
       if err
@@ -89,6 +90,75 @@ module.exports = (app) ->
       moment: moment
       title: 'Penalties'
       return
+    return
+
+  # app.post '/penalties/create', isLoggedIn, (req, res) ->
+  app.post '/penalties/create', (req, res) ->
+
+    try
+      title = req.body.title
+      description = req.body.description
+    catch error
+
+    errors = {}
+
+    if typeof title is 'undefined' || title == ''
+      errors.title = "Title not informed"
+      paramError = true
+
+    if typeof description is 'undefined' || description == ''
+      errors.description = "Description not informed"
+      paramError = true
+
+    if paramError
+      return res.json {
+        "message": "Please inform all params",
+        "errors": errors
+        "errMessage": "Params have not been informed correctly"
+        "params": req.body
+      }
+
+    penalty = new Penalty
+      title: title
+      description: description
+
+    penalty.save (err, result, numAffected) ->
+      if err
+        console.log err
+        return res.status(422).json {message: err}
+      res.json { message: newUserPenalty._id }
+      return
+    return
+
+    Penalty.find {}, (penalty_err, penalties) ->
+      if penalty_err
+        return console.log penalty_err
+
+      User.find {}, (user_err, users) ->
+        if user_err
+          return console.log user_err
+
+        List.find {}, (list_err, matches) ->
+          if list_err
+            console.log list_err
+            return
+
+          console.log "matches", matches
+
+          res.render 'penalties/add.ejs',
+          message: req.flash('loginMessage')
+          users: users
+          penalties: penalties
+          matches: matches
+          user: req.user
+          moment: moment
+          title: 'Penalties'
+          return
+        return
+      return
+    return
+
+    res.json message: "success"
     return
 
   app.get '/penalties/edit', isLoggedIn, (req, res) ->

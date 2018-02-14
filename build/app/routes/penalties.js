@@ -100,6 +100,79 @@ module.exports = function(app) {
       });
     });
   });
+  // app.post '/penalties/create', isLoggedIn, (req, res) ->
+  app.post('/penalties/create', function(req, res) {
+    var description, error, errors, paramError, penalty, title;
+    try {
+      title = req.body.title;
+      description = req.body.description;
+    } catch (error1) {
+      error = error1;
+    }
+    errors = {};
+    if (typeof title === 'undefined' || title === '') {
+      errors.title = "Title not informed";
+      paramError = true;
+    }
+    if (typeof description === 'undefined' || description === '') {
+      errors.description = "Description not informed";
+      paramError = true;
+    }
+    if (paramError) {
+      return res.json({
+        "message": "Please inform all params",
+        "errors": errors,
+        "errMessage": "Params have not been informed correctly",
+        "params": req.body
+      });
+    }
+    penalty = new Penalty({
+      title: title,
+      description: description
+    });
+    penalty.save(function(err, result, numAffected) {
+      if (err) {
+        console.log(err);
+        return res.status(422).json({
+          message: err
+        });
+      }
+      res.json({
+        message: newUserPenalty._id
+      });
+    });
+    return;
+    Penalty.find({}, function(penalty_err, penalties) {
+      if (penalty_err) {
+        return console.log(penalty_err);
+      }
+      User.find({}, function(user_err, users) {
+        if (user_err) {
+          return console.log(user_err);
+        }
+        List.find({}, function(list_err, matches) {
+          if (list_err) {
+            console.log(list_err);
+            return;
+          }
+          console.log("matches", matches);
+          res.render('penalties/add.ejs', {
+            message: req.flash('loginMessage'),
+            users: users,
+            penalties: penalties,
+            matches: matches,
+            user: req.user,
+            moment: moment,
+            title: 'Penalties'
+          });
+        });
+      });
+    });
+    return;
+    res.json({
+      message: "success"
+    });
+  });
   app.get('/penalties/edit', isLoggedIn, function(req, res) {
     List.find({}, function(err, list) {
       if (err) {

@@ -7,8 +7,8 @@ Schema = mongoose.Schema;
 ObjectId = Schema.ObjectId;
 
 PenaltySchema = mongoose.Schema({
-  gravity: {
-    type: Number,
+  title: {
+    type: String,
     required: true
   },
   description: {
