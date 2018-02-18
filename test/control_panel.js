@@ -177,7 +177,7 @@ describe('Control Panel', function()
 		it('should return a 200 status code for a get on penalties/edit', function(done)
 		{
 			request
-			.get(baseUrl + '/penalties/edit')
+			.get(baseUrl + '/penalty/edit')
 			.send(
 			{
 				list_date : list_date,

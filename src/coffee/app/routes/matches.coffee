@@ -347,6 +347,7 @@ module.exports = (app) ->
 
       List.findOne _id: ObjectId(list_id),(err, list) ->
         if err
+          # TODO return error
           console.log err
           res.send err
         res.render     'matches/match.ejs',
@@ -365,6 +366,7 @@ module.exports = (app) ->
     List.findOne _id: ObjectId(req.params.list_id)
     , (err, result) ->
       if err
+        # TODO return error
         return console.log('err', err)
 
       res.render 'matches/players.ejs',

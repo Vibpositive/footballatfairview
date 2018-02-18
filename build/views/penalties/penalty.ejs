@@ -1,0 +1,101 @@
+<!-- views/index.ejs -->
+<!doctype html>
+<html>
+	<head>
+		<title><%= title %></title>
+
+		<% include ../html/scripts_css %>
+
+		<script type="text/javascript" src="/public/js/bootstrap-switch.min.js"></script>
+		<link rel="stylesheet" href="/public/css/bootstrap3/bootstrap-switch.min.css" />
+
+		<script>
+
+			if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+
+			}else{
+
+			}
+
+			$( document ).ready(
+
+        function updatePenalty(penalty_id) {
+          // TODO: validate params
+          $.ajax({
+              type: 'POST',
+              url: '/penalty/edit/' + String(id),
+              data: {},
+              success: success,
+              async:true
+          });
+
+          function success(e)
+          {
+              $("#loadedContainer").html( e );
+          }
+        }
+
+        function(e){
+          $("input").on('input',function(e){
+    				$("#update").removeClass('disabled');
+    			});
+          $("textarea").on('input',function(e){
+    				$("#update").removeClass('disabled');
+    			});
+
+          $('#update').click(function(e)
+          {
+              var id = $(this).val();
+              updatePenalty(id);
+          });
+			  }
+      );
+
+		</script>
+
+	</head>
+	<body>
+		<% include ../html/top %>
+		<div class="jumbotron">
+			<div class="page-header">
+				<div class="container">
+					<div class="row">
+						<div class="col-sm-4">
+						</div>
+						<div class="col-sm-4">
+              <form>
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" class="form-control" id="title" placeholder="Title" value="<%= penalty.title %>">
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" rows="5" id="description" placeholder="Description"><%= penalty.description %></textarea>
+                </div>
+                <button id="update" value="<%= penalty.id %>" type="button" class="btn btn-default disabled" id="submit">Submit</button>
+              </form>
+						</div>
+						<div class="col-sm-4">
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="row">
+				<div class="col-sm-4">
+				</div>
+				<div class="col-sm-4">
+					<div id="list_container">
+						<div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-4">
+				</div>
+				<div id="loadedContainer">
+				</div>
+			</div>
+		</div>
+
+	</body>
+</html>

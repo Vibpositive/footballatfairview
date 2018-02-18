@@ -30,12 +30,12 @@
 			var list_status = "<%= list.list_status %>";
 			var list_size   = "<%= list.list_size %>";
 
-			$("input[name='demo3']").TouchSpin({
+			$("input[name='player']").TouchSpin({
 				min: 0,
 				initval: <%=list.list_size%>
 			});
 
-			$("input[name='demo3']").on('change', function(e){
+			$("input[name='player']").on('change', function(e){
 				$("#update").removeClass('disabled');
 			})
 
@@ -63,7 +63,7 @@
 					return false;
 				}
 
-				list_size = $("input[name='demo3']").val();
+				list_size = $("input[name='player']").val();
 
 				$.ajax({
 					type: 'POST',
@@ -171,7 +171,7 @@
 			<div class="col-md-4">
 			<p class="text-center">
 				<label class="checkbox-inline">
-						Players: <input id="demo3" type="text" value="" name="demo3">
+						Players: <input id="player" type="text" value="" name="player">
 
 				</label>
 			</p>

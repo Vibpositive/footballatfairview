@@ -356,6 +356,7 @@ module.exports = function(app) {
         _id: ObjectId(list_id)
       }, function(err, list) {
         if (err) {
+          // TODO return error
           console.log(err);
           res.send(err);
         }
@@ -377,6 +378,7 @@ module.exports = function(app) {
       _id: ObjectId(req.params.list_id)
     }, function(err, result) {
       if (err) {
+        // TODO return error
         return console.log('err', err);
       }
       res.render('matches/players.ejs', {

@@ -1,31 +1,183 @@
-<!-- views/index.ejs -->
 <!doctype html>
 <html>
-	<head>
-		<title><%= title %></title>
+    <head>
+        <title><%= title %></title>
 
-		<% include ../html/scripts_css %>
+        <% include ../html/scripts_css %>
 
-		<style type="text/css">
-			body { padding-top: 15px; }
-		</style>
-	</head>
-	<body>
-		<% include ../html/top %>
+        <script>
+            $(document).ready(function()
+            {
 
-		<div class="jumbotron">
-			<div class="page-header">
-					<h3>
-						<p class="text-center">
-							<title><%= title %></title>
-						</p>
-					</h3>
+							function loadPenalties() {
 
-			</div>
-			<div id="loadedContainer">
-				<%# include create %>
-			</div>
-		</div>
+							}
 
-	</body>
+							function deletePenalty(id) {
+								$.ajax({
+										type: 'POST',
+										url: '/penalty/delete/',
+										data: {
+											penalty_id: String(id)
+										},
+										success: success,
+										error: fail,
+										async:true
+								});
+
+								function success(e)
+								{
+									// TODO: alert user
+									console.log(e);
+								}
+
+								function fail(e)
+								{
+									// TODO: alert user
+									console.log(e);
+								}
+							}
+
+							var currentPenaltyId = "";
+
+							var modalConfirm = function(callback){
+
+							  $(".delete").on("click", function(){
+							    $("#modal-container").modal('show');
+									currentPenaltyId = $(this).val();
+							  });
+
+							  $("#modal-yes").on("click", function(){
+							    callback(true);
+							    $("#modal-container").modal('hide');
+							  });
+
+							  $("#modal-no").on("click", function(){
+									currentPenaltyId = "";
+							    $("#modal-container").modal('hide');
+							  });
+							};
+
+							modalConfirm(function(confirm){
+							  if(confirm && currentPenaltyId != ""){
+									console.log("currentPenaltyId: " + currentPenaltyId);
+									deletePenalty(currentPenaltyId);
+							  }
+
+							});
+
+              // $('#edit').click(function(e)
+              // {
+              //     var currentListId = $(this).val();
+							//
+              //     $.ajax({
+              //         type: 'POST',
+              //         url: '/penalty/edit/' + String(currentListId),
+              //         data: {},
+              //         success: success,
+              //         async:true
+              //     });
+							//
+              //     function success(e)
+              //     {
+              //         $("#loadedContainer").html( e );
+              //     }
+              // });
+
+            })
+        </script>
+
+    </head>
+    <body>
+        <% include ../html/top %>
+
+
+				<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="modal-container">
+				  <div class="modal-dialog modal-sm">
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				        <h4 class="modal-title" id="myModalLabel">Are you sure?</h4>
+				      </div>
+							<div class="modal-body">
+						    <p>This operation cannot be undone!</p>
+						  </div>
+				      <div class="modal-footer">
+				        <button type="button" class="btn btn-default" id="modal-yes">Yes</button>
+				        <button type="button" class="btn btn-primary" id="modal-no">No</button>
+				      </div>
+				    </div>
+				  </div>
+				</div>
+
+        <div class="jumbotron">
+            <div class="page-header">
+                    <h3>
+                        <p class="text-center">
+                            <title><%= title %></title>
+                        </p>
+                    </h3>
+
+            </div>
+
+            <div id="loadedContainer">
+                <div class="row">
+                    <div class="col-md-4">
+                    </div>
+                    <div class="col-md-4">
+                        <table class="table table-reflow">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <%if (penalties.length > 0) { %>
+                                    <% for(var i=0; i<penalties.length; i++) { %>
+                                        <tr>
+                                            <th scope='row'><%= i+1 %></th>
+                                            <td>
+                                                <%= penalties[i].title %>
+                                            </td>
+                                            <td>
+																							<%= penalties[i].description %>
+                                            </td>
+                                            <td>
+                                                <a href='/penalty/edit/<%= penalties[i]._id %>'>
+                                                    <button id="edit" value="<%= penalties[i]._id %>" type="button" class="btn btn-xs btn-block btn-primary edit">Edit</button>
+                                                </a>
+                                            </td>
+                                            <td>
+                                              <button id="delete" value="<%= penalties[i]._id %>" type="button" class="btn btn-xs btn-block btn-primary delete">Delete</button>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                <% }else{ %>
+																	<!-- TODO -->
+                                    <tr>
+                                        <th scope="row"><%= 1 %></th>
+                                        <td>
+                                            <p>
+                                                <%= penalties.list_date %>
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <%if (penalties.list_status == 'inactive') { %>
+                                                <button id="participate" value="<%= penalties[i]._id %>" type="button" class="btn btn-danger participate disabled">Participate</button>
+                                            <% }else{ %>
+                                                <button id="participate" value="<%= penalties[i]._id %>" type="button" class="btn btn-primary participate">Participate</button>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>

@@ -40,8 +40,6 @@ module.exports = (app) ->
             console.log list_err
             return
 
-          console.log "matches", matches
-
           res.render 'penalties/add.ejs',
           message: req.flash('loginMessage')
           users: users
@@ -63,8 +61,6 @@ module.exports = (app) ->
     penalty_id = req.body.penalty_id
     match_id   = req.body.match_id
 
-    console.log player_id, penalty_id, match_id
-
     newUserPenalty = new UserPenalty
       player_id: player_id
       penalty_id: penalty_id
@@ -79,11 +75,11 @@ module.exports = (app) ->
     return
 
 
-  app.get '/penalties/create', isLoggedIn, (req, res) ->
+  app.get '/penalty/create', isLoggedIn, (req, res) ->
     List.find {}, (err, list) ->
       if err
         return console.log err
-      res.render 'penalties/list.ejs',
+      res.render 'penalties/create.ejs',
       message: req.flash('loginMessage')
       lists: list
       user: req.user
@@ -93,13 +89,13 @@ module.exports = (app) ->
     return
 
   # app.post '/penalties/create', isLoggedIn, (req, res) ->
-  app.post '/penalties/create', (req, res) ->
+  app.post '/penalty/create', (req, res) ->
 
     try
       title = req.body.title
       description = req.body.description
     catch error
-
+      # TODO
     errors = {}
 
     if typeof title is 'undefined' || title == ''
@@ -125,52 +121,41 @@ module.exports = (app) ->
     penalty.save (err, result, numAffected) ->
       if err
         console.log err
-        return res.status(422).json {message: err}
-      res.json { message: newUserPenalty._id }
-      return
+        return res.json {
+          "message": err.message
+          "errors": err
+        }
+      return res.json {
+        "message": "Created successfully",
+      }
     return
 
-    Penalty.find {}, (penalty_err, penalties) ->
-      if penalty_err
-        return console.log penalty_err
-
-      User.find {}, (user_err, users) ->
-        if user_err
-          return console.log user_err
-
-        List.find {}, (list_err, matches) ->
-          if list_err
-            console.log list_err
-            return
-
-          console.log "matches", matches
-
-          res.render 'penalties/add.ejs',
-          message: req.flash('loginMessage')
-          users: users
-          penalties: penalties
-          matches: matches
-          user: req.user
-          moment: moment
-          title: 'Penalties'
-          return
-        return
-      return
-    return
-
-    res.json message: "success"
-    return
-
-  app.get '/penalties/edit', isLoggedIn, (req, res) ->
-    List.find {}, (err, list) ->
+  app.get '/penalty/edit/', isLoggedIn, (req, res) ->
+    Penalty.find {}, (err, penalties) ->
       if err
         return console.log err
-      res.render 'penalties/edit.ejs',
+      console.log penalties
+      res.render 'penalties/list.ejs',
       message: req.flash('loginMessage')
-      lists: list
+      penalties: penalties
       user: req.user
       moment: moment
       title: 'Penalties'
+      return
+    return
+
+  app.get '/penalty/edit/:penalty_id', isLoggedIn, (req, res) ->
+    # TODO validate params
+    penalty_id     = req.params.penalty_id
+    Penalty.findOne { _id: penalty_id}, (err, penalty) ->
+      if err
+        return console.log err
+      res.render 'penalties/penalty.ejs',
+      message: req.flash('loginMessage')
+      penalty: penalty
+      user: req.user
+      moment: moment
+      title: 'Penalty'
       return
     return
 
@@ -185,5 +170,44 @@ module.exports = (app) ->
       moment: moment
       title: 'Penalties'
       return
+    return
+
+  # app.post '/penalty/delete', isLoggedIn, (req, res) ->
+  app.post '/penalty/delete', (req, res) ->
+
+    try
+      penalty_id = req.body.penalty_id
+    catch error
+      return res.json {
+        "errMessage": error
+      }
+
+    errors = {}
+
+    if typeof penalty_id is 'undefined' || penalty_id == ''
+      errors.penalty_id = "Penalty ID not informed"
+      paramError = true
+
+    if paramError
+      return res.json {
+        "message": "Please inform all params",
+        "errors": errors
+        "errMessage": "Params have not been informed correctly"
+        "params": req.body
+      }
+
+    Penalty.deleteOne {_id: penalty_id}, (err, result) ->
+      if err
+        console.log err
+
+      if result.n > 0
+        return res.json {
+          "message": "Deleted successfully"
+        }
+
+      return res.json {
+        "message": "Operation failed"
+        "errMessage": "0 Documents have been deleted"
+      }
     return
   return
