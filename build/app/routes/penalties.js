@@ -231,4 +231,61 @@ module.exports = function(app) {
       });
     });
   });
+  // app.post '/penalty/update', isLoggedIn, (req, res) ->
+  app.post('/penalty/update', function(req, res) {
+    var description, error, errors, paramError, penalty_id, title;
+    try {
+      penalty_id = req.body.penalty_id;
+      title = req.body.title;
+      description = req.body.description;
+    } catch (error1) {
+      error = error1;
+      return res.json({
+        "errMessage": error
+      });
+    }
+    errors = {};
+    if (typeof penalty_id === 'undefined' || penalty_id === '') {
+      errors.penalty_id = "Penalty ID not informed";
+      paramError = true;
+    }
+    if (typeof title === 'undefined' || title === '') {
+      errors.title = "Title not informed";
+      paramError = true;
+    }
+    if (typeof description === 'undefined' || description === '') {
+      errors.description = "Description not informed";
+      paramError = true;
+    }
+    if (paramError) {
+      return res.json({
+        "message": "Please inform all params",
+        "errors": errors,
+        "errMessage": "Params have not been informed correctly",
+        "params": req.body
+      });
+    }
+    Penalty.findOneAndUpdate({
+      _id: penalty_id
+    }, {
+      $set: {
+        title: title,
+        description: description
+      }
+    }, {
+      'new': true,
+      'rawResult': false
+    }, function(err, result) {
+      if (err) {
+        console.log(err);
+      }
+      return res.json({
+        "message": result
+      });
+      return res.json({
+        "message": "Operation failed",
+        "errMessage": "0 Documents have been updated"
+      });
+    });
+  });
 };

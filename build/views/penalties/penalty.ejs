@@ -17,40 +17,77 @@
 
 			}
 
-			$( document ).ready(
+			$( document ).ready(function(e){
+
+        $("input").on('input',function(e){
+  				$("#update").removeClass('disabled');
+  			});
+        $("textarea").on('input',function(e){
+  				$("#update").removeClass('disabled');
+  			});
+
+        $('#update').click(function(e)
+        {
+            var id = $(this).val();
+            updatePenalty(id);
+        });
 
         function updatePenalty(penalty_id) {
-          // TODO: validate params
-          $.ajax({
+
+          var title = $('#title').val();
+          var description = $('#description').val();
+          var paramError = false;
+          var errors = {};
+
+
+          if(typeof penalty_id === 'undefined' || penalty_id === ''){
+            paramError = true;
+            errors.penalty_id = "Penalty id not informed";
+          }
+
+          if(typeof title === 'undefined' || title === ''){
+            paramError = true;
+            errors.title = "Title not informed";
+          }
+
+          if(typeof description === 'undefined' || description === ''){
+            paramError = true;
+            errors.description = "Description not informed";
+          }
+
+          if (paramError) {
+            // TODO: alert user
+            console.log("Error");
+            console.log(errors);
+            return false;
+          }
+
+          try {
+            $.ajax({
               type: 'POST',
-              url: '/penalty/edit/' + String(id),
-              data: {},
+              url: '/penalty/update',
+              data: {
+                penalty_id: penalty_id,
+                title: title,
+                description: description
+              },
               success: success,
               async:true
-          });
+            });
 
-          function success(e)
-          {
+            function success(e)
+            {
               $("#loadedContainer").html( e );
+            }
+          } catch (e) {
+            // TODO
+            console.log(e);
+          } finally {
+
           }
+
         }
-
-        function(e){
-          $("input").on('input',function(e){
-    				$("#update").removeClass('disabled');
-    			});
-          $("textarea").on('input',function(e){
-    				$("#update").removeClass('disabled');
-    			});
-
-          $('#update').click(function(e)
-          {
-              var id = $(this).val();
-              updatePenalty(id);
-          });
-			  }
-      );
-
+		  });
 		</script>
 
 	</head>
