@@ -23,8 +23,8 @@
 								<%= list.names[i].status %>
 							</td>
 							<td>
-								<button id="participate" value="<%= list.names[i].player_id %>" fn="<%= list.names[i].full_name %>" type="button" class="btn btn-xs btn-block btn-danger" action="remove">
-									REMOVE
+								<button value="<%= list.names[i].player_id %>" fn="<%= list.names[i].full_name %>" type="button" class="btn btn-xs btn-block btn-danger" action="remove">
+									REMOVEPorra
 								</button>
 							</td>
 						</tr>
@@ -36,30 +36,3 @@
 	<div class="col-md-4">
 	</div>
 </div>
-<script type="text/javascript">
-	$( document ).ready(function()
-	{
-		$('button[action]').click(function(e)
-		{
-			var currentAction = $(this).attr('action');
-			var player_id     = $(this).val();
-			var full_name     = $(this).attr("fn");
-			var list_id       = "<%= list._id %>";
-
-			$.post("/match/delete/player/",
-			{
-				list_id       : list_id,
-				player_id     : player_id,
-				player_status : currentAction,
-				full_name     : full_name
-			},
-			function(data, status)
-			{
-				$.post("/match/get/players", {list_id : list_id}, function(data)
-				{
-					$("#loadedContainer_internal").html( data );
-				});
-			});
-		});
-	});
-</script>

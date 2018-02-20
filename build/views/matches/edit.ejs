@@ -6,14 +6,14 @@
 
 	<% include ../html/scripts_css %>
 
-	<script type="text/javascript" src="/public/js/jquery.bootstrap-touchspin.min.js"></script>
-	<link rel="stylesheet" href="/public/css/jquery.bootstrap-touchspin.min.css" />
-	<link rel="stylesheet" href="/public/css/toggle-switch.css" />
-
 	<script type="text/javascript">
 
 		$( document ).ready(function()
 		{
+
+			modalConfirm(function(confirm) {
+				alert(confirm);
+			})
 			var list_date   = "<%= list.list_date %>";
 			var list_status = "<%= list.list_status %>";
 			var list_size   = "<%= list.list_size %>";
@@ -38,11 +38,11 @@
 			$('#datetimepicker').datetimepicker({
 				inline: true,
 				sideBySide: false,
-				defaultDate: "<%= moment(list.list_date, 'x').format('MM/DD/YYYY HH:mm') %>"
+				// defaultDate: "<%= moment(list.list_date, 'x').format('MM/DD/YYYY HH:mm') %>"
 			})
 			.on("dp.change", function (e)
 			{
-				list_date = moment(e.date).format('x');
+				// list_date = moment(e.date).format('x');
 				$("#update").removeClass('disabled');
 			});
 
@@ -76,7 +76,71 @@
 					}
 				}
 			});
+			$('button[action]').click(function(e)
+			{
 
+				$("#modal-container").modal('show');
+
+				var player_id     = $(this).val();
+				var list_id       = "<%= list._id %>";
+				var errors 				= {};
+				var paramError    = false;
+
+				if (typeof(player_id) == 'undefined' || player_id == ''){
+					errors.player_id = "Player ID not informed";
+					paramError = true;
+				}
+
+				if (typeof(list_id) == 'undefined' || list_id == ''){
+					errors.list_id = "List ID not informed";
+					paramError = true;
+				}
+
+				if (paramError && errors){
+					for (var error in errors) {
+						if (errors.hasOwnProperty(error)) {
+							showalert(errors[error], "alert-danger");
+						}
+					}
+					return;
+				}
+				// if typeof list_id is 'undefined' || list_id == ''
+				//   errors.list_id = "List ID not informed"
+				//   paramError = true
+
+				$.ajax(
+					{
+						type: "POST",
+						url: "/match/delete/player/",
+						data: {
+							list_id       : list_id,
+							player_id     : player_id
+						},
+						success: success,
+						dataType: "json"
+					}
+				);
+				function success(data, status)
+				{
+					if(data.errors){
+						for (var error in data.errors) {
+							if (data.errors.hasOwnProperty(error)) {
+								showalert(data.errors[error], "alert-danger");
+							}
+						}
+					}else if(data.errMessage){
+						if (data.hasOwnProperty("errMessage")) {
+							showalert(data.errMessage, "alert-danger");
+						}
+					}else{
+						$.post("/match/get/players", {list_id : list_id}, function(data)
+						{
+							$("#loadedContainer_internal").html( data );
+						});
+					}
+				}
+
+			});
 		});
 	</script>
 
@@ -99,6 +163,8 @@
 		<% include ../controlpanel/matches_admin_edit_buttons %>
 		<div id="loadedContainer">
 			<% include ../html/top %>
+			<div id="alert-info">
+			</div>
 
 			<div class="jumbotron">
 				<div class="page-header">
@@ -185,9 +251,6 @@
 				<button type="button" class="btn btn-xs btn-block btn-primary disabled" id="update">update</button>
 			</p>
 
-			<div id="alert-info">
-
-			</div>
 		</div>
 	</div>
 </div>

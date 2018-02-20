@@ -8,12 +8,17 @@
         <script>
             $(document).ready(function()
             {
-
+              $(".delete").on("click", function(){
+                $("#modal-container").modal('show');
+                currentPenaltyId = $(this).val();
+              });
+              
 							function loadPenalties() {
-
+                // TODO reload html with penalties
 							}
 
 							function deletePenalty(id) {
+                // TODO validate params
 								$.ajax({
 										type: 'POST',
 										url: '/penalty/delete/',
@@ -36,79 +41,21 @@
 									// TODO: alert user
 									console.log(e);
 								}
+                var currentPenaltyId = "";
 							}
-
-							var currentPenaltyId = "";
-
-							var modalConfirm = function(callback){
-
-							  $(".delete").on("click", function(){
-							    $("#modal-container").modal('show');
-									currentPenaltyId = $(this).val();
-							  });
-
-							  $("#modal-yes").on("click", function(){
-							    callback(true);
-							    $("#modal-container").modal('hide');
-							  });
-
-							  $("#modal-no").on("click", function(){
-									currentPenaltyId = "";
-							    $("#modal-container").modal('hide');
-							  });
-							};
 
 							modalConfirm(function(confirm){
 							  if(confirm && currentPenaltyId != ""){
 									console.log("currentPenaltyId: " + currentPenaltyId);
 									deletePenalty(currentPenaltyId);
 							  }
-
 							});
-
-              // $('#edit').click(function(e)
-              // {
-              //     var currentListId = $(this).val();
-							//
-              //     $.ajax({
-              //         type: 'POST',
-              //         url: '/penalty/edit/' + String(currentListId),
-              //         data: {},
-              //         success: success,
-              //         async:true
-              //     });
-							//
-              //     function success(e)
-              //     {
-              //         $("#loadedContainer").html( e );
-              //     }
-              // });
-
-            })
+            });
         </script>
 
     </head>
     <body>
         <% include ../html/top %>
-
-
-				<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="modal-container">
-				  <div class="modal-dialog modal-sm">
-				    <div class="modal-content">
-				      <div class="modal-header">
-				        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				        <h4 class="modal-title" id="myModalLabel">Are you sure?</h4>
-				      </div>
-							<div class="modal-body">
-						    <p>This operation cannot be undone!</p>
-						  </div>
-				      <div class="modal-footer">
-				        <button type="button" class="btn btn-default" id="modal-yes">Yes</button>
-				        <button type="button" class="btn btn-primary" id="modal-no">No</button>
-				      </div>
-				    </div>
-				  </div>
-				</div>
 
         <div class="jumbotron">
             <div class="page-header">

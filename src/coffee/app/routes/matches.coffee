@@ -213,63 +213,30 @@ module.exports = (app) ->
     return
 
   app.post '/match/delete/player', isLoggedIn, (req, res, next) ->
-    list_id = req.body.list_id
-    errMessage = ""
-    user = {}
-    updated = 0
-    inputFault = false
-
-    user.player_id = if req.user
-    then new ObjectId(req.user.id)
-    else new ObjectId(req.body.player_id)
-
-    user.last_name  = if req.user
-    then req.user.facebook.last_name
-    else req.body.last_name
-
-    user.first_name = if req.user
-    then req.user.facebook.first_name
-    else req.body.first_name
-
-    user.full_name  = if req.user
-    then req.user.facebook.first_name + " " + req.user.facebook.last_name
-    else req.body.first_name + " " + req.body.last_name
-
-    user.phone      = if req.user
-    then req.user.phone
-    else req.body.phone
-
     errors = {}
 
-    if typeof user.player_id is 'undefined' || user.player_id == ''
+    list_id = req.body.list_id
+
+    player_id = if req.user
+    then req.user.id
+    else req.body.player_id
+
+    if typeof player_id is 'undefined' || player_id == ''
       errors.player_id = "Player ID not informed"
       paramError = true
-
-    if typeof user.last_name is 'undefined' || user.last_name == ''
-      errors.last_name = "Player last name not informed"
-      paramError = true
-
-    if typeof user.first_name is 'undefined' || user.first_name == ''
-      errors.first_name = "Player first name not informed"
-      paramError = true
-
-    if typeof user.full_name is 'undefined' || user.full_name == ''
-      errors.full_name = "Player full name not informed"
-      paramError = true
-
-    if typeof user.phone is 'undefined' || user.phone == ''
-      errors.phone = "Player phone name not informed"
+    if typeof list_id is 'undefined' || list_id == ''
+      errors.list_id = "List ID not informed"
       paramError = true
 
     if paramError
+      
       return res.json {
-        "message": "Please inform all params",
         "errors": errors
         "errMessage": "Params have not been informed correctly"
       }
 
-    removeUserFromMatch(user.player_id, list_id).then (data) ->
-      removeMatchFomUser(user.player_id, list_id)
+    removeUserFromMatch(player_id, list_id).then (data) ->
+      removeMatchFomUser(player_id, list_id)
       return res.json data
 
 
@@ -277,8 +244,7 @@ module.exports = (app) ->
     list_id = req.body.list_id
     errMessage = ""
     user = {}
-    updated = 0
-    inputFault = false
+
 
     user.player_id = if req.user
     then new ObjectId(req.user.id)
@@ -340,6 +306,8 @@ module.exports = (app) ->
 
     List.findOne '_id': list_id,
     (err, doc) ->
+      if err
+        res.status(404)
 
       player_is_on_list = _.find doc.names,
       (player) ->
@@ -366,8 +334,7 @@ module.exports = (app) ->
     List.findOne _id: ObjectId(req.params.list_id)
     , (err, result) ->
       if err
-        # TODO return error
-        return console.log('err', err)
+        res.status(404)
 
       res.render 'matches/players.ejs',
       message: req.flash('loginMessage')
@@ -388,8 +355,9 @@ module.exports = (app) ->
   app.get '/matches/edit', isLoggedIn, (req, res, next) ->
     List.find {}, (err, list) ->
       if err
-        res.send err
-        return
+        return res.json {
+          "errMessage": err.message
+        }
       res.render 'matches/list.ejs',
       message: req.flash('loginMessage')
       lists: list
@@ -403,7 +371,7 @@ module.exports = (app) ->
     list_id     = req.params.list_id
     List.findOne { _id: list_id }, {},(err, doc) ->
       if err
-        return { message: err }
+        res.status(404)
       else
         res.render 'matches/edit.ejs',
         message: ''

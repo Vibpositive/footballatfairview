@@ -19,6 +19,19 @@
 
 
 <script type="text/javascript">
+	
+	var modalConfirm = function(callback){
+
+		$("#modal-yes").on("click", function(){
+			callback(true);
+			$("#modal-container").modal('hide');
+		});
+
+		$("#modal-no").on("click", function(){
+			callback(false);
+			$("#modal-container").modal('hide');
+		});
+	};
 	// Test for the ugliness.
 	if (window.location.hash == '#_=_'){
 		// Check if the browser supports history.replaceState.

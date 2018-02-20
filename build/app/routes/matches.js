@@ -252,57 +252,34 @@ module.exports = function(app) {
     });
   });
   app.post('/match/delete/player', isLoggedIn, function(req, res, next) {
-    var errMessage, errors, inputFault, list_id, paramError, updated, user;
-    list_id = req.body.list_id;
-    errMessage = "";
-    user = {};
-    updated = 0;
-    inputFault = false;
-    user.player_id = req.user ? new ObjectId(req.user.id) : new ObjectId(req.body.player_id);
-    user.last_name = req.user ? req.user.facebook.last_name : req.body.last_name;
-    user.first_name = req.user ? req.user.facebook.first_name : req.body.first_name;
-    user.full_name = req.user ? req.user.facebook.first_name + " " + req.user.facebook.last_name : req.body.first_name + " " + req.body.last_name;
-    user.phone = req.user ? req.user.phone : req.body.phone;
+    var errors, list_id, paramError, player_id;
     errors = {};
-    if (typeof user.player_id === 'undefined' || user.player_id === '') {
+    list_id = req.body.list_id;
+    player_id = req.user ? req.user.id : req.body.player_id;
+    if (typeof player_id === 'undefined' || player_id === '') {
       errors.player_id = "Player ID not informed";
       paramError = true;
     }
-    if (typeof user.last_name === 'undefined' || user.last_name === '') {
-      errors.last_name = "Player last name not informed";
-      paramError = true;
-    }
-    if (typeof user.first_name === 'undefined' || user.first_name === '') {
-      errors.first_name = "Player first name not informed";
-      paramError = true;
-    }
-    if (typeof user.full_name === 'undefined' || user.full_name === '') {
-      errors.full_name = "Player full name not informed";
-      paramError = true;
-    }
-    if (typeof user.phone === 'undefined' || user.phone === '') {
-      errors.phone = "Player phone name not informed";
+    if (typeof list_id === 'undefined' || list_id === '') {
+      errors.list_id = "List ID not informed";
       paramError = true;
     }
     if (paramError) {
       return res.json({
-        "message": "Please inform all params",
         "errors": errors,
         "errMessage": "Params have not been informed correctly"
       });
     }
-    return removeUserFromMatch(user.player_id, list_id).then(function(data) {
-      removeMatchFomUser(user.player_id, list_id);
+    return removeUserFromMatch(player_id, list_id).then(function(data) {
+      removeMatchFomUser(player_id, list_id);
       return res.json(data);
     });
   });
   app.post('/match/add/player', isLoggedIn, function(req, res, next) {
-    var errMessage, errors, inputFault, list_id, paramError, updated, user;
+    var errMessage, errors, list_id, paramError, user;
     list_id = req.body.list_id;
     errMessage = "";
     user = {};
-    updated = 0;
-    inputFault = false;
     user.player_id = req.user ? new ObjectId(req.user.id) : new ObjectId(req.body.player_id);
     user.last_name = req.user ? req.user.facebook.last_name : req.body.last_name;
     user.first_name = req.user ? req.user.facebook.first_name : req.body.first_name;
@@ -349,6 +326,9 @@ module.exports = function(app) {
       '_id': list_id
     }, function(err, doc) {
       var player_is_on_list;
+      if (err) {
+        res.status(404);
+      }
       player_is_on_list = _.find(doc.names, function(player) {
         return String(player.player_id) === String(player_id);
       });
@@ -378,8 +358,7 @@ module.exports = function(app) {
       _id: ObjectId(req.params.list_id)
     }, function(err, result) {
       if (err) {
-        // TODO return error
-        return console.log('err', err);
+        res.status(404);
       }
       res.render('matches/players.ejs', {
         message: req.flash('loginMessage'),
@@ -400,8 +379,9 @@ module.exports = function(app) {
   app.get('/matches/edit', isLoggedIn, function(req, res, next) {
     return List.find({}, function(err, list) {
       if (err) {
-        res.send(err);
-        return;
+        return res.json({
+          "errMessage": err.message
+        });
       }
       res.render('matches/list.ejs', {
         message: req.flash('loginMessage'),
@@ -420,9 +400,7 @@ module.exports = function(app) {
       _id: list_id
     }, {}, function(err, doc) {
       if (err) {
-        return {
-          message: err
-        };
+        return res.status(404);
       } else {
         res.render('matches/edit.ejs', {
           message: '',

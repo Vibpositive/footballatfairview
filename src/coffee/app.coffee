@@ -91,12 +91,14 @@ console.log 'The magic happens on port ' + port
 
 process.on 'exit', (code) ->
   console.log 'About to exit with code: ${code}'
-
-app.use (req, res, next) ->
-  # res.render 'errors/404.ejs', title: '404'
-  # res.status(404).render 'errors/404.ejs', title: '404'
-  res.status(404).send("Sorry can't find that!")
-
+  
+# app.use (error, req, res, next) ->
+#   res.status 404
+#   res.render 'errors/404.ejs',
+#     title: '404  : Not found'
+#     error: error
+#   return
+#
 # app.use (error, req, res, next) ->
 #   res.status 500
 #   res.render 'errors/500.ejs',

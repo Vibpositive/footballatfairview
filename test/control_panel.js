@@ -137,10 +137,10 @@ describe('Control Panel', function()
 		});
 
 
-		it('should return a 200 status code for a get on penalties/add', function(done)
+		it('should return a 200 status code for a get on penalty/add', function(done)
 		{
 			request
-			.get(baseUrl + '/penalties/add')
+			.get(baseUrl + '/penalty/add')
 			.send(
 			{
 				list_date : list_date,
@@ -158,7 +158,7 @@ describe('Control Panel', function()
 		it('should return a 200 status code for a post on penalties/add', function(done)
 		{
 			request
-			.post(baseUrl + '/penalties/add')
+			.post(baseUrl + '/penalty/add')
 			.send(
 			{
 				player_id  : "575f2401c3fe8d106f774237",

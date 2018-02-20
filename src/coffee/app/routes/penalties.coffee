@@ -26,7 +26,7 @@ module.exports = (app) ->
     title: 'Penalties'
     return
 
-  app.get '/penalties/add', isLoggedIn, (req, res) ->
+  app.get '/penalty/add', isLoggedIn, (req, res) ->
     Penalty.find {}, (penalty_err, penalties) ->
       if penalty_err
         return console.log penalty_err
@@ -54,23 +54,53 @@ module.exports = (app) ->
     return
 
   # app.post '/penalties/add', isLoggedIn, (req, res) ->
-  app.post '/penalties/add', (req, res) ->
-    # TODO validate params
+  app.post '/penalty/add', (req, res) ->
+    try
+      player_id  = req.body.player_id
+      penalty_id = req.body.penalty_id
+      match_id   = req.body.match_id
+    catch error
+      return res.json {
+        "errMessage": error
+      }
 
-    player_id  = req.body.player_id
-    penalty_id = req.body.penalty_id
-    match_id   = req.body.match_id
+    errors = {}
+
+    if typeof player_id is 'undefined' || player_id == ''
+      errors.player_id = "Player ID not informed"
+      paramError = true
+
+    if typeof penalty_id is 'undefined' || penalty_id == ''
+      errors.penalty_id = "Penalty ID not informed"
+      paramError = true
+
+    if typeof match_id is 'undefined' || match_id == ''
+      errors.match_id = "Match ID not informed"
+      paramError = true
+
+    if paramError
+      return res.json {
+        "message": "Please inform all params",
+        "errors": errors
+        "errMessage": "Params have not been informed correctly"
+        "params": req.body
+      }
 
     newUserPenalty = new UserPenalty
       player_id: player_id
       penalty_id: penalty_id
       match_id: match_id
 
-    newUserPenalty.save (err, result, numAffected) ->
+    newUserPenalty.save (err, result) ->
       if err
-        console.log err
-        return res.status(422).json {message: err}
-      res.json { message: newUserPenalty._id }
+        return res.json {
+          "errMessage": err.message
+        }
+      return res.json {
+        "message": "Added successfully successfully"
+        "errMessage": ""
+        "doc": result
+      }
       return
     return
 
@@ -95,7 +125,9 @@ module.exports = (app) ->
       title = req.body.title
       description = req.body.description
     catch error
-      # TODO
+      return res.json {
+        "errMessage": error
+      }
     errors = {}
 
     if typeof title is 'undefined' || title == ''
@@ -120,10 +152,8 @@ module.exports = (app) ->
 
     penalty.save (err, result, numAffected) ->
       if err
-        console.log err
         return res.json {
-          "message": err.message
-          "errors": err
+          "errMessage": err.message
         }
       return res.json {
         "message": "Created successfully",
@@ -133,8 +163,7 @@ module.exports = (app) ->
   app.get '/penalty/edit/', isLoggedIn, (req, res) ->
     Penalty.find {}, (err, penalties) ->
       if err
-        return console.log err
-      console.log penalties
+        res.status(404)
       res.render 'penalties/list.ejs',
       message: req.flash('loginMessage')
       penalties: penalties
@@ -145,11 +174,10 @@ module.exports = (app) ->
     return
 
   app.get '/penalty/edit/:penalty_id', isLoggedIn, (req, res) ->
-    # TODO validate params
     penalty_id     = req.params.penalty_id
     Penalty.findOne { _id: penalty_id}, (err, penalty) ->
       if err
-        return console.log err
+        res.status(404)
       res.render 'penalties/penalty.ejs',
       message: req.flash('loginMessage')
       penalty: penalty
@@ -162,7 +190,9 @@ module.exports = (app) ->
   app.get '/penalties/view', isLoggedIn, (req, res) ->
     List.find {}, (err, list) ->
       if err
-        return console.log err
+        return res.json {
+          "errMessage": err.message
+        }
       res.render 'penalties/view.ejs',
       message: req.flash('loginMessage')
       lists: list
@@ -198,7 +228,9 @@ module.exports = (app) ->
 
     Penalty.deleteOne {_id: penalty_id}, (err, result) ->
       if err
-        console.log err
+        return res.json {
+          "errMessage": err.message
+        }
 
       if result.n > 0
         return res.json {
@@ -257,11 +289,16 @@ module.exports = (app) ->
       'rawResult': false
     }, (err, result) ->
       if err
-        console.log err
+        return res.json {
+          "errMessage": err.message
+        }
 
-      return res.json {
-        "message": result
-      }
+      if result
+        return res.json {
+          "message": "Updated successfully"
+          "errMessage": ""
+          "doc": result
+        }
 
       return res.json {
         "message": "Operation failed"
