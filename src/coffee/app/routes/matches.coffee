@@ -41,6 +41,7 @@ removeMatchFomUser = (player_id, match, next) ->
   }, (err, doc) ->
     if err
       errMessage = err.message
+    console.log "removeMatchFomUser: " + doc
     # FIXME matches not being found
     # deferred.resolve doc.matches.indexOf(match)
   return deferred.promise
@@ -136,6 +137,8 @@ removeUserFromMatch = (player_id, list_id) ->
         }
       }
 
+    console.log getTimeToMatch(doc)
+
     List.findOneAndUpdate {
       '_id': list_id
       'names.player_id': ObjectId(player_id)
@@ -151,7 +154,7 @@ removeUserFromMatch = (player_id, list_id) ->
           }
         if not doc
           response = {
-            "message": "Player not in this match96",
+            "message": "Player not in this match",
             "errMessage": "Please inform a valid match and user"
           }
         else
@@ -164,11 +167,11 @@ removeUserFromMatch = (player_id, list_id) ->
   return deferred.promise
 
 # TODO implement
-# getTimeToMatch = (list) ->
-#   currentTime = moment()
-#   matchTime = moment(list.list_date, "x")
-#   diffMinutes = matchTime.diff(currentTime, 'minutes')
-#   return diffMinutes
+getTimeToMatch = (list) ->
+  currentTime = moment()
+  matchTime = moment(list.list_date, "x")
+  diffMinutes = matchTime.diff(currentTime, 'minutes')
+  return diffMinutes
 
 # TODO implement
 # addPenaltyToUser = (user, match, next) ->
@@ -189,7 +192,7 @@ module.exports = (app) ->
     # console.log
     List.find {}, (err, list) ->
       if err
-        next err
+        res.status 404
       res.render 'matches/index.ejs',
       message: req.flash('loginMessage')
       lists: list
@@ -229,7 +232,12 @@ module.exports = (app) ->
       paramError = true
 
     if paramError
-      
+
+      console.log {
+        "errors": errors
+        "errMessage": "Params have not been informed correctly"
+      }
+
       return res.json {
         "errors": errors
         "errMessage": "Params have not been informed correctly"
@@ -237,6 +245,7 @@ module.exports = (app) ->
 
     removeUserFromMatch(player_id, list_id).then (data) ->
       removeMatchFomUser(player_id, list_id)
+      console.log data, player_id
       return res.json data
 
 
@@ -307,7 +316,7 @@ module.exports = (app) ->
     List.findOne '_id': list_id,
     (err, doc) ->
       if err
-        res.status(404)
+        res.status 404
 
       player_is_on_list = _.find doc.names,
       (player) ->
@@ -334,7 +343,7 @@ module.exports = (app) ->
     List.findOne _id: ObjectId(req.params.list_id)
     , (err, result) ->
       if err
-        res.status(404)
+        res.status 404
 
       res.render 'matches/players.ejs',
       message: req.flash('loginMessage')
@@ -355,9 +364,7 @@ module.exports = (app) ->
   app.get '/matches/edit', isLoggedIn, (req, res, next) ->
     List.find {}, (err, list) ->
       if err
-        return res.json {
-          "errMessage": err.message
-        }
+        res.status 404
       res.render 'matches/list.ejs',
       message: req.flash('loginMessage')
       lists: list
@@ -371,7 +378,7 @@ module.exports = (app) ->
     list_id     = req.params.list_id
     List.findOne { _id: list_id }, {},(err, doc) ->
       if err
-        res.status(404)
+        res.status 404
       else
         res.render 'matches/edit.ejs',
         message: ''

@@ -1,4 +1,4 @@
-var List, ObjectId, Penalty, Q, User, UserPenalty, _, addMatchToUser, addUserToMatch, isLoggedIn, moment, removeMatchFomUser, removeUserFromMatch, uuid;
+var List, ObjectId, Penalty, Q, User, UserPenalty, _, addMatchToUser, addUserToMatch, getTimeToMatch, isLoggedIn, moment, removeMatchFomUser, removeUserFromMatch, uuid;
 
 List = require('../models/list');
 
@@ -61,8 +61,9 @@ removeMatchFomUser = function(player_id, match, next) {
   }, function(err, doc) {
     var errMessage;
     if (err) {
-      return errMessage = err.message;
+      errMessage = err.message;
     }
+    return console.log("removeMatchFomUser: " + doc);
   });
   // FIXME matches not being found
   // deferred.resolve doc.matches.indexOf(match)
@@ -167,6 +168,7 @@ removeUserFromMatch = function(player_id, list_id) {
         }
       };
     }
+    console.log(getTimeToMatch(doc));
     return List.findOneAndUpdate({
       '_id': list_id,
       'names.player_id': ObjectId(player_id)
@@ -183,7 +185,7 @@ removeUserFromMatch = function(player_id, list_id) {
       }
       if (!doc) {
         response = {
-          "message": "Player not in this match96",
+          "message": "Player not in this match",
           "errMessage": "Please inform a valid match and user"
         };
       } else {
@@ -200,11 +202,13 @@ removeUserFromMatch = function(player_id, list_id) {
 };
 
 // TODO implement
-// getTimeToMatch = (list) ->
-//   currentTime = moment()
-//   matchTime = moment(list.list_date, "x")
-//   diffMinutes = matchTime.diff(currentTime, 'minutes')
-//   return diffMinutes
+getTimeToMatch = function(list) {
+  var currentTime, diffMinutes, matchTime;
+  currentTime = moment();
+  matchTime = moment(list.list_date, "x");
+  diffMinutes = matchTime.diff(currentTime, 'minutes');
+  return diffMinutes;
+};
 
 // TODO implement
 // addPenaltyToUser = (user, match, next) ->
@@ -224,7 +228,7 @@ module.exports = function(app) {
     // console.log
     List.find({}, function(err, list) {
       if (err) {
-        next(err);
+        res.status(404);
       }
       res.render('matches/index.ejs', {
         message: req.flash('loginMessage'),
@@ -265,6 +269,10 @@ module.exports = function(app) {
       paramError = true;
     }
     if (paramError) {
+      console.log({
+        "errors": errors,
+        "errMessage": "Params have not been informed correctly"
+      });
       return res.json({
         "errors": errors,
         "errMessage": "Params have not been informed correctly"
@@ -272,6 +280,7 @@ module.exports = function(app) {
     }
     return removeUserFromMatch(player_id, list_id).then(function(data) {
       removeMatchFomUser(player_id, list_id);
+      console.log(data, player_id);
       return res.json(data);
     });
   });
@@ -379,9 +388,7 @@ module.exports = function(app) {
   app.get('/matches/edit', isLoggedIn, function(req, res, next) {
     return List.find({}, function(err, list) {
       if (err) {
-        return res.json({
-          "errMessage": err.message
-        });
+        res.status(404);
       }
       res.render('matches/list.ejs', {
         message: req.flash('loginMessage'),

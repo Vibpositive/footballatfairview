@@ -11,12 +11,83 @@
 		$( document ).ready(function()
 		{
 
-			modalConfirm(function(confirm) {
-				alert(confirm);
-			})
 			var list_date   = "<%= list.list_date %>";
 			var list_status = "<%= list.list_status %>";
 			var list_size   = "<%= list.list_size %>";
+			var player_id   = null;
+
+			function deletePlayer(player_id = null){
+
+				if(!player_id){
+					// TODO return error
+					return false;
+				}
+
+				var list_id       = "<%= list._id %>";
+				var errors 				= {};
+				var paramError    = false;
+
+				if (typeof(player_id) == 'undefined' || player_id == ''){
+					errors.player_id = "Player ID not informed";
+					paramError = true;
+				}
+
+				if (typeof(list_id) == 'undefined' || list_id == ''){
+					errors.list_id = "List ID not informed";
+					paramError = true;
+				}
+
+				if (paramError && errors){
+					for (var error in errors) {
+						if (errors.hasOwnProperty(error)) {
+							showalert(errors[error], "alert-danger");
+						}
+					}
+					return;
+				}
+
+				$.ajax(
+					{
+						type: "POST",
+						url: "/match/delete/player/",
+						data: {
+							list_id       : list_id,
+							player_id     : player_id
+						},
+						success: success,
+						error: errorHandler,
+						dataType: "json"
+					}
+				);
+
+				console.log("list_id: " + list_id);
+				console.log("player_id: " + player_id);
+
+				function errorHandler(request, status, error) {
+					// TODO: show a proper erro message
+					showalert(request.statusText, "alert-danger");
+		    }
+				function success(data, status)
+				{
+					console.log("status: " + status);
+					if(data.errors){
+						for (var error in data.errors) {
+							if (data.errors.hasOwnProperty(error)) {
+								showalert(data.errors[error], "alert-danger");
+							}
+						}
+					}else if(data.errMessage){
+						if (data.hasOwnProperty("errMessage")) {
+							showalert(data.errMessage, "alert-danger");
+						}
+					}else{
+						$.post("/match/get/players", {list_id : list_id}, function(data)
+						{
+							$("#loadedContainer_internal").html( data );
+						});
+					}
+				}
+			}
 
 			$("input[name='demo3']").TouchSpin(
 			{
@@ -31,7 +102,7 @@
 			$('input[type="radio"]').click(function(e)
 			{
 				list_status = $(this).attr('matchestatus');
-				console.log('list_status: ' + list_status)
+				// console.log('list_status: ' + list_status)
 				$("#update").removeClass('disabled');
 			});
 
@@ -76,71 +147,18 @@
 					}
 				}
 			});
-			$('button[action]').click(function(e)
-			{
 
+			$( ".removePlayer" ).click(function(e){
 				$("#modal-container").modal('show');
-
-				var player_id     = $(this).val();
-				var list_id       = "<%= list._id %>";
-				var errors 				= {};
-				var paramError    = false;
-
-				if (typeof(player_id) == 'undefined' || player_id == ''){
-					errors.player_id = "Player ID not informed";
-					paramError = true;
-				}
-
-				if (typeof(list_id) == 'undefined' || list_id == ''){
-					errors.list_id = "List ID not informed";
-					paramError = true;
-				}
-
-				if (paramError && errors){
-					for (var error in errors) {
-						if (errors.hasOwnProperty(error)) {
-							showalert(errors[error], "alert-danger");
-						}
-					}
-					return;
-				}
-				// if typeof list_id is 'undefined' || list_id == ''
-				//   errors.list_id = "List ID not informed"
-				//   paramError = true
-
-				$.ajax(
-					{
-						type: "POST",
-						url: "/match/delete/player/",
-						data: {
-							list_id       : list_id,
-							player_id     : player_id
-						},
-						success: success,
-						dataType: "json"
-					}
-				);
-				function success(data, status)
-				{
-					if(data.errors){
-						for (var error in data.errors) {
-							if (data.errors.hasOwnProperty(error)) {
-								showalert(data.errors[error], "alert-danger");
-							}
-						}
-					}else if(data.errMessage){
-						if (data.hasOwnProperty("errMessage")) {
-							showalert(data.errMessage, "alert-danger");
-						}
-					}else{
-						$.post("/match/get/players", {list_id : list_id}, function(data)
-						{
-							$("#loadedContainer_internal").html( data );
-						});
-					}
-				}
-
+				player_id = $(this).val();
 			});
+
+			modalConfirm(function(confirm){
+				if(confirm){
+					deletePlayer(player_id);
+				}
+			});
+
 		});
 	</script>
 
